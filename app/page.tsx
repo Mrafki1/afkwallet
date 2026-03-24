@@ -19,6 +19,7 @@ const FEATURED_CARDS = [
     issuer: "American Express",  name: "The Platinum Card",
     value: "~$1,800", portal: "+$125 via GCR",
     rarity: "LEGENDARY", rarityColor: "#d4a017", rarityBg: "#7a5c3a",
+    gemSrc: "/assets/gems/gem_01.png",
     href: "/cards/amex-plat",
   },
   {
@@ -26,6 +27,7 @@ const FEATURED_CARDS = [
     issuer: "American Express",   name: "Cobalt Card",
     value: "~$500", portal: "+$100 via GCR",
     rarity: "EPIC", rarityColor: "#c4a0e8", rarityBg: "#5a3a7a",
+    gemSrc: "/assets/gems/gem_04.png",
     href: "/cards/amex-cobalt",
   },
   {
@@ -33,6 +35,7 @@ const FEATURED_CARDS = [
     issuer: "Scotiabank",               name: "Gold American Express",
     value: "~$885", portal: "+$150 via GCR",
     rarity: "RARE", rarityColor: "#90c0e8", rarityBg: "#2a5a7a",
+    gemSrc: "/assets/gems/gem_00.png",
     href: "/cards/scotia-amex-gold",
   },
 ];
@@ -51,10 +54,10 @@ const VALUE_ROWS = [
 ];
 
 const TRACKER_FEATURES = [
-  { icon: "⚔️", label: "MSR Progress Tracker", desc: "Real-time spend progress bars. Never miss a deadline or forfeit a welcome bonus." },
-  { icon: "📅", label: "Fee Renewal Alerts",   desc: "Get flagged 60 days before your annual fee hits so you can keep or cancel in time." },
-  { icon: "💳", label: "Card Collection",      desc: "Your full card inventory with rarity, status, and value — always one tap away." },
-  { icon: "📊", label: "Reward History",       desc: "Every bonus you've ever earned, what it was worth, and what's still in progress." },
+  { iconSrc: "/assets/tools/watering-can.png", label: "MSR Progress Tracker", desc: "Real-time spend progress bars. Never miss a deadline or forfeit a welcome bonus." },
+  { iconSrc: "/assets/tools/seed-bag.png",     label: "Fee Renewal Alerts",   desc: "Get flagged 60 days before your annual fee hits so you can keep or cancel in time." },
+  { iconSrc: "/assets/tools/axe.png",          label: "Card Collection",      desc: "Your full card inventory with rarity, status, and value — always one tap away." },
+  { iconSrc: "/assets/tools/scythe.png",       label: "Reward History",       desc: "Every bonus you've ever earned, what it was worth, and what's still in progress." },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -66,9 +69,12 @@ export default function LandingPage() {
 
       {/* ── Hero ── */}
       <section style={{ background: "#f9f0d9" }} className="relative overflow-hidden">
-        {/* Decorative background wheat */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none select-none text-3xl flex items-end gap-2 px-8 opacity-20">
-          🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾🌾
+        {/* Decorative forage sprites */}
+        <div className="absolute bottom-4 left-0 right-0 pointer-events-none select-none flex items-end justify-around px-8 opacity-60">
+          {["/assets/forage/forage_00.png","/assets/forage/forage_01.png","/assets/forage/forage_02.png","/assets/forage/forage_03.png","/assets/forage/forage_04.png","/assets/forage/forage_05.png","/assets/forage/forage_00.png","/assets/forage/forage_03.png","/assets/forage/forage_01.png","/assets/forage/forage_04.png","/assets/forage/forage_02.png","/assets/forage/forage_05.png"].map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={i} src={src} alt="" width={32} height={32} style={{ imageRendering: "pixelated" }} />
+          ))}
         </div>
 
         <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -198,12 +204,16 @@ export default function LandingPage() {
               <div key={card.src} className="sdv-card flex flex-col overflow-hidden hover:-translate-y-1 transition-transform duration-200">
                 {/* Rarity banner */}
                 <div
-                  className="px-4 py-1.5 text-center"
+                  className="px-4 py-2 flex items-center justify-center gap-2"
                   style={{ background: card.rarityBg, borderBottom: "2px solid #5a3c20" }}
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={card.gemSrc} alt="" width={20} height={20} style={{ imageRendering: "pixelated" }} />
                   <span className="text-[11px] font-pixel" style={{ color: card.rarityColor }}>
                     {card.rarity}
                   </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={card.gemSrc} alt="" width={20} height={20} style={{ imageRendering: "pixelated" }} />
                 </div>
 
                 {/* Card image */}
@@ -276,10 +286,11 @@ export default function LandingPage() {
                 }}
               >
                 <div
-                  className="w-8 h-8 flex items-center justify-center text-sm"
+                  className="w-10 h-10 flex items-center justify-center"
                   style={{ background: "#3d2b1f", border: "2px solid #d4a017" }}
                 >
-                  ⚔️
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/assets/gems/gem_01.png" alt="" width={28} height={28} style={{ imageRendering: "pixelated" }} />
                 </div>
                 <div>
                   <p className="text-[11px] font-pixel" style={{ color: "#f0c840" }}>Legendary Deal</p>
@@ -342,7 +353,8 @@ export default function LandingPage() {
                   onMouseEnter={e => (e.currentTarget.style.transform = "translate(-1px,-1px)")}
                   onMouseLeave={e => (e.currentTarget.style.transform = "")}
                 >
-                  <div className="text-2xl mb-3">{f.icon}</div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={f.iconSrc} alt="" width={48} height={48} style={{ imageRendering: "pixelated" }} className="mb-3" />
                   <h3 className="font-bold text-sm mb-1.5" style={{ color: "#3d2b1f" }}>{f.label}</h3>
                   <p className="text-xs leading-relaxed" style={{ color: "#7a6048" }}>{f.desc}</p>
                 </div>
