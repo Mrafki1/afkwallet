@@ -93,3 +93,7 @@ body {
 .sdv-brown { color: #7a5c3a; }
 .sdv-text  { color: #3d2b1f; }
 .sdv-muted { color: #7a6048; }
+
+/* Blog post title hover (server component safe) */
+.sdv-blog-title { color: #3d2b1f; transition: color 0.15s; }
+.sdv-blog-title:hover { color: #4a7c59; }

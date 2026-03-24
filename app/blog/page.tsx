@@ -67,12 +67,7 @@ export default function BlogPage() {
                 ))}
               </div>
               <Link href={`/blog/${post.slug}`}>
-                <h2
-                  className="text-xl font-bold leading-snug mb-2 transition-colors"
-                  style={{ color: "#3d2b1f" }}
-                  onMouseEnter={e => ((e.target as HTMLElement).style.color = "#4a7c59")}
-                  onMouseLeave={e => ((e.target as HTMLElement).style.color = "#3d2b1f")}
-                >
+                <h2 className="sdv-blog-title text-xl font-bold leading-snug mb-2">
                   {post.title}
                 </h2>
               </Link>
