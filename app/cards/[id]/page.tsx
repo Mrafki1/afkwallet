@@ -15,16 +15,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!card) return {};
   const description = `${card.pointsBonus} welcome bonus. ${card.firstYearValue} first-year value. ${card.annualFee} annual fee. Compare rebate portals and apply via the highest payout.`;
   return {
-    title: card.name,
+    title: `${card.name} Review 2025`,
     description,
+    keywords: [card.name, card.issuer, card.program, "credit card Canada", "welcome bonus", "rebate portal"],
+    alternates: { canonical: `/cards/${id}` },
     openGraph: {
-      title: `${card.name} — ChurnCA`,
+      title: `${card.name} Review 2025 | ChurnCA`,
       description,
+      url: `/cards/${id}`,
       images: [{ url: card.image, width: 600, height: 375, alt: card.name }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${card.name} — ChurnCA`,
+      title: `${card.name} Review 2025 | ChurnCA`,
       description,
       images: [card.image],
     },

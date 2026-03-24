@@ -1,10 +1,80 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cards, type Card } from "../data/cards";
 import Navbar from "../components/Navbar";
+
+// ─── Tooltip ──────────────────────────────────────────────────────────────────
+function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  function show() {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect();
+      const x = Math.max(160, Math.min(r.left + r.width / 2, window.innerWidth - 160));
+      setPos({ x, y: r.bottom });
+    }
+  }
+
+  function hide() {
+    hideTimer.current = setTimeout(() => setPos(null), 120);
+  }
+
+  return (
+    <span ref={triggerRef} className="inline-flex items-center gap-1 cursor-help" onMouseEnter={show} onMouseLeave={hide}>
+      {children}
+      {pos && (
+        <span
+          style={{ position: "fixed", left: pos.x, top: pos.y + 8, transform: "translateX(-50%)", zIndex: 9999 }}
+          className="w-72 rounded-xl bg-gray-900 text-white text-xs px-3 py-2.5 leading-relaxed shadow-xl normal-case tracking-normal font-normal text-center pointer-events-none whitespace-normal"
+        >
+          <span className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-gray-900" />
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
+const TOOLTIPS = {
+  firstYearValue: "Total estimated value in year one — welcome bonus + portal cash back minus the annual fee. Lets you compare cards on a level playing field.",
+  welcomeBonus: "Points or cash back you earn after hitting the minimum spend. This is the main reason to apply for a new card. Higher is better.",
+  annualFee: "Yearly fee charged by the card issuer. 'FYF' = First Year Free — the fee is waived for your first 12 months.",
+  msr: "Minimum Spend Requirement — the total you need to charge to the card (usually within 3 months) to unlock the full welcome bonus.",
+  bestPortal: "Rebate portals pay you extra cash back just for applying through their link. Stack this on top of your welcome bonus for free money.",
+  topEarnRate: "The best points multiplier this card earns on everyday spending. e.g. '5x on dining' means 5 points per dollar at restaurants.",
+  pointsProgram: "The rewards currency this card earns. Aeroplan and Amex MR are the most flexible — they can be transferred to multiple airlines.",
+  pointsValue: "Estimated value per point in cents, based on common redemptions. 1.5¢+ is considered good; premium programs can reach 2–3¢.",
+  foreignFee: "Fee charged on purchases in a foreign currency (e.g. USD). Most Canadian cards charge 2.5%. Cards that waive this save you money on travel and online shopping.",
+  incomeReq: "Minimum personal or household income required to qualify for this card.",
+  loungeAccess: "Airport lounge access included with the card. Priority Pass and Visa Airport Companion cover hundreds of lounges worldwide.",
+  network: "Payment network (Visa, Mastercard, Amex). Amex is less widely accepted than Visa/MC but often has better earn rates and perks.",
+  travelMedical: "Emergency medical insurance for you and your family while travelling. Coverage amount and trip length limits vary by card.",
+};
+
+// ─── Rarity ───────────────────────────────────────────────────────────────────
+const RARITY = {
+  legendary: { label: "LEGENDARY", color: "text-amber-400",  border: "border-amber-400/50",  glow: "shadow-[0_0_16px_rgba(251,191,36,0.2)]",   bg: "bg-amber-400/10"  },
+  epic:      { label: "EPIC",      color: "text-purple-400", border: "border-purple-500/50", glow: "shadow-[0_0_12px_rgba(168,85,247,0.15)]",  bg: "bg-purple-500/10" },
+  rare:      { label: "RARE",      color: "text-blue-400",   border: "border-blue-400/40",   glow: "",                                          bg: "bg-blue-500/10"   },
+  uncommon:  { label: "UNCOMMON",  color: "text-green-400",  border: "border-green-600/40",  glow: "",                                          bg: "bg-green-500/10"  },
+  common:    { label: "COMMON",    color: "text-slate-500",   border: "border-slate-700",      glow: "",                                          bg: "bg-slate-800/50"   },
+} as const;
+type RarityKey = keyof typeof RARITY;
+
+function getCardRarity(feeNum: number, valueStr: string): RarityKey {
+  const value = parseInt(valueStr.replace(/[^0-9]/g, "")) || 0;
+  if (feeNum >= 599 || value >= 1500) return "legendary";
+  if (feeNum >= 250 || value >= 800)  return "epic";
+  if (feeNum >= 120 || value >= 500)  return "rare";
+  if (feeNum >= 1)                    return "uncommon";
+  return "common";
+}
 
 // ─── Personas ─────────────────────────────────────────────────────────────────
 type Persona = {
@@ -85,9 +155,9 @@ const PERSONAS: Persona[] = [
 ];
 
 // ─── Card image ───────────────────────────────────────────────────────────────
-function CardArt({ name, image, gradient, featured, elevated }: { name: string; image: string; gradient: string; featured: boolean; elevated?: boolean }) {
+function CardArt({ name, image, gradient, elevated }: { name: string; image: string; gradient: string; featured: boolean; elevated?: boolean }) {
   return (
-    <div className="relative w-full aspect-[1.6/1] rounded-xl overflow-hidden bg-gray-100">
+    <div className="relative w-full aspect-[1.6/1] rounded-xl overflow-hidden bg-slate-800">
       <Image src={image} alt={name} fill className="object-contain p-2"
         onError={(e) => {
           const parent = (e.target as HTMLImageElement).parentElement;
@@ -98,10 +168,7 @@ function CardArt({ name, image, gradient, featured, elevated }: { name: string; 
         }}
       />
       {elevated && (
-        <span className="absolute top-2 left-2 text-xs font-bold bg-red-600 text-white px-2 py-0.5 rounded-full shadow-sm tracking-wide animate-pulse">🔥 HOT OFFER</span>
-      )}
-      {!elevated && featured && (
-        <span className="absolute top-2 left-2 text-xs font-semibold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full shadow-sm">FEATURED</span>
+        <span className="absolute top-2 left-2 text-xs font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full shadow-sm tracking-wide animate-pulse">⚡ HOT DROP</span>
       )}
     </div>
   );
@@ -111,15 +178,20 @@ function CardArt({ name, image, gradient, featured, elevated }: { name: string; 
 function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<string>; onToggle: (id: string) => void }) {
   const inCompare = compareSet.has(card.id);
   const maxed = compareSet.size >= 3 && !inCompare;
+  const rarity = RARITY[getCardRarity(card.annualFeeNum, card.firstYearValue)];
   return (
-    <div className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] p-5 flex flex-col gap-4 border-2 ${inCompare ? "border-red-900" : "border-gray-100"}`}>
+    <div className={`bg-slate-900 rounded-2xl transition-all duration-200 ease-out hover:-translate-y-1 p-5 flex flex-col gap-4 border-2 ${inCompare ? "border-amber-400" : rarity.border} ${rarity.glow}`}>
+      {/* Rarity badge */}
+      <div className={`-mx-5 -mt-5 px-4 py-1 rounded-t-xl flex items-center gap-2 ${rarity.bg} border-b ${rarity.border}`}>
+        <span className={`text-[10px] font-black uppercase tracking-widest ${rarity.color}`}>{rarity.label}</span>
+      </div>
       <div className="relative">
         <Link href={`/cards/${card.id}`}>
           <CardArt name={card.name} image={card.image} gradient={card.gradient} featured={card.featured} elevated={card.elevated} />
         </Link>
         {card.elevated && card.elevatedNote && (
-          <div className="mt-2 flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
-            <span className="text-red-600 text-xs font-semibold">{card.elevatedNote}</span>
+          <div className="mt-2 flex items-center gap-1.5 bg-amber-400/10 border border-amber-400/20 rounded-lg px-3 py-1.5">
+            <span className="text-amber-400 text-xs font-semibold">{card.elevatedNote}</span>
           </div>
         )}
         <button
@@ -127,38 +199,44 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
           disabled={maxed}
           title={inCompare ? "Remove from compare" : maxed ? "Max 3 cards" : "Add to compare"}
           className={`absolute top-2 right-2 w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-colors shadow-sm ${
-            inCompare ? "bg-red-900 border-red-900 text-white" : maxed ? "bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed" : "bg-white border-gray-300 text-gray-400 hover:border-red-900 hover:text-red-900"
+            inCompare ? "bg-amber-400 border-amber-400 text-slate-950" : maxed ? "bg-slate-700 border-slate-600 text-slate-500 cursor-not-allowed" : "bg-slate-800 border-slate-600 text-slate-400 hover:border-amber-400 hover:text-amber-400"
           }`}
         >
           {inCompare ? "✓" : "+"}
         </button>
       </div>
       <div>
-        <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">{card.issuer}</p>
-        <Link href={`/cards/${card.id}`} className="hover:text-red-900 transition-colors">
-          <h3 className="font-bold text-gray-900 text-base leading-tight mt-0.5">{card.name}</h3>
+        <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{card.issuer}</p>
+        <Link href={`/cards/${card.id}`} className="hover:text-amber-400 transition-colors">
+          <h3 className="font-bold text-white text-base leading-tight mt-0.5">{card.name}</h3>
         </Link>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="bg-gray-50 rounded-xl p-2">
-          <p className="text-xs text-gray-400 mb-0.5 leading-tight">1st Year Value</p>
-          <p className="font-bold text-orange-500 text-sm">{card.firstYearValue}</p>
+        <div className="bg-slate-800 rounded-xl p-2">
+          <p className="text-xs text-slate-500 mb-0.5 leading-tight justify-center flex">
+            <Tooltip text={TOOLTIPS.firstYearValue}>1st Year Value <span className="ml-0.5 text-[10px]">ⓘ</span></Tooltip>
+          </p>
+          <p className="font-bold text-amber-400 text-sm">{card.firstYearValue}</p>
         </div>
-        <div className="bg-gray-50 rounded-xl p-2">
-          <p className="text-xs text-gray-400 mb-0.5 leading-tight">Welcome Bonus</p>
-          <p className="font-bold text-gray-800 text-xs leading-tight">{card.pointsBonus}</p>
+        <div className="bg-slate-800 rounded-xl p-2">
+          <p className="text-xs text-slate-500 mb-0.5 leading-tight justify-center flex">
+            <Tooltip text={TOOLTIPS.welcomeBonus}>Welcome Bonus <span className="ml-0.5 text-[10px]">ⓘ</span></Tooltip>
+          </p>
+          <p className="font-bold text-white text-xs leading-tight">{card.pointsBonus}</p>
         </div>
-        <div className="bg-gray-50 rounded-xl p-2">
-          <p className="text-xs text-gray-400 mb-0.5 leading-tight">Annual Fee</p>
-          <p className="font-bold text-gray-800 text-sm">{card.annualFee}</p>
+        <div className="bg-slate-800 rounded-xl p-2">
+          <p className="text-xs text-slate-500 mb-0.5 leading-tight justify-center flex">
+            <Tooltip text={TOOLTIPS.annualFee}>Annual Fee <span className="ml-0.5 text-[10px]">ⓘ</span></Tooltip>
+          </p>
+          <p className="font-bold text-white text-sm">{card.annualFee}</p>
         </div>
       </div>
       {card.rewards.length > 0 && (
         <div className="flex flex-col gap-1.5">
           {card.rewards.slice(0, 2).map((r, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="font-bold text-gray-900 text-sm w-10 shrink-0">{r.multiplier}</span>
-              <span className="text-gray-500 text-xs">{r.category}</span>
+              <span className="font-bold text-amber-400 text-sm w-10 shrink-0">{r.multiplier}</span>
+              <span className="text-slate-500 text-xs">{r.category}</span>
             </div>
           ))}
         </div>
@@ -166,7 +244,7 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
       {card.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {card.tags.slice(0, 3).map(tag => (
-            <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full">{tag}</span>
+            <span key={tag} className="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">{tag}</span>
           ))}
         </div>
       )}
@@ -176,20 +254,20 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
             <div className="flex flex-wrap gap-2">
               {card.portals.map((portal, i) => (
                 <a key={portal.name} href={portal.url} target="_blank" rel="noopener noreferrer"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${i === 0 ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"}`}>
-                  {i === 0 && <span className="text-green-500">★</span>}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${i === 0 ? "bg-emerald-400/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-400/20" : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700"}`}>
+                  {i === 0 && <span className="text-emerald-400">★</span>}
                   {portal.name} <span className="font-bold">${portal.bonus}</span>
                 </a>
               ))}
             </div>
             <a href={card.portals[0].url} target="_blank" rel="noopener noreferrer"
-              className="w-full text-center bg-red-900 hover:bg-red-800 text-white text-sm font-semibold py-2 rounded-xl transition-colors">
+              className="w-full text-center bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold py-2 rounded-xl transition-colors">
               Apply via {card.portals[0].name} (+${card.portals[0].bonus})
             </a>
           </>
         ) : (
           <a href={card.directLink} target="_blank" rel="noopener noreferrer"
-            className="w-full text-center bg-red-900 hover:bg-red-800 text-white text-sm font-semibold py-2 rounded-xl transition-colors">
+            className="w-full text-center bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold py-2 rounded-xl transition-colors">
             Apply Direct
           </a>
         )}
@@ -225,13 +303,18 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
     return sortDir === "asc" ? diff : -diff;
   }), [cards, sortCol, sortDir]);
 
-  function Th({ col, label }: { col: SortCol; label: string }) {
+  function Th({ col, label, tooltip }: { col: SortCol; label: string; tooltip?: string }) {
     const active = sortCol === col;
     return (
       <th onClick={() => handleSort(col)}
-        className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide cursor-pointer hover:text-gray-900 select-none whitespace-nowrap">
-        {label}
-        <span className={`ml-1 text-xs ${active ? "text-red-900" : "text-gray-300"}`}>
+        className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:text-white select-none whitespace-nowrap">
+        {tooltip ? (
+          <Tooltip text={tooltip}>
+            <span>{label}</span>
+            <span className="text-slate-600 text-[10px] font-normal">ⓘ</span>
+          </Tooltip>
+        ) : label}
+        <span className={`ml-1 text-xs ${active ? "text-amber-400" : "text-slate-600"}`}>
           {active ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
         </span>
       </th>
@@ -239,35 +322,37 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+    <div className="overflow-x-auto rounded-2xl border border-slate-800 shadow-sm">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 border-b border-gray-100">
+        <thead className="bg-slate-900 border-b border-slate-800">
           <tr>
             <th className="px-3 py-3 w-10"></th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-64">Card</th>
-            <Th col="value"  label="1st Year Value" />
-            <Th col="bonus"  label="Welcome Bonus" />
-            <Th col="fee"    label="Annual Fee" />
-            <Th col="msr"    label="Min. Spend" />
-            <Th col="portal" label="Best Portal" />
-            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Top Earn Rate</th>
+            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-64">Card</th>
+            <Th col="value"  label="1st Year Value" tooltip={TOOLTIPS.firstYearValue} />
+            <Th col="bonus"  label="Welcome Bonus"  tooltip={TOOLTIPS.welcomeBonus} />
+            <Th col="fee"    label="Annual Fee"     tooltip={TOOLTIPS.annualFee} />
+            <Th col="msr"    label="Min. Spend"     tooltip={TOOLTIPS.msr} />
+            <Th col="portal" label="Best Portal"    tooltip={TOOLTIPS.bestPortal} />
+            <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">
+              <Tooltip text={TOOLTIPS.topEarnRate}><span>Top Earn Rate</span><span className="text-slate-600 text-[10px] font-normal ml-1">ⓘ</span></Tooltip>
+            </th>
             <th className="px-4 py-3"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-slate-800/50">
           {sorted.map((card, i) => {
             const best = card.portals[0] ?? null;
             const inCompare = compareSet.has(card.id);
             const maxed = compareSet.size >= 3 && !inCompare;
             return (
-              <tr key={card.id} className={`hover:bg-gray-50 transition-colors ${inCompare ? "bg-red-50/40" : i % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}>
+              <tr key={card.id} className={`hover:bg-slate-800/50 transition-colors ${inCompare ? "bg-amber-400/5" : i % 2 === 0 ? "bg-slate-950" : "bg-slate-900/30"}`}>
                 <td className="px-3 py-3">
                   <button
                     onClick={() => onToggle(card.id)}
                     disabled={maxed}
                     title={inCompare ? "Remove from compare" : maxed ? "Max 3 cards" : "Compare"}
                     className={`w-6 h-6 rounded border-2 flex items-center justify-center text-xs font-bold transition-colors ${
-                      inCompare ? "bg-red-900 border-red-900 text-white" : maxed ? "border-gray-200 text-gray-300 cursor-not-allowed" : "border-gray-300 text-gray-300 hover:border-red-900 hover:text-red-900"
+                      inCompare ? "bg-amber-400 border-amber-400 text-slate-950" : maxed ? "border-slate-700 text-slate-600 cursor-not-allowed" : "border-slate-700 text-slate-600 hover:border-amber-400 hover:text-amber-400"
                     }`}
                   >
                     {inCompare ? "✓" : ""}
@@ -275,54 +360,54 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
                 </td>
                 <td className="px-4 py-3">
                   <Link href={`/cards/${card.id}`} className="flex items-center gap-3 group">
-                    <div className="relative w-16 aspect-[1.586/1] rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                    <div className="relative w-16 aspect-[1.586/1] rounded-lg overflow-hidden bg-slate-800 shrink-0">
                       <Image src={card.image} alt={card.name} fill className="object-contain p-1" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900 group-hover:text-red-900 transition-colors leading-tight text-sm">{card.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{card.issuer}</p>
-                      {card.featured && <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full">FEATURED</span>}
+                      <p className="font-semibold text-white group-hover:text-amber-400 transition-colors leading-tight text-sm">{card.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{card.issuer}</p>
+                      {card.elevated && <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-full border border-amber-400/20">⚡ HOT DROP</span>}
                     </div>
                   </Link>
                 </td>
-                <td className="px-4 py-3"><span className="font-bold text-orange-500">{card.firstYearValue}</span></td>
+                <td className="px-4 py-3"><span className="font-bold text-amber-400">{card.firstYearValue}</span></td>
                 <td className="px-4 py-3">
-                  <span className="font-semibold text-gray-800 text-xs">{card.pointsBonus}</span>
-                  <p className="text-xs text-gray-400 mt-0.5">{card.program}</p>
+                  <span className="font-semibold text-white text-xs">{card.pointsBonus}</span>
+                  <p className="text-xs text-slate-500 mt-0.5">{card.program}</p>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`font-semibold text-sm ${card.annualFeeNum === 0 ? "text-green-600" : "text-gray-800"}`}>{card.annualFee}</span>
+                  <span className={`font-semibold text-sm ${card.annualFeeNum === 0 ? "text-emerald-400" : "text-white"}`}>{card.annualFee}</span>
                 </td>
-                <td className="px-4 py-3"><span className="text-gray-600 text-xs">{card.msr}</span></td>
+                <td className="px-4 py-3"><span className="text-slate-400 text-xs">{card.msr}</span></td>
                 <td className="px-4 py-3">
                   {best ? (
                     <div className="flex flex-col gap-1">
                       <a href={best.url} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors">
+                        className="inline-flex items-center gap-1.5 bg-emerald-400/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-400/20 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors">
                         ★ {best.name} +${best.bonus}
                       </a>
                       {card.portals.slice(1).map(p => (
                         <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer"
-                          className="text-xs text-gray-400 hover:text-gray-600">
+                          className="text-xs text-slate-500 hover:text-slate-300">
                           {p.name} +${p.bonus}
                         </a>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-xs text-gray-400">Direct only</span>
+                    <span className="text-xs text-slate-600">Direct only</span>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   {card.rewards[0] && (
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-gray-900">{card.rewards[0].multiplier}</span>
-                      <span className="text-xs text-gray-400">{card.rewards[0].category}</span>
+                      <span className="font-bold text-amber-400">{card.rewards[0].multiplier}</span>
+                      <span className="text-xs text-slate-500">{card.rewards[0].category}</span>
                     </div>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   <a href={best ? best.url : card.directLink} target="_blank" rel="noopener noreferrer"
-                    className="whitespace-nowrap bg-red-900 hover:bg-red-800 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors">
+                    className="whitespace-nowrap bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
                     Apply →
                   </a>
                 </td>
@@ -339,10 +424,10 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
 function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) {
   const compared = ids.map(id => cards.find(c => c.id === id)!).filter(Boolean);
 
-  const rows: { label: string; render: (c: Card) => React.ReactNode }[] = [
+  const rows: { label: string; tooltip?: string; render: (c: Card) => React.ReactNode }[] = [
     { label: "Card", render: c => (
       <div className="flex flex-col items-center gap-2">
-        <div className="w-28 aspect-[1.586/1] relative rounded-xl overflow-hidden bg-gray-100">
+        <div className="w-28 aspect-[1.586/1] relative rounded-xl overflow-hidden bg-slate-800">
           <Image src={c.image} alt={c.name} fill className="object-contain p-1"
             onError={(e) => {
               const p = (e.target as HTMLImageElement).parentElement;
@@ -350,49 +435,49 @@ function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) 
             }} />
         </div>
         <div className="text-center">
-          <p className="text-xs text-gray-400">{c.issuer}</p>
-          <p className="font-bold text-gray-900 text-sm leading-tight">{c.name}</p>
+          <p className="text-xs text-slate-500">{c.issuer}</p>
+          <p className="font-bold text-white text-sm leading-tight">{c.name}</p>
         </div>
       </div>
     )},
-    { label: "1st Year Value", render: c => <span className="font-black text-orange-500 text-xl">{c.firstYearValue}</span> },
-    { label: "Welcome Bonus",  render: c => <span className="font-semibold text-gray-800 text-sm">{c.pointsBonus}</span> },
-    { label: "Annual Fee",     render: c => <span className={`font-bold text-lg ${c.annualFeeNum === 0 ? "text-green-600" : "text-gray-800"}`}>{c.annualFee}</span> },
-    { label: "Min. Spend",     render: c => <span className="text-sm text-gray-700">{c.msr}</span> },
-    { label: "Points Program", render: c => <span className="text-sm text-gray-700">{c.program}</span> },
-    { label: "Points Value",   render: c => <span className="text-xs text-gray-600">{c.pointsValue ?? "—"}</span> },
-    { label: "Best Portal",    render: c => c.portals[0] ? (
+    { label: "1st Year Value", tooltip: TOOLTIPS.firstYearValue, render: c => <span className="font-black text-amber-400 text-xl">{c.firstYearValue}</span> },
+    { label: "Welcome Bonus",  tooltip: TOOLTIPS.welcomeBonus,  render: c => <span className="font-semibold text-white text-sm">{c.pointsBonus}</span> },
+    { label: "Annual Fee",     tooltip: TOOLTIPS.annualFee,     render: c => <span className={`font-bold text-lg ${c.annualFeeNum === 0 ? "text-emerald-400" : "text-white"}`}>{c.annualFee}</span> },
+    { label: "Min. Spend",     tooltip: TOOLTIPS.msr,           render: c => <span className="text-sm text-slate-400">{c.msr}</span> },
+    { label: "Points Program", tooltip: TOOLTIPS.pointsProgram, render: c => <span className="text-sm text-slate-400">{c.program}</span> },
+    { label: "Points Value",   tooltip: TOOLTIPS.pointsValue,   render: c => <span className="text-xs text-slate-500">{c.pointsValue ?? "—"}</span> },
+    { label: "Best Portal",    tooltip: TOOLTIPS.bestPortal,    render: c => c.portals[0] ? (
       <a href={c.portals[0].url} target="_blank" rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-green-100">
+        className="inline-flex items-center gap-1 bg-emerald-400/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-emerald-400/20">
         ★ {c.portals[0].name} +${c.portals[0].bonus}
       </a>
-    ) : <span className="text-xs text-gray-400">Direct only</span> },
-    { label: "Network",        render: c => <span className="text-sm text-gray-700">{c.network ?? "—"}</span> },
-    { label: "Foreign Fee",    render: c => <span className={`text-xs font-medium ${c.foreignFee?.startsWith("0%") ? "text-green-600" : "text-gray-700"}`}>{c.foreignFee ?? "—"}</span> },
-    { label: "Income Req.",    render: c => <span className="text-xs text-gray-600">{c.incomeReq ?? "—"}</span> },
-    { label: "Lounge Access",  render: c => <span className="text-xs text-gray-600">{c.loungeDetails ?? "—"}</span> },
-    { label: "Top Earn Rate",  render: c => c.rewards[0] ? (
-      <span className="text-sm font-bold text-gray-800">{c.rewards[0].multiplier} <span className="font-normal text-gray-500 text-xs">{c.rewards[0].category}</span></span>
-    ) : <span className="text-gray-400">—</span> },
+    ) : <span className="text-xs text-slate-500">Direct only</span> },
+    { label: "Network",        tooltip: TOOLTIPS.network,       render: c => <span className="text-sm text-slate-400">{c.network ?? "—"}</span> },
+    { label: "Foreign Fee",    tooltip: TOOLTIPS.foreignFee,    render: c => <span className={`text-xs font-medium ${c.foreignFee?.startsWith("0%") ? "text-emerald-400" : "text-slate-400"}`}>{c.foreignFee ?? "—"}</span> },
+    { label: "Income Req.",    tooltip: TOOLTIPS.incomeReq,     render: c => <span className="text-xs text-slate-500">{c.incomeReq ?? "—"}</span> },
+    { label: "Lounge Access",  tooltip: TOOLTIPS.loungeAccess,  render: c => <span className="text-xs text-slate-500">{c.loungeDetails ?? "—"}</span> },
+    { label: "Top Earn Rate",  tooltip: TOOLTIPS.topEarnRate,   render: c => c.rewards[0] ? (
+      <span className="text-sm font-bold text-white">{c.rewards[0].multiplier} <span className="font-normal text-slate-500 text-xs">{c.rewards[0].category}</span></span>
+    ) : <span className="text-slate-600">—</span> },
     { label: "Travel Medical", render: c => {
       const m = c.insurance?.find(i => i.startsWith("Travel Medical"));
-      return m ? <span className="text-xs text-green-600 font-medium">✓ {m.match(/\(\$[^)]+\)/)?.[0] ?? ""}</span> : <span className="text-xs text-gray-400">✗ None</span>;
+      return m ? <span className="text-xs text-emerald-400 font-medium">✓ {m.match(/\(\$[^)]+\)/)?.[0] ?? ""}</span> : <span className="text-xs text-slate-600">✗ None</span>;
     }},
-    { label: "Trip Cancellation", render: c => c.insurance?.includes("Trip Cancellation") ? <span className="text-green-600 text-sm font-bold">✓</span> : <span className="text-gray-400 text-sm">✗</span> },
+    { label: "Trip Cancellation", render: c => c.insurance?.includes("Trip Cancellation") ? <span className="text-emerald-400 text-sm font-bold">✓</span> : <span className="text-slate-600 text-sm">✗</span> },
     { label: "Transfer Partners", render: c => (
-      <div className="text-xs text-gray-600 leading-relaxed">
+      <div className="text-xs text-slate-500 leading-relaxed">
         {c.transferPartners && c.transferPartners[0] && !c.transferPartners[0].includes("no transfer") && !c.transferPartners[0].includes("Cash back")
           ? c.transferPartners.join(", ") : "None"}
       </div>
     )},
     { label: "Tags / Perks",  render: c => (
       <div className="flex flex-wrap gap-1 justify-center">
-        {c.tags.map(t => <span key={t} className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{t}</span>)}
+        {c.tags.map(t => <span key={t} className="text-[10px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full">{t}</span>)}
       </div>
     )},
     { label: "Apply",         render: c => (
       <a href={c.portals[0]?.url ?? c.directLink} target="_blank" rel="noopener noreferrer"
-        className="bg-red-900 hover:bg-red-800 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors whitespace-nowrap">
+        className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl transition-colors whitespace-nowrap">
         {c.portals[0] ? `Apply via ${c.portals[0].name}` : "Apply Direct"} →
       </a>
     )},
@@ -400,21 +485,26 @@ function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) 
 
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 py-10">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 py-10">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Card Comparison</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl font-light leading-none">×</button>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <h2 className="text-lg font-bold text-white">Card Comparison</h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-white text-2xl font-light leading-none">×</button>
         </div>
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <tbody>
               {rows.map(row => (
-                <tr key={row.label} className="border-b border-gray-50 last:border-0">
-                  <td className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide w-32 shrink-0 align-middle whitespace-nowrap">
-                    {row.label}
+                <tr key={row.label} className="border-b border-slate-800 last:border-0">
+                  <td className="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide w-32 shrink-0 align-middle whitespace-nowrap">
+                    {row.tooltip ? (
+                      <Tooltip text={row.tooltip}>
+                        <span>{row.label}</span>
+                        <span className="ml-0.5 text-[10px] font-normal">ⓘ</span>
+                      </Tooltip>
+                    ) : row.label}
                   </td>
                   {compared.map(c => (
                     <td key={c.id} className={`px-4 py-3 text-center align-middle`}>
@@ -544,24 +634,23 @@ export default function CardsPage() {
   const hasFilters = search || activePills.size > 0 || issuer !== "Any Issuer" || fee !== "any" || program !== "Any Program";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-950">
       <Navbar activePage="cards" />
 
       <div className="max-w-7xl mx-auto px-6 py-10">
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Best Canadian Credit Cards</h1>
-          <p className="text-gray-500 mt-1.5 text-sm">
-            Top signup offers from{" "}
-            <a href="https://www.reddit.com/r/churningcanada" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-700">r/churningcanada</a>.
-            Apply via rebate portals to stack extra cash back on top of your signup bonus.
+          <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2">{"// Card Database"}</p>
+          <h1 className="text-3xl font-black text-white">Canadian Credit Cards</h1>
+          <p className="text-slate-500 mt-1.5 text-sm">
+            75+ cards with first-year value, portals, and rarity ratings. Apply via rebate portals to stack extra cash back on top of your welcome bonus.
           </p>
         </div>
 
-        {/* ── Persona picker ── */}
+        {/* ── Class picker (Persona) ── */}
         <div className="mb-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">I&apos;m looking for cards for...</p>
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">Choose your class</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {PERSONAS.map(persona => {
               const active = activePersona === persona.id;
@@ -571,16 +660,16 @@ export default function CardsPage() {
                   onClick={() => selectPersona(persona)}
                   className={`flex flex-col items-center text-center gap-2 p-4 rounded-2xl border-2 transition-all duration-150 ${
                     active
-                      ? "border-red-900 bg-red-50 text-red-900 shadow-md"
-                      : "border-gray-100 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900 hover:shadow-sm"
+                      ? "border-amber-400 bg-amber-400/10 text-amber-400 shadow-lg shadow-amber-400/10"
+                      : "border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700 hover:text-white"
                   }`}
                 >
-                  <div className={`p-2 rounded-xl ${active ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-500"}`}>
+                  <div className={`p-2 rounded-xl ${active ? "bg-amber-400/20 text-amber-400" : "bg-slate-800 text-slate-500"}`}>
                     {persona.icon}
                   </div>
                   <div>
-                    <p className={`text-xs font-bold leading-tight ${active ? "text-red-900" : "text-gray-800"}`}>{persona.label}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5 leading-tight hidden sm:block">{persona.tagline}</p>
+                    <p className={`text-xs font-bold leading-tight ${active ? "text-amber-400" : "text-white"}`}>{persona.label}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-tight hidden sm:block">{persona.tagline}</p>
                   </div>
                 </button>
               );
@@ -588,15 +677,15 @@ export default function CardsPage() {
           </div>
         </div>
 
-        {/* ── Search + view toggle + advanced toggle ── */}
+        {/* ── Search + view toggle ── */}
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <input type="text" placeholder="Search cards..." value={search}
             onChange={e => setSearch(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-gray-400 bg-white w-52" />
+            className="border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none focus:border-amber-400/50 bg-slate-900 text-white placeholder-zinc-600 w-52" />
 
           <button
             onClick={() => setShowAdvanced(v => !v)}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 font-medium transition-colors"
+            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white font-medium transition-colors"
           >
             <svg className={`w-4 h-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
@@ -605,7 +694,7 @@ export default function CardsPage() {
           </button>
 
           {hasFilters && (
-            <button onClick={clearAll} className="text-sm text-red-900 hover:underline font-medium">
+            <button onClick={clearAll} className="text-sm text-amber-400 hover:underline font-medium">
               Clear all
             </button>
           )}
@@ -613,21 +702,19 @@ export default function CardsPage() {
           <div className="ml-auto flex items-center gap-3">
             {view === "grid" && (
               <select value={gridSort} onChange={e => setGridSort(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-xs bg-white text-gray-700 outline-none focus:border-gray-400">
+                className="border border-slate-700 rounded-lg px-3 py-2 text-xs bg-slate-900 text-slate-300 outline-none focus:border-amber-400/50">
                 {GRID_SORTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             )}
-            <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-              <button onClick={() => setView("table")}
-                title="Table view"
-                className={`px-3 py-2 transition-colors ${view === "table" ? "bg-red-900 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}>
+            <div className="flex rounded-lg border border-slate-700 overflow-hidden">
+              <button onClick={() => setView("table")} title="Table view"
+                className={`px-3 py-2 transition-colors ${view === "table" ? "bg-amber-400 text-slate-950" : "bg-slate-900 text-slate-500 hover:bg-slate-800"}`}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 6h18M3 14h18M3 18h18" />
                 </svg>
               </button>
-              <button onClick={() => setView("grid")}
-                title="Grid view"
-                className={`px-3 py-2 border-l border-gray-200 transition-colors ${view === "grid" ? "bg-red-900 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}>
+              <button onClick={() => setView("grid")} title="Grid view"
+                className={`px-3 py-2 border-l border-slate-700 transition-colors ${view === "grid" ? "bg-amber-400 text-slate-950" : "bg-slate-900 text-slate-500 hover:bg-slate-800"}`}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
@@ -636,33 +723,33 @@ export default function CardsPage() {
           </div>
         </div>
 
-        {/* ── Advanced filters (collapsed by default) ── */}
+        {/* ── Advanced filters ── */}
         {showAdvanced && (
-          <div className="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-100 flex flex-wrap gap-3 items-center">
+          <div className="bg-slate-900 rounded-2xl p-5 mb-6 border border-slate-800 flex flex-wrap gap-3 items-center">
             <select value={issuer} onChange={e => setIssuer(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-700 outline-none focus:border-gray-400">
+              className="border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-slate-300 outline-none focus:border-amber-400/50">
               {ISSUERS.map(i => <option key={i}>{i}</option>)}
             </select>
             <select value={fee} onChange={e => setFee(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-700 outline-none focus:border-gray-400">
+              className="border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-slate-300 outline-none focus:border-amber-400/50">
               {FEES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
             <select value={program} onChange={e => setProgram(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white text-gray-700 outline-none focus:border-gray-400">
+              className="border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-slate-300 outline-none focus:border-amber-400/50">
               {PROGRAMS.map(p => <option key={p}>{p}</option>)}
             </select>
           </div>
         )}
 
         {/* Result count */}
-        <p className="text-sm text-gray-400 mb-5">
+        <p className="text-sm text-slate-500 mb-5">
           {activePersona && (
-            <span className="mr-2 text-red-900 font-medium">
+            <span className="mr-2 text-amber-400 font-medium">
               {PERSONAS.find(p => p.id === activePersona)?.label} —
             </span>
           )}
           {filtered.length} card{filtered.length !== 1 ? "s" : ""}
-          {view === "table" && <span className="ml-2 text-gray-300 text-xs">click column headers to sort</span>}
+          {view === "table" && <span className="ml-2 text-slate-700 text-xs">click column headers to sort</span>}
         </p>
 
         {/* Results */}
@@ -675,45 +762,41 @@ export default function CardsPage() {
               </div>
             )
         ) : (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-lg font-medium text-gray-500">No cards match your filters.</p>
-            <button onClick={clearAll} className="mt-3 text-sm text-red-900 hover:underline font-medium">Clear all filters</button>
+          <div className="text-center py-20 text-slate-500">
+            <p className="text-lg font-medium text-slate-400">No cards match your filters.</p>
+            <button onClick={clearAll} className="mt-3 text-sm text-amber-400 hover:underline font-medium">Clear all filters</button>
           </div>
         )}
 
         {/* ── Compare bar (sticky bottom) ── */}
         {compareSet.size > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-2xl px-6 py-3">
+          <div className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900 border-t border-slate-800 shadow-2xl px-6 py-3">
             <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
-              <span className="text-sm font-semibold text-gray-700 shrink-0">
+              <span className="text-sm font-semibold text-white shrink-0">
                 Compare ({compareSet.size}/3):
               </span>
               <div className="flex items-center gap-3 flex-1 flex-wrap">
                 {[...compareSet].map(id => {
                   const c = cards.find(x => x.id === id)!;
                   return (
-                    <div key={id} className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-1.5 text-sm">
-                      <span className="font-medium text-gray-800">{c.name}</span>
-                      <button onClick={() => toggleCompare(id)} className="text-gray-400 hover:text-red-900 font-bold leading-none text-lg">×</button>
+                    <div key={id} className="flex items-center gap-2 bg-slate-800 rounded-xl px-3 py-1.5 text-sm border border-slate-700">
+                      <span className="font-medium text-white">{c.name}</span>
+                      <button onClick={() => toggleCompare(id)} className="text-slate-500 hover:text-amber-400 font-bold leading-none text-lg">×</button>
                     </div>
                   );
                 })}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 {compareSet.size >= 2 && (
-                  <button
-                    onClick={() => setShowCompareModal(true)}
-                    className="bg-red-900 hover:bg-red-800 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
-                  >
+                  <button onClick={() => setShowCompareModal(true)}
+                    className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold px-5 py-2 rounded-xl transition-colors">
                     Compare →
                   </button>
                 )}
                 {compareSet.size < 2 && (
-                  <span className="text-xs text-gray-400">Select {2 - compareSet.size} more to compare</span>
+                  <span className="text-xs text-slate-500">Select {2 - compareSet.size} more to compare</span>
                 )}
-                <button onClick={() => setCompareSet(new Set())} className="text-sm text-gray-400 hover:text-gray-700">
-                  Clear
-                </button>
+                <button onClick={() => setCompareSet(new Set())} className="text-sm text-slate-500 hover:text-white">Clear</button>
               </div>
             </div>
           </div>
@@ -725,15 +808,15 @@ export default function CardsPage() {
         )}
 
         {/* Legend */}
-        <div className="mt-14 pt-8 border-t border-gray-100 flex flex-wrap gap-4 text-xs text-gray-400">
-          <span><strong className="text-gray-500">GCR</strong> = Great Canadian Rebates</span>
-          <span><strong className="text-gray-500">FF</strong> = Frugal Flyer</span>
-          <span><strong className="text-gray-500">CCG</strong> = Credit Card Genius</span>
-          <span><strong className="text-gray-500">FYF</strong> = First Year Free</span>
-          <span><strong className="text-gray-500">MR</strong> = Amex Membership Rewards</span>
+        <div className="mt-14 pt-8 border-t border-slate-800 flex flex-wrap gap-4 text-xs text-slate-600">
+          <span><strong className="text-slate-500">GCR</strong> = Great Canadian Rebates</span>
+          <span><strong className="text-slate-500">FF</strong> = Frugal Flyer</span>
+          <span><strong className="text-slate-500">CCG</strong> = Credit Card Genius</span>
+          <span><strong className="text-slate-500">FYF</strong> = First Year Free</span>
+          <span><strong className="text-slate-500">MR</strong> = Amex Membership Rewards</span>
         </div>
-        <p className="text-xs text-gray-400 mt-2">
-          * First-year values are estimates. Offers change frequently — always verify before applying. Last updated Mar 22, 2026.
+        <p className="text-xs text-slate-600 mt-2">
+          * First-year values are estimates. Offers change frequently — always verify before applying.
         </p>
       </div>
     </div>

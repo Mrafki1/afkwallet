@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 
-export default function Navbar({ activePage }: { activePage?: "cards" | "blog" }) {
+export default function Navbar({ activePage }: { activePage?: "cards" | "blog" | "deals" }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -16,53 +16,48 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" }
   }, []);
 
   return (
-    <nav className="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-20">
+    <nav className="border-b border-slate-800 sticky top-0 bg-[#080d1a]/95 backdrop-blur z-20">
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
 
-        {/* Left — logo + desktop links */}
+        {/* Logo + desktop links */}
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-xl font-bold text-gray-900 tracking-tight">ChurnCA</Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-500">
-            <Link
-              href="/cards"
-              className={`hover:text-gray-900 transition-colors ${activePage === "cards" ? "text-gray-900 border-b-2 border-red-900 pb-0.5" : ""}`}
-            >
-              Credit Cards
+          <Link href="/" className="flex items-center gap-1 group">
+            <span className="text-lg font-black text-amber-400 tracking-tight group-hover:text-amber-300 transition-colors font-pixel">AFK</span>
+            <span className="text-lg font-black text-white tracking-tight font-pixel">WALLET</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <Link href="/cards" className={`transition-colors ${activePage === "cards" ? "text-white border-b-2 border-amber-400 pb-0.5" : "text-slate-400 hover:text-white"}`}>
+              Cards
             </Link>
-            <Link
-              href="/blog"
-              className={`hover:text-gray-900 transition-colors ${activePage === "blog" ? "text-gray-900 border-b-2 border-red-900 pb-0.5" : ""}`}
-            >
+            <Link href="/deals" className={`transition-colors ${activePage === "deals" ? "text-white border-b-2 border-amber-400 pb-0.5" : "text-slate-400 hover:text-white"}`}>
+              ⚡ Hot Deals
+            </Link>
+            <Link href="/blog" className={`transition-colors ${activePage === "blog" ? "text-white border-b-2 border-amber-400 pb-0.5" : "text-slate-400 hover:text-white"}`}>
               Blog
             </Link>
-            <Link href="/#how-it-works" className="hover:text-gray-900 transition-colors">How It Works</Link>
+            <Link href="/#how-it-works" className="text-slate-400 hover:text-white transition-colors">How It Works</Link>
           </div>
         </div>
 
         {/* Right — CTA + hamburger */}
         <div className="flex items-center gap-3">
-          {loggedIn ? (
-            <Link href="/dashboard" className="bg-red-900 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-              Dashboard
-            </Link>
-          ) : (
-            <Link href="/auth" className="bg-red-900 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-              Log in
-            </Link>
-          )}
-
-          {/* Hamburger — mobile only */}
+          <Link
+            href={loggedIn ? "/dashboard" : "/auth"}
+            className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+          >
+            {loggedIn ? "Dashboard" : "Start Free"}
+          </Link>
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-slate-800 transition-colors"
             aria-label="Toggle menu"
           >
             {menuOpen ? (
-              <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
@@ -70,36 +65,23 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" }
         </div>
       </div>
 
-      {/* Mobile dropdown */}
+      {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-6 py-4 flex flex-col gap-4">
-          <Link
-            href="/cards"
-            onClick={() => setMenuOpen(false)}
-            className="text-sm font-medium text-gray-700 hover:text-red-900 transition-colors"
-          >
-            Credit Cards
+        <div className="md:hidden border-t border-slate-800 bg-[#080d1a] px-6 py-4 flex flex-col gap-4">
+          <Link href="/cards" onClick={() => setMenuOpen(false)} className={`text-sm font-medium transition-colors ${activePage === "cards" ? "text-amber-400" : "text-slate-400 hover:text-white"}`}>
+            Cards
           </Link>
-          <Link
-            href="/blog"
-            onClick={() => setMenuOpen(false)}
-            className="text-sm font-medium text-gray-700 hover:text-red-900 transition-colors"
-          >
+          <Link href="/deals" onClick={() => setMenuOpen(false)} className={`text-sm font-medium transition-colors ${activePage === "deals" ? "text-amber-400" : "text-slate-400 hover:text-white"}`}>
+            ⚡ Hot Deals
+          </Link>
+          <Link href="/blog" onClick={() => setMenuOpen(false)} className={`text-sm font-medium transition-colors ${activePage === "blog" ? "text-amber-400" : "text-slate-400 hover:text-white"}`}>
             Blog
           </Link>
-          <Link
-            href="/#how-it-works"
-            onClick={() => setMenuOpen(false)}
-            className="text-sm font-medium text-gray-700 hover:text-red-900 transition-colors"
-          >
+          <Link href="/#how-it-works" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
             How It Works
           </Link>
           {loggedIn && (
-            <Link
-              href="/dashboard"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-medium text-gray-700 hover:text-red-900 transition-colors"
-            >
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
               My Dashboard
             </Link>
           )}
