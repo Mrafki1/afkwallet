@@ -15,27 +15,38 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
     return () => subscription.unsubscribe();
   }, []);
 
+  const linkClass = (page?: string) =>
+    `transition-colors font-semibold text-sm drop-shadow-[1px_1px_0px_rgba(61,39,16,0.7)] ${
+      activePage === page ? "text-[#f0c840]" : "text-[#f5ead8] hover:text-[#f0c840]"
+    }`;
+
   return (
-    <nav className="border-b border-slate-800 sticky top-0 bg-[#080d1a]/95 backdrop-blur z-20">
+    <nav
+      className="sticky top-0 z-20"
+      style={{
+        background: "linear-gradient(to bottom, #9b7245 0%, #8b6343 35%, #7a5430 65%, #8b6343 100%)",
+        borderBottom: "4px solid #5a3c20",
+        boxShadow: "0 3px 0px #3d2710",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
 
         {/* Logo + desktop links */}
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-1 group">
-            <span className="text-lg font-black text-amber-400 tracking-tight group-hover:text-amber-300 transition-colors font-pixel">AFK</span>
-            <span className="text-lg font-black text-white tracking-tight font-pixel">WALLET</span>
+          <Link href="/" className="flex items-center gap-1.5 group">
+            <span className="text-base font-pixel text-[#f0c840] group-hover:text-[#f5d870] transition-colors drop-shadow-[1px_1px_0px_rgba(61,39,16,0.9)]">
+              AFK
+            </span>
+            <span className="text-base font-pixel text-[#f5ead8] drop-shadow-[1px_1px_0px_rgba(61,39,16,0.9)]">
+              WALLET
+            </span>
           </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/cards" className={`transition-colors ${activePage === "cards" ? "text-white border-b-2 border-amber-400 pb-0.5" : "text-slate-400 hover:text-white"}`}>
-              Cards
-            </Link>
-            <Link href="/deals" className={`transition-colors ${activePage === "deals" ? "text-white border-b-2 border-amber-400 pb-0.5" : "text-slate-400 hover:text-white"}`}>
-              ⚡ Hot Deals
-            </Link>
-            <Link href="/blog" className={`transition-colors ${activePage === "blog" ? "text-white border-b-2 border-amber-400 pb-0.5" : "text-slate-400 hover:text-white"}`}>
-              Blog
-            </Link>
-            <Link href="/#how-it-works" className="text-slate-400 hover:text-white transition-colors">How It Works</Link>
+
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/cards"         className={linkClass("cards")}>Cards</Link>
+            <Link href="/deals"         className={linkClass("deals")}>⚡ Hot Deals</Link>
+            <Link href="/blog"          className={linkClass("blog")}>Blog</Link>
+            <Link href="/#how-it-works" className={linkClass()}>How It Works</Link>
           </div>
         </div>
 
@@ -43,21 +54,22 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
         <div className="flex items-center gap-3">
           <Link
             href={loggedIn ? "/dashboard" : "/auth"}
-            className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-sm font-bold px-4 py-2 rounded-lg transition-colors"
+            className="sdv-btn text-sm font-pixel px-4 py-2"
           >
             {loggedIn ? "Dashboard" : "Start Free"}
           </Link>
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="md:hidden p-2 rounded-lg hover:bg-slate-800 transition-colors"
+            className="md:hidden p-2 transition-colors"
+            style={{ color: "#f5ead8" }}
             aria-label="Toggle menu"
           >
             {menuOpen ? (
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             )}
@@ -67,23 +79,16 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-[#080d1a] px-6 py-4 flex flex-col gap-4">
-          <Link href="/cards" onClick={() => setMenuOpen(false)} className={`text-sm font-medium transition-colors ${activePage === "cards" ? "text-amber-400" : "text-slate-400 hover:text-white"}`}>
-            Cards
-          </Link>
-          <Link href="/deals" onClick={() => setMenuOpen(false)} className={`text-sm font-medium transition-colors ${activePage === "deals" ? "text-amber-400" : "text-slate-400 hover:text-white"}`}>
-            ⚡ Hot Deals
-          </Link>
-          <Link href="/blog" onClick={() => setMenuOpen(false)} className={`text-sm font-medium transition-colors ${activePage === "blog" ? "text-amber-400" : "text-slate-400 hover:text-white"}`}>
-            Blog
-          </Link>
-          <Link href="/#how-it-works" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-            How It Works
-          </Link>
+        <div
+          className="md:hidden px-6 py-4 flex flex-col gap-4"
+          style={{ background: "#7a5430", borderTop: "2px solid #5a3c20" }}
+        >
+          <Link href="/cards"         onClick={() => setMenuOpen(false)} className={linkClass("cards")}>Cards</Link>
+          <Link href="/deals"         onClick={() => setMenuOpen(false)} className={linkClass("deals")}>⚡ Hot Deals</Link>
+          <Link href="/blog"          onClick={() => setMenuOpen(false)} className={linkClass("blog")}>Blog</Link>
+          <Link href="/#how-it-works" onClick={() => setMenuOpen(false)} className={linkClass()}>How It Works</Link>
           {loggedIn && (
-            <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-              My Dashboard
-            </Link>
+            <Link href="/dashboard"   onClick={() => setMenuOpen(false)} className={linkClass()}>My Dashboard</Link>
           )}
         </div>
       )}

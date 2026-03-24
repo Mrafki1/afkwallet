@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllPosts } from "../lib/posts";
 import Navbar from "../components/Navbar";
+import VineDivider from "../components/VineDivider";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -29,32 +30,54 @@ export default function BlogPage() {
   const posts = getAllPosts();
 
   return (
-    <div className="min-h-screen bg-[#080d1a]">
+    <div className="min-h-screen" style={{ background: "#f9f0d9", color: "#3d2b1f" }}>
       <Navbar activePage="blog" />
 
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <div className="mb-12">
-          <p className="text-base font-pixel text-amber-400 mb-2">✦ Blog</p>
-          <h1 className="text-4xl font-black text-white">Guides & Strategy</h1>
-          <p className="text-slate-400 mt-3 text-lg">Guides for Canadians maximizing credit card rewards — bonuses, portals, and strategy.</p>
+      {/* Header */}
+      <div className="pt-16 pb-10" style={{ background: "#f9f0d9", borderBottom: "3px solid #c4a06a" }}>
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="sdv-sign inline-block text-xs px-3 py-1.5 mb-4">✦ Blog</div>
+          <h1 className="text-4xl font-black" style={{ color: "#3d2b1f" }}>Guides & Strategy</h1>
+          <p className="mt-3 text-lg" style={{ color: "#7a6048" }}>
+            Guides for Canadians maximizing credit card rewards — bonuses, portals, and strategy.
+          </p>
         </div>
+      </div>
 
-        <div className="flex flex-col divide-y divide-slate-800">
+      <VineDivider />
+
+      <div className="max-w-3xl mx-auto px-6 py-12">
+        <div className="flex flex-col gap-0">
           {posts.map(post => (
-            <article key={post.slug} className="py-8 group">
+            <article
+              key={post.slug}
+              className="py-8 group"
+              style={{ borderBottom: "2px solid #c4a06a" }}
+            >
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <time className="text-xs text-slate-500 font-medium">{formatDate(post.date)}</time>
+                <time className="text-xs font-medium" style={{ color: "#9a7858" }}>{formatDate(post.date)}</time>
                 {post.tags?.slice(0, 3).map(tag => (
-                  <span key={tag} className="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">{tag}</span>
+                  <span
+                    key={tag}
+                    className="text-xs font-pixel px-2 py-0.5"
+                    style={{ background: "#ede0c0", color: "#7a5c3a", border: "2px solid #7a5c3a" }}
+                  >
+                    {tag}
+                  </span>
                 ))}
               </div>
               <Link href={`/blog/${post.slug}`}>
-                <h2 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors leading-snug mb-2">
+                <h2
+                  className="text-xl font-bold leading-snug mb-2 transition-colors"
+                  style={{ color: "#3d2b1f" }}
+                  onMouseEnter={e => ((e.target as HTMLElement).style.color = "#4a7c59")}
+                  onMouseLeave={e => ((e.target as HTMLElement).style.color = "#3d2b1f")}
+                >
                   {post.title}
                 </h2>
               </Link>
-              <p className="text-slate-500 text-sm leading-relaxed mb-4">{post.description}</p>
-              <Link href={`/blog/${post.slug}`} className="text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors">
+              <p className="text-sm leading-relaxed mb-4" style={{ color: "#7a6048" }}>{post.description}</p>
+              <Link href={`/blog/${post.slug}`} className="text-sm font-semibold transition-colors" style={{ color: "#4a7c59" }}>
                 Read guide →
               </Link>
             </article>
