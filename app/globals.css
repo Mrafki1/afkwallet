@@ -104,3 +104,13 @@ body {
   border-top: 1px solid var(--border);
   margin: 0;
 }
+
+/* Card ticker marquee */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+  width: max-content;
+}

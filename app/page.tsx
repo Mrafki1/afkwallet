@@ -30,6 +30,26 @@ const FEATURED_CARDS = [
   },
 ];
 
+// Ticker cards — two copies for seamless loop
+const TICKER_CARDS = [
+  "/cards/amex-plat.png",
+  "/cards/amex-cobalt.png",
+  "/cards/scotia-amex-gold.png",
+  "/cards/td-aeroplan-vi.png",
+  "/cards/rbc-avion-vi.png",
+  "/cards/cibc-aeroplan-vi.png",
+  "/cards/bmo-ascend.webp",
+  "/cards/scotia-passport-vi.png",
+  "/cards/amex-aeroplan-reserve.png",
+  "/cards/td-fct-vi.webp",
+  "/cards/rbc-westjet-we.png",
+  "/cards/bmo-viporter-we.png",
+  "/cards/amex-gold.png",
+  "/cards/cibc-aventura-vi.png",
+  "/cards/nbc-world-elite.png",
+  "/cards/rogers-world-elite.png",
+];
+
 const HOW_IT_WORKS_STEPS = [
   {
     number: "01",
@@ -128,42 +148,104 @@ export default function LandingPage() {
       {/* ── Hero ── */}
       <section style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0" }}>
         <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28">
-          <div className="max-w-3xl">
-            <div className="badge badge-blue mb-6">🇨🇦 Canadian Credit Card Rewards</div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left: copy */}
+            <div>
+              <div className="badge badge-blue mb-6">🇨🇦 Canadian Credit Card Rewards</div>
 
-            <h1 className="text-5xl sm:text-6xl font-bold leading-[1.08] tracking-tight mb-6" style={{ color: "#0f172a", letterSpacing: "-0.03em" }}>
-              Maximize every<br />credit card bonus<br />
-              <span style={{ color: "#2563eb" }}>in Canada.</span>
-            </h1>
+              <h1 className="text-5xl sm:text-6xl font-bold leading-[1.08] tracking-tight mb-6" style={{ color: "#0f172a", letterSpacing: "-0.03em" }}>
+                Maximize every<br />credit card bonus<br />
+                <span style={{ color: "#2563eb" }}>in Canada.</span>
+              </h1>
 
-            <p className="text-xl leading-relaxed mb-10 max-w-2xl" style={{ color: "#475569" }}>
-              Compare 75+ Canadian credit cards by first-year value, find the best rebate portal for each one, and track your welcome bonuses — all in one place.
-            </p>
+              <p className="text-xl leading-relaxed mb-10 max-w-2xl" style={{ color: "#475569" }}>
+                Compare 75+ Canadian credit cards by first-year value, find the best rebate portal for each one, and track your welcome bonuses — all in one place.
+              </p>
 
-            <div className="flex flex-wrap gap-3 mb-16">
-              <Link href="/cards" className="btn-primary text-sm px-6 py-3">
-                Browse all cards →
-              </Link>
-              <Link href="/auth" className="btn-secondary text-sm px-6 py-3">
-                Track my cards free
-              </Link>
+              <div className="flex flex-wrap gap-3 mb-16">
+                <Link href="/cards" className="btn-primary text-sm px-6 py-3">
+                  Browse all cards →
+                </Link>
+                <Link href="/auth" className="btn-secondary text-sm px-6 py-3">
+                  Track my cards free
+                </Link>
+              </div>
+
+              {/* Stats row */}
+              <div className="flex flex-wrap gap-8">
+                {[
+                  { value: "75+",    label: "Cards indexed" },
+                  { value: "4",      label: "Portals compared" },
+                  { value: "$1,800", label: "Top first-year value" },
+                  { value: "Free",   label: "No account required to browse" },
+                ].map(s => (
+                  <div key={s.label}>
+                    <p className="text-2xl font-bold tracking-tight" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>{s.value}</p>
+                    <p className="text-sm mt-0.5" style={{ color: "#64748b" }}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Stats row */}
-            <div className="flex flex-wrap gap-8">
-              {[
-                { value: "75+",   label: "Cards indexed" },
-                { value: "4",     label: "Portals compared" },
-                { value: "$1,800", label: "Top first-year value" },
-                { value: "Free",  label: "No account required to browse" },
-              ].map(s => (
-                <div key={s.label}>
-                  <p className="text-2xl font-bold tracking-tight" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>{s.value}</p>
-                  <p className="text-sm mt-0.5" style={{ color: "#64748b" }}>{s.label}</p>
+            {/* Right: floating card stack */}
+            <div className="relative hidden lg:flex items-center justify-center h-72">
+              {/* glow blob behind */}
+              <div
+                className="absolute w-80 h-56 rounded-3xl opacity-20 blur-3xl"
+                style={{ background: "linear-gradient(135deg,#2563eb,#7c3aed)" }}
+              />
+              {/* card 1 — back */}
+              <div
+                className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl"
+                style={{ transform: "rotate(-8deg) translate(-32px, 24px)", zIndex: 10 }}
+              >
+                <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
+                  <Image src="/cards/rbc-avion-vi.png" alt="RBC Avion" width={288} height={182} className="rounded-lg object-contain w-full" />
                 </div>
-              ))}
+              </div>
+              {/* card 2 — middle */}
+              <div
+                className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl"
+                style={{ transform: "rotate(3deg) translate(16px, -8px)", zIndex: 20 }}
+              >
+                <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
+                  <Image src="/cards/scotia-amex-gold.png" alt="Scotia Gold Amex" width={288} height={182} className="rounded-lg object-contain w-full" />
+                </div>
+              </div>
+              {/* card 3 — front */}
+              <div
+                className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl"
+                style={{ transform: "rotate(-2deg) translate(-8px, -32px)", zIndex: 30 }}
+              >
+                <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
+                  <Image src="/cards/amex-plat.png" alt="Amex Platinum" width={288} height={182} className="rounded-lg object-contain w-full" />
+                </div>
+                {/* value chip on front card */}
+                <div
+                  className="absolute bottom-4 left-4 right-4 rounded-xl px-4 py-2.5 flex items-center justify-between"
+                  style={{ background: "rgba(15,23,42,0.85)", backdropFilter: "blur(8px)" }}
+                >
+                  <span className="text-xs font-semibold" style={{ color: "#94a3b8" }}>1st Year Value</span>
+                  <span className="text-sm font-bold" style={{ color: "#4ade80" }}>~$1,800</span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Card Ticker ── */}
+      <section style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0", overflow: "hidden" }} className="py-6">
+        <div className="flex gap-4 animate-ticker">
+          {[...TICKER_CARDS, ...TICKER_CARDS].map((src, i) => (
+            <div
+              key={i}
+              className="shrink-0 rounded-xl overflow-hidden"
+              style={{ width: 120, background: "#ffffff", border: "1px solid #e2e8f0", padding: "6px" }}
+            >
+              <Image src={src} alt="card" width={120} height={76} className="object-contain rounded-lg w-full h-full" />
+            </div>
+          ))}
         </div>
       </section>
 
