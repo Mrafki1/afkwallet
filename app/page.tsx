@@ -195,28 +195,19 @@ export default function LandingPage() {
                 style={{ background: "linear-gradient(135deg,#2563eb,#7c3aed)" }}
               />
               {/* card 1 — back */}
-              <div
-                className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl"
-                style={{ transform: "rotate(-8deg) translate(-32px, 24px)", zIndex: 10 }}
-              >
+              <div className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl hero-card hero-card-1" style={{ zIndex: 10 }}>
                 <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
                   <Image src="/cards/rbc-avion-vi.png" alt="RBC Avion" width={288} height={182} className="rounded-lg object-contain w-full" />
                 </div>
               </div>
               {/* card 2 — middle */}
-              <div
-                className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl"
-                style={{ transform: "rotate(3deg) translate(16px, -8px)", zIndex: 20 }}
-              >
+              <div className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl hero-card hero-card-2" style={{ zIndex: 20 }}>
                 <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
                   <Image src="/cards/scotia-amex-gold.png" alt="Scotia Gold Amex" width={288} height={182} className="rounded-lg object-contain w-full" />
                 </div>
               </div>
               {/* card 3 — front */}
-              <div
-                className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl"
-                style={{ transform: "rotate(-2deg) translate(-8px, -32px)", zIndex: 30 }}
-              >
+              <div className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl hero-card hero-card-3" style={{ zIndex: 30 }}>
                 <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
                   <Image src="/cards/amex-plat.png" alt="Amex Platinum" width={288} height={182} className="rounded-lg object-contain w-full" />
                 </div>
@@ -262,9 +253,9 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6" style={{ alignItems: "stretch" }}>
             {HOW_IT_WORKS_STEPS.map((step, i) => (
-              <div key={step.number} className="relative flex flex-col">
+              <div key={step.number} className="relative flex flex-col h-full">
                 {i < HOW_IT_WORKS_STEPS.length - 1 && (
                   <div
                     className="hidden md:block absolute top-8 left-full w-6 h-px z-10"
