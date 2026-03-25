@@ -30,25 +30,6 @@ const FEATURED_CARDS = [
   },
 ];
 
-// Ticker cards — two copies for seamless loop
-const TICKER_CARDS = [
-  "/cards/amex-plat.png",
-  "/cards/amex-cobalt.png",
-  "/cards/scotia-amex-gold.png",
-  "/cards/td-aeroplan-vi.png",
-  "/cards/rbc-avion-vi.png",
-  "/cards/cibc-aeroplan-vi.png",
-  "/cards/bmo-ascend.webp",
-  "/cards/scotia-passport-vi.png",
-  "/cards/amex-aeroplan-reserve.png",
-  "/cards/td-fct-vi.webp",
-  "/cards/rbc-westjet-we.png",
-  "/cards/bmo-viporter-we.png",
-  "/cards/amex-gold.png",
-  "/cards/cibc-aventura-vi.png",
-  "/cards/nbc-world-elite.png",
-  "/cards/rogers-world-elite.png",
-];
 
 const HOW_IT_WORKS_STEPS = [
   {
@@ -196,21 +177,15 @@ export default function LandingPage() {
               />
               {/* card 1 — back */}
               <div className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl hero-card hero-card-1" style={{ zIndex: 10 }}>
-                <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
-                  <Image src="/cards/rbc-avion-vi.png" alt="RBC Avion" width={288} height={182} className="rounded-lg object-contain w-full" />
-                </div>
+                <Image src="/cards/rbc-avion-vi.png" alt="RBC Avion" width={288} height={182} className="object-cover w-full" />
               </div>
               {/* card 2 — middle */}
               <div className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl hero-card hero-card-2" style={{ zIndex: 20 }}>
-                <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
-                  <Image src="/cards/scotia-amex-gold.png" alt="Scotia Gold Amex" width={288} height={182} className="rounded-lg object-contain w-full" />
-                </div>
+                <Image src="/cards/scotia-amex-gold.png" alt="Scotia Gold Amex" width={288} height={182} className="object-cover w-full" />
               </div>
               {/* card 3 — front */}
               <div className="absolute w-72 rounded-2xl overflow-hidden shadow-2xl hero-card hero-card-3" style={{ zIndex: 30 }}>
-                <div style={{ background: "#f8fafc", padding: "10px", borderRadius: 12 }}>
-                  <Image src="/cards/amex-plat.png" alt="Amex Platinum" width={288} height={182} className="rounded-lg object-contain w-full" />
-                </div>
+                <Image src="/cards/amex-plat.png" alt="Amex Platinum" width={288} height={182} className="object-cover w-full" />
                 {/* value chip on front card */}
                 <div
                   className="absolute bottom-4 left-4 right-4 rounded-xl px-4 py-2.5 flex items-center justify-between"
@@ -222,21 +197,6 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ── Card Ticker ── */}
-      <section style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0", overflow: "hidden" }} className="py-6">
-        <div className="flex gap-4 animate-ticker">
-          {[...TICKER_CARDS, ...TICKER_CARDS].map((src, i) => (
-            <div
-              key={i}
-              className="shrink-0 rounded-xl overflow-hidden"
-              style={{ width: 120, background: "#ffffff", border: "1px solid #e2e8f0", padding: "6px" }}
-            >
-              <Image src={src} alt="card" width={120} height={76} className="object-contain rounded-lg w-full h-full" />
-            </div>
-          ))}
         </div>
       </section>
 
@@ -275,6 +235,54 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── First Year Value ── */}
+      <section style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0" }}>
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <p className="section-label mb-3">First Year Value</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>
+                One card.<br />$1,326 net value.
+              </h2>
+              <p className="leading-relaxed mb-4" style={{ color: "#64748b" }}>
+                Welcome bonuses are the biggest single-hit reward in personal finance. Stack a rebate portal on top and you&apos;re collecting cash from two sources at once.
+              </p>
+              <p className="leading-relaxed mb-8" style={{ color: "#64748b" }}>
+                Most Canadians leave this on the table because nobody showed them the math. AFK Wallet makes it visible before you apply.
+              </p>
+              <Link href="/cards" className="btn-primary inline-block text-sm px-6 py-3">
+                Browse all deals →
+              </Link>
+            </div>
+
+            {/* Value breakdown card */}
+            <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
+              <div className="px-6 py-5" style={{ background: "#0f172a" }}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#64748b" }}>Example breakdown</p>
+                <p className="font-semibold text-white">Amex Platinum — Year One</p>
+              </div>
+
+              <div className="divide-y" style={{ borderColor: "#f1f5f9" }}>
+                {VALUE_ROWS.map(row => (
+                  <div key={row.label} className="px-6 py-4 flex items-center justify-between">
+                    <span className="text-sm" style={{ color: "#64748b" }}>{row.label}</span>
+                    <span className="font-semibold text-sm" style={{ color: row.positive ? "#16a34a" : "#dc2626" }}>{row.value}</span>
+                  </div>
+                ))}
+                <div className="px-6 py-5 flex items-center justify-between" style={{ background: "#f8fafc" }}>
+                  <span className="font-semibold" style={{ color: "#0f172a" }}>Net value, year one</span>
+                  <span className="font-bold text-2xl tracking-tight" style={{ color: "#16a34a", letterSpacing: "-0.02em" }}>+$1,326</span>
+                </div>
+              </div>
+
+              <p className="px-6 py-3 text-xs" style={{ color: "#94a3b8", borderTop: "1px solid #f1f5f9" }}>
+                Based on 100k MR pts via Aeroplan at ~2¢/pt. Portal rates vary — verify before applying.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -333,54 +341,6 @@ export default function LandingPage() {
 
           <div className="mt-6 text-center sm:hidden">
             <Link href="/cards" className="text-sm font-semibold" style={{ color: "#2563eb" }}>View all 75+ cards →</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── First Year Value ── */}
-      <section style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <p className="section-label mb-3">First Year Value</p>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>
-                One card.<br />$1,326 net value.
-              </h2>
-              <p className="leading-relaxed mb-4" style={{ color: "#64748b" }}>
-                Welcome bonuses are the biggest single-hit reward in personal finance. Stack a rebate portal on top and you&apos;re collecting cash from two sources at once.
-              </p>
-              <p className="leading-relaxed mb-8" style={{ color: "#64748b" }}>
-                Most Canadians leave this on the table because nobody showed them the math. AFK Wallet makes it visible before you apply.
-              </p>
-              <Link href="/cards" className="btn-primary inline-block text-sm px-6 py-3">
-                Browse all deals →
-              </Link>
-            </div>
-
-            {/* Value breakdown card */}
-            <div className="card overflow-hidden" style={{ borderRadius: 16 }}>
-              <div className="px-6 py-5" style={{ background: "#0f172a" }}>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#64748b" }}>Example breakdown</p>
-                <p className="font-semibold text-white">Amex Platinum — Year One</p>
-              </div>
-
-              <div className="divide-y" style={{ borderColor: "#f1f5f9" }}>
-                {VALUE_ROWS.map(row => (
-                  <div key={row.label} className="px-6 py-4 flex items-center justify-between">
-                    <span className="text-sm" style={{ color: "#64748b" }}>{row.label}</span>
-                    <span className="font-semibold text-sm" style={{ color: row.positive ? "#16a34a" : "#dc2626" }}>{row.value}</span>
-                  </div>
-                ))}
-                <div className="px-6 py-5 flex items-center justify-between" style={{ background: "#f8fafc" }}>
-                  <span className="font-semibold" style={{ color: "#0f172a" }}>Net value, year one</span>
-                  <span className="font-bold text-2xl tracking-tight" style={{ color: "#16a34a", letterSpacing: "-0.02em" }}>+$1,326</span>
-                </div>
-              </div>
-
-              <p className="px-6 py-3 text-xs" style={{ color: "#94a3b8", borderTop: "1px solid #f1f5f9" }}>
-                Based on 100k MR pts via Aeroplan at ~2¢/pt. Portal rates vary — verify before applying.
-              </p>
-            </div>
           </div>
         </div>
       </section>
