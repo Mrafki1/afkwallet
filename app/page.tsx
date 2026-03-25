@@ -127,7 +127,7 @@ export default function LandingPage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0" }}>
+      <section style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0", overflow: "hidden" }}>
         <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: copy */}
