@@ -262,16 +262,16 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch">
             {HOW_IT_WORKS_STEPS.map((step, i) => (
-              <div key={step.number} className="relative">
+              <div key={step.number} className="relative flex flex-col">
                 {i < HOW_IT_WORKS_STEPS.length - 1 && (
                   <div
                     className="hidden md:block absolute top-8 left-full w-6 h-px z-10"
                     style={{ background: "#cbd5e1" }}
                   />
                 )}
-                <div className="card p-6" style={{ borderRadius: 12 }}>
+                <div className="card p-6 flex flex-col flex-1" style={{ borderRadius: 12 }}>
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
                     style={{ background: "#eff6ff", color: "#2563eb" }}
