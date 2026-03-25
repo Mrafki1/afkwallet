@@ -154,6 +154,9 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
               <div className="bg-gray-50 rounded-2xl p-4 text-center">
                 <p className="text-xs text-gray-400 font-medium mb-1">Annual Fee</p>
                 <p className="font-bold text-gray-800 text-lg">{card.annualFee}</p>
+                {card.id === "amex-cobalt" && (
+                  <p className="text-[10px] text-gray-400 mt-1">Billed as $16/mo</p>
+                )}
               </div>
               <div className="bg-gray-50 rounded-2xl p-4 text-center">
                 <p className="text-xs text-gray-400 font-medium mb-1">Spend Required</p>

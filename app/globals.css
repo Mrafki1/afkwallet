@@ -2,8 +2,15 @@
 @plugin "@tailwindcss/typography";
 
 :root {
-  --background: #f9f0d9;
-  --foreground: #3d2b1f;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --surface: #f8fafc;
+  --accent: #2563eb;
+  --accent-light: #eff6ff;
+  --green: #16a34a;
+  --red: #dc2626;
 }
 
 @theme inline {
@@ -11,89 +18,89 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-pixel: var(--font-pixel);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  cursor: url('/assets/tools/shovel.png') 8 8, auto;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Stardew Valley UI components ── */
+/* ── Professional UI components ── */
 
-/* Main window panel (dark brown border + golden inner glow) */
-.sdv-panel {
-  background: #ede0c0;
-  border: 4px solid #5a3c20;
-  box-shadow: 4px 4px 0px #3d2710, inset 0 0 0 2px #c4a06a;
+.card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
 }
 
-/* Lighter card panel */
-.sdv-card {
-  background: #f5ead8;
-  border: 3px solid #7a5c3a;
-  box-shadow: 3px 3px 0px #5a3c20;
-}
-
-/* Green action button (primary) */
-.sdv-btn {
+.btn-primary {
   display: inline-block;
-  background: #4a7c59;
-  color: #f5ead8;
-  border: 3px solid #2d5a3a;
-  box-shadow: 3px 3px 0px #1d3a22;
+  background: var(--accent);
+  color: #ffffff;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.15s, transform 0.1s;
+  letter-spacing: -0.01em;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  display: inline-block;
+  background: #ffffff;
+  color: var(--foreground);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-weight: 600;
+  transition: border-color 0.15s, background 0.15s;
+  letter-spacing: -0.01em;
+}
+.btn-secondary:hover {
+  border-color: #94a3b8;
+  background: var(--surface);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+.badge-blue  { background: #eff6ff; color: #1d4ed8; }
+.badge-green { background: #f0fdf4; color: #15803d; }
+.badge-amber { background: #fffbeb; color: #b45309; }
+.badge-red   { background: #fef2f2; color: #b91c1c; }
+
+.section-label {
+  font-size: 12px;
   font-weight: 700;
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-.sdv-btn:hover {
-  background: #5a9e6f;
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #1d3a22;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
-/* Tan/wood secondary button */
-.sdv-btn-tan {
-  display: inline-block;
-  background: #c4a06a;
-  color: #3d2b1f;
-  border: 3px solid #7a5c3a;
-  box-shadow: 3px 3px 0px #5a3c20;
-  font-weight: 700;
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-.sdv-btn-tan:hover {
-  background: #d4b07a;
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #5a3c20;
-}
+/* Blog post title hover */
+.blog-title { color: var(--foreground); transition: color 0.15s; }
+.blog-title:hover { color: var(--accent); }
 
-/* Wooden sign section label */
-.sdv-sign {
-  display: inline-block;
-  background: linear-gradient(to bottom, #9b7245, #7a5430);
-  border: 3px solid #5a3c20;
-  box-shadow: 2px 2px 0px #3d2710;
-  color: #f5ead8;
-  font-family: var(--font-pixel);
+/* Divider */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0;
 }
-
-/* Pixel step number box */
-.sdv-step-num {
-  background: #3d2b1f;
-  border: 3px solid #d4a017;
-  color: #f0c840;
-  font-family: var(--font-pixel);
-}
-
-/* Leaf-green accent text */
-.sdv-green { color: #4a7c59; }
-.sdv-gold  { color: #d4a017; }
-.sdv-brown { color: #7a5c3a; }
-.sdv-text  { color: #3d2b1f; }
-.sdv-muted { color: #7a6048; }
-
-/* Blog post title hover (server component safe) */
-.sdv-blog-title { color: #3d2b1f; transition: color 0.15s; }
-.sdv-blog-title:hover { color: #4a7c59; }

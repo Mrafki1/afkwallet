@@ -106,7 +106,7 @@ export const cards: Card[] = [
     id: "amex-cobalt",
     name: "Amex Cobalt",
     issuer: "American Express",
-    annualFee: "$16/mo",
+    annualFee: "$192/yr",
     annualFeeNum: 192,
     firstYearValue: "~$500",
     pointsBonus: "up to 30,000 MR",

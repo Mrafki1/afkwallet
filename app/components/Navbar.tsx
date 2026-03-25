@@ -7,38 +7,51 @@ import { createClient } from "../lib/supabase";
 export default function Navbar({ activePage }: { activePage?: "cards" | "blog" | "deals" }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data }) => setLoggedIn(!!data.session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setLoggedIn(!!s));
-    return () => subscription.unsubscribe();
+
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const linkClass = (page?: string) =>
-    `transition-colors font-semibold text-sm drop-shadow-[1px_1px_0px_rgba(61,39,16,0.7)] ${
-      activePage === page ? "text-[#f0c840]" : "text-[#f5ead8] hover:text-[#f0c840]"
+    `text-sm font-medium transition-colors ${
+      activePage === page
+        ? "text-[#2563eb]"
+        : "text-[#374151] hover:text-[#0f172a]"
     }`;
 
   return (
     <nav
-      className="sticky top-0 z-20"
+      className="sticky top-0 z-20 bg-white"
       style={{
-        background: "linear-gradient(to bottom, #9b7245 0%, #8b6343 35%, #7a5430 65%, #8b6343 100%)",
-        borderBottom: "4px solid #5a3c20",
-        boxShadow: "0 3px 0px #3d2710",
+        borderBottom: "1px solid #e2e8f0",
+        boxShadow: scrolled ? "0 1px 8px rgba(0,0,0,0.06)" : "none",
+        transition: "box-shadow 0.2s",
       }}
     >
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
         {/* Logo + desktop links */}
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-1.5 group">
-            <span className="text-base font-pixel text-[#f0c840] group-hover:text-[#f5d870] transition-colors drop-shadow-[1px_1px_0px_rgba(61,39,16,0.9)]">
-              AFK
-            </span>
-            <span className="text-base font-pixel text-[#f5ead8] drop-shadow-[1px_1px_0px_rgba(61,39,16,0.9)]">
-              WALLET
+          <Link href="/" className="flex items-center gap-2 group">
+            <div
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-white text-xs font-bold"
+              style={{ background: "#2563eb" }}
+            >
+              A
+            </div>
+            <span className="font-bold text-base tracking-tight" style={{ color: "#0f172a" }}>
+              AFK Wallet
             </span>
           </Link>
 
@@ -54,14 +67,13 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
         <div className="flex items-center gap-3">
           <Link
             href={loggedIn ? "/dashboard" : "/auth"}
-            className="sdv-btn text-sm font-pixel px-4 py-2"
+            className="btn-primary text-sm px-4 py-2 hidden sm:inline-block"
           >
-            {loggedIn ? "Dashboard" : "Start Free"}
+            {loggedIn ? "Dashboard" : "Get Started"}
           </Link>
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="md:hidden p-2 transition-colors"
-            style={{ color: "#f5ead8" }}
+            className="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100 transition-colors"
             aria-label="Toggle menu"
           >
             {menuOpen ? (
@@ -80,16 +92,33 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
       {/* Mobile menu */}
       {menuOpen && (
         <div
-          className="md:hidden px-6 py-4 flex flex-col gap-4"
-          style={{ background: "#7a5430", borderTop: "2px solid #5a3c20" }}
+          className="md:hidden px-6 py-4 flex flex-col gap-1 border-t"
+          style={{ background: "#ffffff", borderColor: "#e2e8f0" }}
         >
-          <Link href="/cards"         onClick={() => setMenuOpen(false)} className={linkClass("cards")}>Cards</Link>
-          <Link href="/deals"         onClick={() => setMenuOpen(false)} className={linkClass("deals")}>⚡ Hot Deals</Link>
-          <Link href="/blog"          onClick={() => setMenuOpen(false)} className={linkClass("blog")}>Blog</Link>
-          <Link href="/#how-it-works" onClick={() => setMenuOpen(false)} className={linkClass()}>How It Works</Link>
-          {loggedIn && (
-            <Link href="/dashboard"   onClick={() => setMenuOpen(false)} className={linkClass()}>My Dashboard</Link>
-          )}
+          {[
+            { href: "/cards",         label: "Cards",         page: "cards" },
+            { href: "/deals",         label: "⚡ Hot Deals",  page: "deals" },
+            { href: "/blog",          label: "Blog",          page: "blog"  },
+            { href: "/#how-it-works", label: "How It Works",  page: ""      },
+          ].map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMenuOpen(false)}
+              className={`py-2.5 text-sm font-medium ${activePage === item.page ? "text-blue-600" : "text-gray-700"}`}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <div className="pt-3 border-t mt-1" style={{ borderColor: "#e2e8f0" }}>
+            <Link
+              href={loggedIn ? "/dashboard" : "/auth"}
+              onClick={() => setMenuOpen(false)}
+              className="btn-primary text-sm px-4 py-2.5 w-full text-center block"
+            >
+              {loggedIn ? "Dashboard" : "Get Started"}
+            </Link>
+          </div>
         </div>
       )}
     </nav>
