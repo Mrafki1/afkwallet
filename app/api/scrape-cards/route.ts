@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { chromium } from "playwright-core";
+import chromiumBin from "@sparticuz/chromium";
 import { upsertCards } from "../../lib/cards-db";
 import type { Card } from "../../data/cards";
 
@@ -91,10 +92,12 @@ function slugToId(slug: string): string {
 // ── Main scrape logic ─────────────────────────────────────────────────────
 
 async function scrapeAllCards(): Promise<ScrapedCard[]> {
-  // Use playwright-core with a downloaded Chromium (available in Vercel via playwright)
+  const isVercel = !!process.env.VERCEL;
   const browser = await chromium.launch({
+    args: isVercel ? chromiumBin.args : ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+    defaultViewport: isVercel ? chromiumBin.defaultViewport : null,
+    executablePath: isVercel ? await chromiumBin.executablePath() : undefined,
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
   });
   const context = await browser.newContext({
     userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/121.0.0.0 Safari/537.36",

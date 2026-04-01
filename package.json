@@ -24,11 +24,13 @@
     "seed:dry": "node scripts/seed-cards.mjs --dry-run"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^143.0.4",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.3",
     "@tailwindcss/typography": "^0.5.19",
     "gray-matter": "^4.0.3",
     "next": "15.5.14",
+    "playwright-core": "^1.59.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "remark": "^15.0.1",
