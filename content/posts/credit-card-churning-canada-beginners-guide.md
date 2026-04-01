@@ -62,9 +62,9 @@ Once you've earned a few bonuses and understand how the ecosystem works, you can
 
 ## The tools you need
 
-**ChurnCA** (you're already here) — browse current offers, compare rebate portals, and track your cards.
+**PointsBinder** (you're already here) — browse current offers, compare rebate portals, and track your cards.
 
-**A spreadsheet or tracker** — log your apply date, MSR deadline, annual fee date, and how many points you've earned. The ChurnCA dashboard does this for you.
+**A spreadsheet or tracker** — log your apply date, MSR deadline, annual fee date, and how many points you've earned. The PointsBinder dashboard does this for you.
 
 **r/churningcanada** — the most active Canadian churning community. Great for data points on approval odds and current elevated offers.
 

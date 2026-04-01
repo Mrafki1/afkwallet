@@ -78,7 +78,7 @@ Not all card types work with all services — check before relying on this.
 
 The worst outcome is missing the MSR by a few hundred dollars and losing the entire bonus.
 
-Log your apply date and MSR deadline in the ChurnCA dashboard the day you're approved. Update your spending as you go. Set a reminder 3 weeks before the deadline to check your progress.
+Log your apply date and MSR deadline in the PointsBinder dashboard the day you're approved. Update your spending as you go. Set a reminder 3 weeks before the deadline to check your progress.
 
 If you're behind with a month to go, that's when to accelerate: prepay insurance, stock up on grocery gift cards, or move bills forward.
 

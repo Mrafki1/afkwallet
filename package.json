@@ -6,7 +6,22 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "scrape:portals": "node scripts/scrape-portals.mjs",
+    "scrape:portals:ccg": "node scripts/scrape-portals.mjs --portal CCG",
+    "scrape:portals:gcr": "node scripts/scrape-portals.mjs --portal GCR",
+    "scrape:portals:ff": "node scripts/scrape-portals.mjs --portal FF",
+    "scrape:portals:fw": "node scripts/scrape-portals.mjs --portal FW",
+    "scrape:portals:dry": "node scripts/scrape-portals.mjs --dry-run",
+    "scrape:portals:headed": "node scripts/scrape-portals.mjs --headed",
+    "scrape:ccg": "node scripts/scrape-ccg.mjs",
+    "scrape:ccg:dry": "node scripts/scrape-ccg.mjs --dry-run",
+    "scrape:ccg:headed": "node scripts/scrape-ccg.mjs --headed",
+    "images": "node scripts/download-card-images.mjs",
+    "images:dry": "node scripts/download-card-images.mjs --dry-run",
+    "images:headed": "node scripts/download-card-images.mjs --headed",
+    "seed": "node scripts/seed-cards.mjs",
+    "seed:dry": "node scripts/seed-cards.mjs --dry-run"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",
@@ -26,8 +41,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.3.1",
     "eslint": "^9",
     "eslint-config-next": "15.5.14",
+    "playwright": "^1.58.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

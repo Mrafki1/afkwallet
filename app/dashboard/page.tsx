@@ -18,6 +18,13 @@ type UserCard = {
   notes: string | null;
 };
 
+type DbCard = {
+  id: string;
+  name: string;
+  issuer: string;
+  msr: string | null;
+};
+
 function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null;
   const diff = new Date(dateStr).getTime() - new Date().setHours(0, 0, 0, 0);
@@ -68,14 +75,14 @@ function StatusBadge({ days, label }: { days: number | null; label: string }) {
 }
 
 // Searchable combobox — shows suggestions from cards list but accepts any free text
-function CardCombobox({ value, onChange }: { value: string; onChange: (name: string, cardId: string) => void }) {
+function CardCombobox({ value, onChange, allCards }: { value: string; onChange: (name: string, cardId: string) => void; allCards: DbCard[] }) {
   const [query, setQuery]     = useState(value);
   const [open, setOpen]       = useState(false);
   const containerRef          = useRef<HTMLDivElement>(null);
 
   const suggestions = query.length > 0
-    ? cards.filter(c => c.name.toLowerCase().includes(query.toLowerCase())).slice(0, 6)
-    : cards.slice(0, 6);
+    ? allCards.filter(c => c.name.toLowerCase().includes(query.toLowerCase())).slice(0, 6)
+    : allCards.slice(0, 6);
 
   useEffect(() => { setQuery(value); }, [value]);
 
@@ -231,6 +238,7 @@ export default function Dashboard() {
 
 function DashboardInner() {
   const [userCards, setUserCards]   = useState<UserCard[]>([]);
+  const [dbCards, setDbCards]       = useState<DbCard[]>([]);
   const [loading, setLoading]       = useState(true);
   const [showAdd, setShowAdd]       = useState(false);
   const [editCard, setEditCard]     = useState<UserCard | null>(null);
@@ -272,11 +280,12 @@ function DashboardInner() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }
       setUserEmail(user.email ?? "");
-      const { data } = await supabase
-        .from("user_cards")
-        .select("*")
-        .order("apply_date", { ascending: false });
-      setUserCards(data ?? []);
+      const [{ data: ucData }, { data: cardData }] = await Promise.all([
+        supabase.from("user_cards").select("*").order("apply_date", { ascending: false }),
+        supabase.from("cards").select("id, name, issuer, msr").eq("status", "published").order("name"),
+      ]);
+      setUserCards(ucData ?? []);
+      setDbCards(cardData ?? []);
       setLoading(false);
 
       // Auto-open add form if arriving from a card page
@@ -328,9 +337,9 @@ function DashboardInner() {
     setSelectedCardId(cardId);
     // Auto-fill MSR amount from card data if field is empty
     if (cardId && !msrAmount) {
-      const card = cards.find(c => c.id === cardId);
+      const card = dbCards.find(c => c.id === cardId) ?? cards.find(c => c.id === cardId);
       if (card) {
-        const match = card.msr.match(/\$?([\d,]+)/);
+        const match = (card.msr ?? "").match(/\$?([\d,]+)/);
         if (match) setMsrAmount(match[1].replace(",", ""));
       }
     }
@@ -419,8 +428,8 @@ function DashboardInner() {
       <nav className="sticky top-0 z-20" style={{ background: "rgba(255,255,255,0.95)", borderBottom: "1px solid #e2e8f0", backdropFilter: "blur(8px)" }}>
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 flex items-center justify-center rounded-md text-white text-xs font-bold" style={{ background: "#2563eb" }}>A</div>
-            <span className="font-bold text-sm" style={{ color: "#0f172a" }}>AFK Wallet</span>
+            <div className="w-6 h-6 flex items-center justify-center rounded-md text-white text-xs font-bold" style={{ background: "#2563eb" }}>P</div>
+            <span className="font-bold text-sm" style={{ color: "#0f172a" }}>PointsBinder</span>
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm hidden sm:block" style={{ color: "#64748b" }}>{userEmail}</span>
@@ -433,7 +442,7 @@ function DashboardInner() {
 
       <div className="max-w-5xl mx-auto px-6 py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: "#0f172a" }}>My Cards</h1>
             <p className="text-sm mt-1" style={{ color: "#64748b" }}>Track your MSR progress and annual fee deadlines.</p>
@@ -447,14 +456,44 @@ function DashboardInner() {
           </button>
         </div>
 
+        {/* Summary stats */}
+        {userCards.length > 0 && (() => {
+          const activeMsr    = userCards.filter(c => c.msr_amount > 0 && c.msr_spent < c.msr_amount);
+          const remaining    = activeMsr.reduce((sum, c) => sum + (c.msr_amount - c.msr_spent), 0);
+          const urgentCount  = userCards.filter(c => {
+            const msrD = daysUntil(c.msr_deadline);
+            const feeD = daysUntil(c.annual_fee_date ? new Date(new Date(c.annual_fee_date).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null);
+            return (msrD !== null && msrD <= 30 && c.msr_spent < c.msr_amount) || (feeD !== null && feeD <= 30);
+          }).length;
+          return (
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {[
+                { label: "Cards tracked", value: String(userCards.length) },
+                { label: "MSR remaining", value: remaining > 0 ? `$${remaining.toLocaleString()}` : "All done ✓" },
+                { label: "Action needed", value: urgentCount > 0 ? `${urgentCount} deadline${urgentCount > 1 ? "s" : ""}` : "All clear ✓", urgent: urgentCount > 0 },
+              ].map(stat => (
+                <div key={stat.label} className="rounded-xl p-4" style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}>
+                  <p className="text-xs mb-1" style={{ color: "#94a3b8" }}>{stat.label}</p>
+                  <p className="text-xl font-bold tracking-tight" style={{ color: stat.urgent ? "#b91c1c" : "#0f172a", letterSpacing: "-0.02em" }}>{stat.value}</p>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
         {/* Cards list */}
         {userCards.length === 0 ? (
           <div className="text-center py-20 rounded-2xl" style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}>
-            <p className="text-lg font-medium" style={{ color: "#94a3b8" }}>No cards tracked yet.</p>
-            <p className="text-sm mt-1" style={{ color: "#94a3b8" }}>Add your first card to start tracking.</p>
-            <button onClick={openAdd} className="btn-primary text-sm font-semibold px-4 py-2 mt-4" style={{ borderRadius: 10 }}>
-              + Add Card
-            </button>
+            <p className="text-lg font-medium mb-1" style={{ color: "#94a3b8" }}>No cards tracked yet.</p>
+            <p className="text-sm mb-4" style={{ color: "#94a3b8" }}>Add your first card to start tracking MSR progress and deadlines.</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={openAdd} className="btn-primary text-sm font-semibold px-4 py-2" style={{ borderRadius: 10 }}>
+                + Add Card
+              </button>
+              <Link href="/cards" className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors" style={{ border: "1px solid #e2e8f0", color: "#64748b" }}>
+                Browse cards →
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -468,12 +507,10 @@ function DashboardInner() {
               const msrDone    = uc.msr_amount > 0 && uc.msr_spent >= uc.msr_amount;
               return (
                 <div key={uc.id} className="rounded-2xl p-6" style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                      <h2 className="font-bold text-lg leading-tight" style={{ color: "#0f172a" }}>{uc.card_name}</h2>
-                      <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>Applied {formatDate(uc.apply_date)}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 justify-end shrink-0">
+                  <div className="mb-4">
+                    <h2 className="font-bold text-lg leading-tight" style={{ color: "#0f172a" }}>{uc.card_name}</h2>
+                    <p className="text-xs mt-0.5 mb-2" style={{ color: "#94a3b8" }}>Applied {formatDate(uc.apply_date)}</p>
+                    <div className="flex flex-wrap gap-2">
                       {msrDays !== null && !msrDone && <StatusBadge days={msrDays} label="MSR deadline" />}
                       {cancelDays !== null && <StatusBadge days={cancelDays} label="Cancel window" />}
                       {feeDays !== null && <StatusBadge days={feeDays} label="Annual fee" />}
@@ -597,7 +634,7 @@ function DashboardInner() {
 
               <div>
                 <label className="text-xs font-medium block mb-1" style={{ color: "#475569" }}>Card name</label>
-                <CardCombobox value={cardName} onChange={handleCardSelect} />
+                <CardCombobox value={cardName} onChange={handleCardSelect} allCards={dbCards} />
               </div>
 
               <div>

@@ -49,7 +49,7 @@ A few things to keep in mind when applying:
 
 **Use the best rebate portal.** Portals like GCR, Frugal Flyer, and Credit Card Genius pay you extra cash just for applying through their link. Always compare before clicking "Apply."
 
-**Track your MSR deadline.** Most cards give you 3 months. Add the card to your ChurnCA dashboard immediately after applying so you never lose track.
+**Track your MSR deadline.** Most cards give you 3 months. Add the card to your PointsBinder dashboard immediately after applying so you never lose track.
 
 ---
 

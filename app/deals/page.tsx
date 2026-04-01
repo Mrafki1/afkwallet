@@ -1,14 +1,12 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { cards } from "../data/cards";
+import { getCards, getLastVerified } from "../lib/cards-db";
+import type { Portal } from "../data/cards";
 import Navbar from "../components/Navbar";
 
-const elevatedCards = cards.filter(c => c.elevated);
-const LAST_UPDATED = "March 23, 2025";
+export const dynamic = "force-dynamic";
 
-function BestPortal({ portals, directLink }: { portals: typeof cards[0]["portals"]; directLink: string }) {
+function BestPortal({ portals, directLink }: { portals: Portal[]; directLink: string }) {
   if (portals.length === 0) {
     return (
       <a href={directLink} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center text-sm py-2.5 block" style={{ borderRadius: 8 }}>
@@ -16,7 +14,7 @@ function BestPortal({ portals, directLink }: { portals: typeof cards[0]["portals
       </a>
     );
   }
-  const best = portals[0];
+  const best = [...portals].sort((a, b) => b.bonus - a.bonus)[0];
   return (
     <a href={best.url} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center text-sm py-2.5 block" style={{ borderRadius: 8 }}>
       Apply via {best.name} — get ${best.bonus} back →
@@ -24,7 +22,11 @@ function BestPortal({ portals, directLink }: { portals: typeof cards[0]["portals
   );
 }
 
-export default function DealsPage() {
+export default async function DealsPage() {
+  const allCards = await getCards();
+  const elevatedCards = allCards.filter(c => c.elevated);
+  const lastVerified = await getLastVerified();
+  const LAST_UPDATED = new Date(lastVerified).toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" });
   return (
     <div className="min-h-screen" style={{ background: "#ffffff", color: "#0f172a" }}>
       <Navbar activePage="deals" />
@@ -95,7 +97,7 @@ export default function DealsPage() {
                     {/* Stats */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {[
-                        { label: "1st Year Value", value: card.firstYearValue, highlight: true },
+                        { label: "1st Year Value", value: (() => { const base = parseInt(card.firstYearValue.replace(/[^0-9]/g, "")) || 0; const bonus = [...card.portals].sort((a, b) => b.bonus - a.bonus)[0]?.bonus ?? 0; return (!base || !bonus) ? card.firstYearValue : `~$${(base + bonus).toLocaleString()}`; })(), highlight: true },
                         { label: "Welcome Bonus",  value: card.pointsBonus,   highlight: false },
                         { label: "Annual Fee",      value: card.annualFee,     highlight: false },
                         { label: "MSR",             value: card.msr,           highlight: false },
@@ -112,7 +114,7 @@ export default function DealsPage() {
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#64748b" }}>Best portal cash back</p>
                         <div className="flex flex-wrap gap-2">
-                          {card.portals.map((portal, pi) => (
+                          {[...card.portals].sort((a, b) => b.bonus - a.bonus).map((portal, pi) => (
                             <a
                               key={portal.name}
                               href={portal.url}

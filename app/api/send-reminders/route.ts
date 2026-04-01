@@ -30,18 +30,22 @@ export async function GET(request: NextRequest) {
 
   const in30 = addDays(30);
   const in7  = addDays(7);
+  const in31 = addDays(31);
+  const in8  = addDays(8);
 
-  // Cards with annual fee due in 30 days
+  // Cards with annual fee due within the next 30–31 day window
   const { data: feeCards } = await supabase
     .from("user_cards")
     .select("*")
-    .eq("annual_fee_date", in30);
+    .gte("annual_fee_date", in30)
+    .lte("annual_fee_date", in31);
 
-  // Cards with MSR deadline in 7 days that aren't complete yet
+  // Cards with MSR deadline within the next 7–8 day window that aren't complete yet
   const { data: msrCards } = await supabase
     .from("user_cards")
     .select("*")
-    .eq("msr_deadline", in7);
+    .gte("msr_deadline", in7)
+    .lte("msr_deadline", in8);
 
   const incompleteMsr = (msrCards ?? []).filter(c => c.msr_spent < c.msr_amount);
 
@@ -127,7 +131,7 @@ function emailHtml({ title, preheader, body, ctaText, ctaUrl }: {
       <table width="100%" style="max-width:520px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;">
         <!-- Header -->
         <tr><td style="background:#7f1d1d;padding:24px 32px;">
-          <p style="margin:0;color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px;">ChurnCA</p>
+          <p style="margin:0;color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px;">PointsBinder</p>
         </td></tr>
         <!-- Body -->
         <tr><td style="padding:32px;">
@@ -139,7 +143,7 @@ function emailHtml({ title, preheader, body, ctaText, ctaUrl }: {
         </td></tr>
         <!-- Footer -->
         <tr><td style="padding:20px 32px;border-top:1px solid #f3f4f6;">
-          <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you track cards on ChurnCA. Offers change frequently — always verify before acting.</p>
+          <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you track cards on PointsBinder. Offers change frequently — always verify before acting.</p>
         </td></tr>
       </table>
     </td></tr>

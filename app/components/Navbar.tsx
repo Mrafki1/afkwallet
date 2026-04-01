@@ -32,7 +32,7 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
 
   return (
     <nav
-      className="sticky top-0 z-20 bg-white"
+      className="sticky top-0 z-50 bg-white"
       style={{
         borderBottom: "1px solid #e2e8f0",
         boxShadow: scrolled ? "0 1px 8px rgba(0,0,0,0.06)" : "none",
@@ -48,10 +48,10 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
               className="w-7 h-7 flex items-center justify-center rounded-lg text-white text-xs font-bold"
               style={{ background: "#2563eb" }}
             >
-              A
+              P
             </div>
             <span className="font-bold text-base tracking-tight" style={{ color: "#0f172a" }}>
-              AFK Wallet
+              PointsBinder
             </span>
           </Link>
 
@@ -60,6 +60,12 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
             <Link href="/deals"         className={linkClass("deals")}>⚡ Hot Deals</Link>
             <Link href="/blog"          className={linkClass("blog")}>Blog</Link>
             <Link href="/#how-it-works" className={linkClass()}>How It Works</Link>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("pb:open-quiz"))}
+              className="text-sm font-medium transition-colors text-[#374151] hover:text-[#0f172a]"
+            >
+              ✨ Take the Quiz
+            </button>
           </div>
         </div>
 
@@ -69,7 +75,7 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
             href={loggedIn ? "/dashboard" : "/auth"}
             className="btn-primary text-sm px-4 py-2 hidden sm:inline-block"
           >
-            {loggedIn ? "Dashboard" : "Get Started"}
+            {loggedIn ? "Dashboard" : "Login / Sign Up"}
           </Link>
           <button
             onClick={() => setMenuOpen(o => !o)}
@@ -96,10 +102,10 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
           style={{ background: "#ffffff", borderColor: "#e2e8f0" }}
         >
           {[
-            { href: "/cards",         label: "Cards",         page: "cards" },
-            { href: "/deals",         label: "⚡ Hot Deals",  page: "deals" },
-            { href: "/blog",          label: "Blog",          page: "blog"  },
-            { href: "/#how-it-works", label: "How It Works",  page: ""      },
+            { href: "/cards",         label: "Cards",           page: "cards" },
+            { href: "/deals",         label: "⚡ Hot Deals",    page: "deals" },
+            { href: "/blog",          label: "Blog",            page: "blog"  },
+            { href: "/#how-it-works", label: "How It Works",    page: ""      },
           ].map(item => (
             <Link
               key={item.href}
@@ -110,13 +116,19 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
               {item.label}
             </Link>
           ))}
+          <button
+            onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent("pb:open-quiz")); }}
+            className="py-2.5 text-sm font-medium text-gray-700 text-left"
+          >
+            ✨ Take the Quiz
+          </button>
           <div className="pt-3 border-t mt-1" style={{ borderColor: "#e2e8f0" }}>
             <Link
               href={loggedIn ? "/dashboard" : "/auth"}
               onClick={() => setMenuOpen(false)}
               className="btn-primary text-sm px-4 py-2.5 w-full text-center block"
             >
-              {loggedIn ? "Dashboard" : "Get Started"}
+              {loggedIn ? "Dashboard" : "Login / Sign Up"}
             </Link>
           </div>
         </div>

@@ -26,7 +26,7 @@ function AuthForm() {
 
     if (mode === "forgot") {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset`,
       });
       if (error) { setError(error.message); setLoading(false); return; }
       setError("Check your email for a password reset link.");
@@ -54,95 +54,119 @@ function AuthForm() {
   }
 
   const headings = {
-    login:  { title: "Welcome back",      sub: "Log in to view your card tracker." },
-    signup: { title: "Create account",    sub: "Start tracking your cards for free." },
-    forgot: { title: "Reset password",    sub: "We'll send a reset link to your email." },
+    login:  { title: "Welcome back",   sub: "Log in to view your card tracker." },
+    signup: { title: "Create account", sub: "Start tracking your cards for free." },
+    forgot: { title: "Reset password", sub: "We'll send a reset link to your email." },
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 w-full max-w-sm p-8">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#f8fafc" }}>
+      <div className="w-full max-w-sm">
 
-        <Link href="/" className="text-xl font-bold text-gray-900 tracking-tight block mb-8">ChurnCA</Link>
-
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">{headings[mode].title}</h1>
-        <p className="text-sm text-gray-500 mb-6">{headings[mode].sub}</p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400"
-              placeholder="you@example.com"
-            />
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 justify-center mb-8">
+          <div
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white text-sm font-bold"
+            style={{ background: "#2563eb" }}
+          >
+            P
           </div>
+          <span className="font-bold text-lg tracking-tight" style={{ color: "#0f172a" }}>PointsBinder</span>
+        </Link>
 
-          {mode !== "forgot" && (
+        {/* Card */}
+        <div className="bg-white rounded-2xl p-8" style={{ border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+          <h1 className="text-2xl font-bold mb-1 tracking-tight" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>
+            {headings[mode].title}
+          </h1>
+          <p className="text-sm mb-6" style={{ color: "#64748b" }}>{headings[mode].sub}</p>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium text-gray-600">Password</label>
-                {mode === "login" && (
-                  <button
-                    type="button"
-                    onClick={() => switchMode("forgot")}
-                    className="text-xs text-red-900 hover:underline"
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
+              <label className="text-xs font-semibold block mb-1.5" style={{ color: "#374151" }}>Email</label>
               <input
-                type="password"
+                type="email"
                 required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400"
-                placeholder="••••••••"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-colors"
+                style={{ border: "1.5px solid #e2e8f0", color: "#0f172a" }}
+                onFocus={e => e.target.style.borderColor = "#2563eb"}
+                onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                placeholder="you@example.com"
               />
             </div>
-          )}
 
-          {error && (
-            <p className={`text-xs ${error.startsWith("Check") ? "text-green-600" : "text-red-500"}`}>
-              {error}
-            </p>
-          )}
+            {mode !== "forgot" && (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold" style={{ color: "#374151" }}>Password</label>
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      onClick={() => switchMode("forgot")}
+                      className="text-xs font-medium hover:underline"
+                      style={{ color: "#2563eb" }}
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-colors"
+                  style={{ border: "1.5px solid #e2e8f0", color: "#0f172a" }}
+                  onFocus={e => e.target.style.borderColor = "#2563eb"}
+                  onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-red-900 hover:bg-red-800 disabled:opacity-50 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
-          >
-            {loading ? "Please wait..." : mode === "login" ? "Log in" : mode === "signup" ? "Create account" : "Send reset link"}
-          </button>
-        </form>
+            {error && (
+              <p className={`text-xs font-medium`} style={{ color: error.startsWith("Check") ? "#16a34a" : "#dc2626" }}>
+                {error}
+              </p>
+            )}
 
-        <div className="text-xs text-gray-500 mt-6 text-center flex flex-col gap-2">
-          {mode === "forgot" ? (
-            <p>
-              Back to{" "}
-              <button onClick={() => switchMode("login")} className="text-red-900 font-medium hover:underline">
-                Log in
-              </button>
-            </p>
-          ) : (
-            <>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full py-2.5 text-sm disabled:opacity-50"
+            >
+              {loading ? "Please wait…" : mode === "login" ? "Log in" : mode === "signup" ? "Create account" : "Send reset link"}
+            </button>
+          </form>
+
+          <div className="text-xs mt-6 text-center" style={{ color: "#64748b" }}>
+            {mode === "forgot" ? (
+              <p>
+                Back to{" "}
+                <button onClick={() => switchMode("login")} className="font-semibold hover:underline" style={{ color: "#2563eb" }}>
+                  Log in
+                </button>
+              </p>
+            ) : (
               <p>
                 {mode === "login" ? "Don't have an account? " : "Already have an account? "}
                 <button
                   onClick={() => switchMode(mode === "login" ? "signup" : "login")}
-                  className="text-red-900 font-medium hover:underline"
+                  className="font-semibold hover:underline"
+                  style={{ color: "#2563eb" }}
                 >
                   {mode === "login" ? "Sign up" : "Log in"}
                 </button>
               </p>
-            </>
-          )}
+            )}
+          </div>
         </div>
+
+        <p className="text-xs text-center mt-6" style={{ color: "#94a3b8" }}>
+          Not financial advice. Always verify offers before applying.
+        </p>
       </div>
     </div>
   );

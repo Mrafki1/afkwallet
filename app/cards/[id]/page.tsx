@@ -1,17 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cards } from "../../data/cards";
+import { getCard, getCards, getLastVerified } from "../../lib/cards-db";
+import AlertSubscribe from "./AlertSubscribe";
 import CardImage from "./CardImage";
 import TrackButton from "./TrackButton";
 
-export async function generateStaticParams() {
-  return cards.map(card => ({ id: card.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const card = cards.find(c => c.id === id);
+  const card = await getCard(id);
   if (!card) return {};
   const description = `${card.pointsBonus} welcome bonus. ${card.firstYearValue} first-year value. ${card.annualFee} annual fee. Compare rebate portals and apply via the highest payout.`;
   return {
@@ -20,14 +19,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     keywords: [card.name, card.issuer, card.program, "credit card Canada", "welcome bonus", "rebate portal"],
     alternates: { canonical: `/cards/${id}` },
     openGraph: {
-      title: `${card.name} Review 2025 | ChurnCA`,
+      title: `${card.name} Review 2025 | PointsBinder`,
       description,
       url: `/cards/${id}`,
       images: [{ url: card.image, width: 600, height: 375, alt: card.name }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${card.name} Review 2025 | ChurnCA`,
+      title: `${card.name} Review 2025 | PointsBinder`,
       description,
       images: [card.image],
     },
@@ -49,10 +48,18 @@ function CheckIcon({ checked }: { checked: boolean }) {
 
 export default async function CardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const card = cards.find(c => c.id === id);
+  const card = await getCard(id);
   if (!card) notFound();
+  const CARDS_LAST_VERIFIED = await getLastVerified();
 
-  const bestPortal = card.portals.length > 0 ? card.portals[0] : null;
+  const sortedPortals = [...card.portals].sort((a, b) => b.bonus - a.bonus);
+  const bestPortal = sortedPortals[0] ?? null;
+  const effectiveFYV = (() => {
+    const base = parseInt(card.firstYearValue.replace(/[^0-9]/g, "")) || 0;
+    const bonus = bestPortal?.bonus ?? 0;
+    if (!base || !bonus) return card.firstYearValue;
+    return `~$${(base + bonus).toLocaleString()}`;
+  })();
 
   // Normalise insurance for checklist display
   const hasMedical = card.insurance?.some(i => i.startsWith("Travel Medical"));
@@ -69,25 +76,29 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ background: "#f8fafc" }}>
 
       {/* ── Navbar ── */}
-      <nav className="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-20">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-xl font-bold text-gray-900 tracking-tight">ChurnCA</Link>
-            <span className="text-gray-300">/</span>
-            <Link href="/cards" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Credit Cards</Link>
-            <span className="text-gray-300">/</span>
-            <span className="text-sm text-gray-700 font-medium truncate max-w-48">{card.name}</span>
+      <nav className="sticky top-0 z-20 bg-white" style={{ borderBottom: "1px solid #e2e8f0" }}>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-7 h-7 flex items-center justify-center rounded-lg text-white text-xs font-bold" style={{ background: "#2563eb" }}>P</div>
+              <span className="font-bold text-base tracking-tight" style={{ color: "#0f172a" }}>PointsBinder</span>
+            </Link>
+            <div className="hidden sm:flex items-center gap-1 text-sm" style={{ color: "#94a3b8" }}>
+              <Link href="/cards" className="hover:text-gray-900 transition-colors" style={{ color: "#64748b" }}>Credit Cards</Link>
+              <span className="mx-1">/</span>
+              <span className="font-medium truncate max-w-48" style={{ color: "#0f172a" }}>{card.name}</span>
+            </div>
           </div>
-          <Link href="/cards" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:block">
+          <Link href="/cards" className="text-sm font-medium transition-colors hidden sm:block" style={{ color: "#64748b" }}>
             ← All cards
           </Link>
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-6 py-10">
 
         {/* ── Hero ── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 mb-12">
@@ -143,9 +154,9 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
 
             {/* Key stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-orange-50 rounded-2xl p-4 text-center">
-                <p className="text-xs text-orange-400 font-medium mb-1">1st Year Value</p>
-                <p className="font-black text-orange-600 text-xl">{card.firstYearValue}</p>
+              <div className="rounded-2xl p-4 text-center" style={{ background: "#eff6ff" }}>
+                <p className="text-xs font-medium mb-1" style={{ color: "#93c5fd" }}>1st Year Value</p>
+                <p className="font-black text-xl" style={{ color: "#2563eb" }}>{effectiveFYV}</p>
               </div>
               <div className="bg-gray-50 rounded-2xl p-4 text-center">
                 <p className="text-xs text-gray-400 font-medium mb-1">Welcome Bonus</p>
@@ -165,11 +176,11 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* Portal comparison */}
-            {card.portals.length > 0 && (
+            {sortedPortals.length > 0 && (
               <div>
                 <p className="text-xs text-gray-400 font-semibold uppercase tracking-widest mb-3">Apply via rebate portal</p>
                 <div className="flex flex-col gap-2">
-                  {card.portals.map((portal, i) => (
+                  {sortedPortals.map((portal, i) => (
                     <a
                       key={portal.name}
                       href={portal.url}
@@ -204,7 +215,10 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                 href={bestPortal ? bestPortal.url : card.directLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-red-900 hover:bg-red-800 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-sm"
+                className="text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-sm"
+                style={{ background: "#2563eb" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = "#1d4ed8"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = "#2563eb"; }}
               >
                 {bestPortal ? `Apply via ${bestPortal.name} (+$${bestPortal.bonus})` : "Apply Now"}
               </a>
@@ -220,6 +234,16 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
               )}
               <TrackButton cardId={card.id} />
             </div>
+
+            {/* Notify me when elevated */}
+            {!card.elevated && (
+              <AlertSubscribe cardId={card.id} cardName={card.name} />
+            )}
+
+            {/* Last verified */}
+            <p className="text-xs" style={{ color: "#94a3b8" }}>
+              Data verified {new Date(card.lastVerified ?? CARDS_LAST_VERIFIED).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" })}
+            </p>
 
           </div>
         </div>
@@ -238,7 +262,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                 <div className="flex flex-col gap-4">
                   {card.welcomeMilestones.map((m, i) => (
                     <div key={i} className="flex gap-4 items-start">
-                      <div className="w-7 h-7 rounded-full bg-red-50 border-2 border-red-100 text-red-900 text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-7 h-7 rounded-full text-xs font-black flex items-center justify-center shrink-0 mt-0.5" style={{ background: "#eff6ff", border: "2px solid #bfdbfe", color: "#1d4ed8" }}>
                         {i + 1}
                       </div>
                       <div className="flex-1 bg-gray-50 rounded-xl px-4 py-3">
@@ -258,7 +282,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
               <div className="flex flex-col gap-3">
                 {card.rewards.map((r, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <span className={`font-black text-lg w-14 shrink-0 ${i === 0 ? "text-red-900" : "text-gray-600"}`}>{r.multiplier}</span>
+                    <span className={`font-black text-lg w-14 shrink-0 ${i === 0 ? "text-blue-600" : "text-gray-600"}`}>{r.multiplier}</span>
                     <div className="flex-1 bg-gray-50 rounded-lg px-3 py-2">
                       <span className="text-sm text-gray-700">{r.category}</span>
                     </div>
@@ -266,7 +290,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                 ))}
               </div>
               {card.pointsValue && (
-                <p className="mt-4 text-xs text-gray-500 bg-blue-50 text-blue-700 px-3 py-2 rounded-lg">
+                <p className="mt-4 text-xs px-3 py-2 rounded-lg" style={{ background: "#eff6ff", color: "#1d4ed8" }}>
                   <strong>Points value:</strong> {card.pointsValue}
                 </p>
               )}
@@ -279,7 +303,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                 <div className="flex flex-col gap-2">
                   {card.transferPartners.map((partner, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-900 shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "#2563eb" }} />
                       {partner}
                     </div>
                   ))}
@@ -355,41 +379,46 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* ── Related cards ── */}
+        {await (async () => {
+          const allCards = await getCards();
+          const related = allCards.filter(c => c.issuer === card!.issuer && c.id !== card!.id).slice(0, 3);
+          if (related.length === 0) return null;
+          return (
         <div className="mt-12 pt-10 border-t border-gray-100">
           <h2 className="font-bold text-gray-900 text-xl mb-6">Other {card.issuer} cards</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {cards
-              .filter(c => c.issuer === card.issuer && c.id !== card.id)
-              .slice(0, 3)
-              .map(related => (
+            {related.map(related => (
                 <Link
                   key={related.id}
                   href={`/cards/${related.id}`}
-                  className="flex items-center gap-3 p-4 bg-white border border-gray-100 rounded-2xl hover:border-red-200 hover:shadow-md transition-all"
+                  className="flex items-center gap-3 p-4 bg-white border border-gray-100 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all"
                 >
                   <div className="relative w-20 aspect-[1.586/1] rounded-lg overflow-hidden bg-gray-100 shrink-0">
                     <Image src={related.image} alt={related.name} fill className="object-contain p-1" />
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900 text-sm leading-tight">{related.name}</p>
-                    <p className="text-xs text-orange-500 font-bold mt-0.5">{related.firstYearValue}</p>
+                    <p className="text-xs font-bold mt-0.5" style={{ color: "#2563eb" }}>{related.firstYearValue}</p>
                     <p className="text-xs text-gray-400">{related.annualFee}</p>
                   </div>
                 </Link>
               ))}
           </div>
         </div>
+          );
+        })()}
 
       </div>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-gray-100 mt-16 py-8">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
-          <Link href="/" className="font-bold text-gray-600 text-sm">ChurnCA</Link>
+      <footer className="mt-16 py-8" style={{ borderTop: "1px solid #e2e8f0" }}>
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs" style={{ color: "#94a3b8" }}>
+          <Link href="/" className="font-bold text-sm" style={{ color: "#64748b" }}>PointsBinder</Link>
           <div className="flex gap-5">
             <Link href="/cards" className="hover:text-gray-600 transition-colors">All Cards</Link>
+            <Link href="/deals" className="hover:text-gray-600 transition-colors">Hot Deals</Link>
+            <Link href="/blog" className="hover:text-gray-600 transition-colors">Blog</Link>
             <Link href="/auth" className="hover:text-gray-600 transition-colors">Sign up</Link>
-            <Link href="/dashboard" className="hover:text-gray-600 transition-colors">Dashboard</Link>
           </div>
           <p>Offers change frequently — always verify before applying.</p>
         </div>

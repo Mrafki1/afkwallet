@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cards, type Card } from "../data/cards";
+import type { Card } from "../data/cards";
 import Navbar from "../components/Navbar";
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
@@ -212,7 +212,7 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
             <p className="text-xs mb-0.5 leading-tight flex justify-center" style={{ color: "#94a3b8" }}>
               <Tooltip text={TOOLTIPS.firstYearValue}>1st Year Value <span className="ml-0.5 text-[10px]">ⓘ</span></Tooltip>
             </p>
-            <p className="font-bold text-sm" style={{ color: "#2563eb" }}>{card.firstYearValue}</p>
+            <p className="font-bold text-sm" style={{ color: "#2563eb" }}>{effectiveFYV(card)}</p>
           </div>
           <div className="rounded-xl p-2" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
             <p className="text-xs mb-0.5 leading-tight flex justify-center" style={{ color: "#94a3b8" }}>
@@ -254,7 +254,7 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
           {card.portals.length > 0 ? (
             <>
               <div className="flex flex-wrap gap-2">
-                {card.portals.map((portal, i) => (
+                {[...card.portals].sort((a, b) => b.bonus - a.bonus).map((portal, i) => (
                   <a
                     key={portal.name}
                     href={portal.url}
@@ -272,14 +272,19 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
                   </a>
                 ))}
               </div>
-              <a
-                href={card.portals[0].url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary w-full text-center text-sm font-bold py-2 rounded-xl transition-colors"
-              >
-                Apply via {card.portals[0].name} (+${card.portals[0].bonus})
-              </a>
+              {(() => {
+                const best = [...card.portals].sort((a, b) => b.bonus - a.bonus)[0];
+                return (
+                  <a
+                    href={best.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary w-full text-center text-sm font-bold py-2 rounded-xl transition-colors"
+                  >
+                    Apply via {best.name} (+${best.bonus})
+                  </a>
+                );
+              })()}
             </>
           ) : (
             <a
@@ -305,10 +310,17 @@ function parseNum(str: string) {
   return parseInt(str.replace(/[$,~a-zA-Z\s]/g, "")) || 0;
 }
 
-function calcROI(card: { firstYearValue: string; msr: string }): number | null {
+function effectiveFYV(card: Card): string {
+  const base = parseNum(card.firstYearValue);
+  const portalBonus = card.portals.length > 0 ? Math.max(...card.portals.map(p => p.bonus)) : 0;
+  if (!base || !portalBonus) return card.firstYearValue;
+  return `~$${(base + portalBonus).toLocaleString()}`;
+}
+
+function calcROI(card: Card): number | null {
   // Monthly MSRs (e.g. "$750/mo") don't map cleanly to a one-time ROI
   if (card.msr.includes("/mo")) return null;
-  const value = parseNum(card.firstYearValue);
+  const value = parseNum(effectiveFYV(card));
   const msr = parseNum(card.msr);
   if (!msr || !value) return null;
   return Math.round((value / msr) * 100);
@@ -325,11 +337,11 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
 
   const sorted = useMemo(() => [...cards].sort((a, b) => {
     let diff = 0;
-    if (sortCol === "value")  diff = parseNum(a.firstYearValue) - parseNum(b.firstYearValue);
+    if (sortCol === "value")  diff = parseNum(effectiveFYV(a)) - parseNum(effectiveFYV(b));
     if (sortCol === "bonus")  diff = parseNum(a.pointsBonus) - parseNum(b.pointsBonus);
     if (sortCol === "fee")    diff = a.annualFeeNum - b.annualFeeNum;
     if (sortCol === "msr")    diff = parseNum(a.msr) - parseNum(b.msr);
-    if (sortCol === "portal") diff = (a.portals[0]?.bonus ?? 0) - (b.portals[0]?.bonus ?? 0);
+    if (sortCol === "portal") diff = Math.max(0, ...(a.portals.map(p => p.bonus))) - Math.max(0, ...(b.portals.map(p => p.bonus)));
     if (sortCol === "roi")    diff = (calcROI(a) ?? -1) - (calcROI(b) ?? -1);
     return sortDir === "asc" ? diff : -diff;
   }), [cards, sortCol, sortDir]);
@@ -360,7 +372,7 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
       <table className="w-full text-sm">
         <thead style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
           <tr>
-            <th className="px-3 py-3 w-10"></th>
+            <th className="px-3 py-3 w-10 text-center text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>Compare</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>Card</th>
             <Th col="value"  label="1st Yr Value"  tooltip={TOOLTIPS.firstYearValue} />
             <Th col="fee"    label="Annual Fee"    tooltip={TOOLTIPS.annualFee} />
@@ -372,7 +384,7 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
         </thead>
         <tbody>
           {sorted.map((card, i) => {
-            const best = card.portals[0] ?? null;
+            const best = [...card.portals].sort((a, b) => b.bonus - a.bonus)[0] ?? null;
             const inCompare = compareSet.has(card.id);
             const maxed = compareSet.size >= 3 && !inCompare;
             return (
@@ -416,7 +428,7 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="font-bold" style={{ color: "#2563eb" }}>{card.firstYearValue}</span>
+                  <span className="font-bold" style={{ color: "#2563eb" }}>{effectiveFYV(card)}</span>
                 </td>
                 <td className="px-4 py-3">
                   <span className="font-semibold text-sm" style={{ color: card.annualFeeNum === 0 ? "#16a34a" : "#0f172a" }}>{card.annualFee}</span>
@@ -471,7 +483,7 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
                 </td>
                 <td className="px-4 py-3">
                   <a
-                    href={best ? best.url : card.directLink}
+                    href={best?.url ?? card.directLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-primary whitespace-nowrap text-xs font-bold px-3 py-2 rounded-lg transition-colors"
@@ -489,8 +501,8 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
 }
 
 // ─── Compare modal ────────────────────────────────────────────────────────────
-function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) {
-  const compared = ids.map(id => cards.find(c => c.id === id)!).filter(Boolean);
+function CompareModal({ ids, onClose, allCards }: { ids: string[]; onClose: () => void; allCards: Card[] }) {
+  const compared = ids.map(id => allCards.find(c => c.id === id)!).filter(Boolean);
 
   const rows: { label: string; tooltip?: string; render: (c: Card) => React.ReactNode }[] = [
     {
@@ -519,7 +531,7 @@ function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) 
         </div>
       ),
     },
-    { label: "1st Year Value", tooltip: TOOLTIPS.firstYearValue, render: c => <span className="font-black text-xl" style={{ color: "#2563eb" }}>{c.firstYearValue}</span> },
+    { label: "1st Year Value", tooltip: TOOLTIPS.firstYearValue, render: c => <span className="font-black text-xl" style={{ color: "#2563eb" }}>{effectiveFYV(c)}</span> },
     { label: "Welcome Bonus",  tooltip: TOOLTIPS.welcomeBonus,  render: c => <span className="font-semibold text-sm" style={{ color: "#0f172a" }}>{c.pointsBonus}</span> },
     { label: "Annual Fee",     tooltip: TOOLTIPS.annualFee,     render: c => <span className="font-bold text-lg" style={{ color: c.annualFeeNum === 0 ? "#16a34a" : "#0f172a" }}>{c.annualFee}</span> },
     { label: "Min. Spend",     tooltip: TOOLTIPS.msr,           render: c => <span className="text-sm" style={{ color: "#64748b" }}>{c.msr}</span> },
@@ -528,19 +540,22 @@ function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) 
     {
       label: "Best Portal",
       tooltip: TOOLTIPS.bestPortal,
-      render: c => c.portals[0] ? (
-        <a
-          href={c.portals[0].url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors"
-          style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}
-        >
-          ★ {c.portals[0].name} +${c.portals[0].bonus}
-        </a>
-      ) : (
-        <span className="text-xs" style={{ color: "#94a3b8" }}>Direct only</span>
-      ),
+      render: c => {
+        const bp = [...c.portals].sort((a, b) => b.bonus - a.bonus)[0];
+        return bp ? (
+          <a
+            href={bp.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors"
+            style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}
+          >
+            ★ {bp.name} +${bp.bonus}
+          </a>
+        ) : (
+          <span className="text-xs" style={{ color: "#94a3b8" }}>Direct only</span>
+        );
+      },
     },
     { label: "Network",        tooltip: TOOLTIPS.network,       render: c => <span className="text-sm" style={{ color: "#64748b" }}>{c.network ?? "—"}</span> },
     { label: "Foreign Fee",    tooltip: TOOLTIPS.foreignFee,    render: c => <span className="text-xs font-medium" style={{ color: c.foreignFee?.startsWith("0%") ? "#16a34a" : "#64748b" }}>{c.foreignFee ?? "—"}</span> },
@@ -601,16 +616,19 @@ function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) 
     },
     {
       label: "Apply",
-      render: c => (
-        <a
-          href={c.portals[0]?.url ?? c.directLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary text-xs font-bold px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
-        >
-          {c.portals[0] ? `Apply via ${c.portals[0].name}` : "Apply Direct"} →
-        </a>
-      ),
+      render: c => {
+        const bp = [...c.portals].sort((a, b) => b.bonus - a.bonus)[0];
+        return (
+          <a
+            href={bp?.url ?? c.directLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary text-xs font-bold px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
+          >
+            {bp ? `Apply via ${bp.name}` : "Apply Direct"} →
+          </a>
+        );
+      },
     },
   ];
 
@@ -664,7 +682,7 @@ function CompareModal({ ids, onClose }: { ids: string[]; onClose: () => void }) 
 }
 
 // ─── Filter helpers ───────────────────────────────────────────────────────────
-const ISSUERS = ["Any Issuer", "American Express", "BMO", "CIBC", "MBNA / TD", "RBC", "Scotiabank", "TD"];
+const ISSUERS = ["Any Issuer", "American Express", "BMO", "CIBC", "MBNA", "RBC", "Scotiabank", "TD", "Tangerine", "Neo Financial", "KOHO"];
 const FEES = [
   { value: "any", label: "Any Fee" },
   { value: "free", label: "No Annual Fee" },
@@ -700,7 +718,11 @@ function pillMatches(card: Card, pillId: string): boolean {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function CardsPage() {
-  const [view, setView]                       = useState<"grid" | "table">("table");
+  const [cards, setCards]                     = useState<Card[]>([]);
+  const [loading, setLoading]                 = useState(true);
+  const [view, setView]                       = useState<"grid" | "table">(
+    typeof window !== "undefined" && window.innerWidth < 640 ? "grid" : "table"
+  );
   const [compareSet, setCompareSet]           = useState<Set<string>>(new Set());
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [activePersona, setActivePersona]     = useState<string | null>(null);
@@ -712,6 +734,13 @@ export default function CardsPage() {
   const [program, setProgram]                 = useState("Any Program");
   const [gridSort, setGridSort]               = useState("featured");
   const [showAdvanced, setShowAdvanced]       = useState(false);
+
+  useEffect(() => {
+    fetch("/api/cards")
+      .then(r => r.json())
+      .then(data => { setCards(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   function toggleCompare(id: string) {
     setCompareSet(prev => {
@@ -769,14 +798,14 @@ export default function CardsPage() {
     if (view === "grid") {
       result.sort((a, b) => {
         if (gridSort === "featured") return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
-        if (gridSort === "value")    return parseNum(b.firstYearValue) - parseNum(a.firstYearValue);
+        if (gridSort === "value")    return parseNum(effectiveFYV(b)) - parseNum(effectiveFYV(a));
         if (gridSort === "fee-asc")  return a.annualFeeNum - b.annualFeeNum;
         if (gridSort === "fee-desc") return b.annualFeeNum - a.annualFeeNum;
         return 0;
       });
     }
     return result;
-  }, [search, activePills, excludeTags, issuer, fee, program, gridSort, view]);
+  }, [cards, search, activePills, excludeTags, issuer, fee, program, gridSort, view]);
 
   const hasFilters = search || activePills.size > 0 || issuer !== "Any Issuer" || fee !== "any" || program !== "Any Program";
 
@@ -789,6 +818,18 @@ export default function CardsPage() {
     color: "#0f172a",
     outline: "none",
   };
+
+  if (loading) return (
+    <div className="min-h-screen" style={{ background: "#f8fafc" }}>
+      <Navbar activePage="cards" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Loading cards…</p>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen" style={{ background: "#f8fafc" }}>
@@ -1004,7 +1045,7 @@ export default function CardsPage() {
 
         {/* Compare modal */}
         {showCompareModal && (
-          <CompareModal ids={[...compareSet]} onClose={() => setShowCompareModal(false)} />
+          <CompareModal ids={[...compareSet]} onClose={() => setShowCompareModal(false)} allCards={cards} />
         )}
 
         {/* Legend + disclaimer */}

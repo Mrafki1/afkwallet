@@ -34,7 +34,7 @@ It varies by card and changes over time, but here are typical ranges:
 
 On a $699 annual fee card, getting $150 back via a portal meaningfully changes the math on whether the card is worth keeping for a second year.
 
-## How ChurnCA helps
+## How PointsBinder helps
 
 This is exactly why we built the portal comparison into every card listing. Instead of checking 4 different portal websites, you can see the current best portal payout right on the card's page. One click takes you directly to the right link.
 
@@ -44,7 +44,7 @@ We update portal rates regularly. If you notice one is out of date, let us know.
 
 ## The 60-second checklist before every application
 
-1. Find the card on ChurnCA
+1. Find the card on PointsBinder
 2. Look at the portal comparison — pick the highest payout
 3. Click the portal link (not the issuer's direct link)
 4. Apply as normal

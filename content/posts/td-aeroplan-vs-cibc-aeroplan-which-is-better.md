@@ -67,4 +67,4 @@ If not, cancel before month 11 and move on to the next welcome bonus.
 
 **Verdict:** Get both. The combined 90,000-point bonus is one of the best deals in Canadian churning and costs nothing in year one.
 
-*Check current portal rates on ChurnCA before applying.*
+*Check current portal rates on PointsBinder before applying.*

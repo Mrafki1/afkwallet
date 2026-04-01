@@ -3,32 +3,45 @@
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "./components/Navbar";
+import { cards } from "./data/cards";
+import QuizModal from "./components/QuizModal";
+
+// ── Find My Card button — reopens the quiz modal for returning visitors ───────
+function FindMyCardButton() {
+  return (
+    <button
+      className="btn-primary text-sm px-6 py-3"
+      onClick={() => window.dispatchEvent(new CustomEvent("pb:open-quiz"))}
+    >
+      ✨ Find my card →
+    </button>
+  );
+}
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
-const FEATURED_CARDS = [
-  {
-    src: "/cards/amex-plat.png", alt: "Amex Platinum",
-    issuer: "American Express",  name: "The Platinum Card",
-    value: "~$1,800", portal: "+$125 via GCR",
-    badge: "Best Overall", badgeClass: "badge-amber",
-    href: "/cards/amex-plat",
-  },
-  {
-    src: "/cards/amex-cobalt.png", alt: "Amex Cobalt",
-    issuer: "American Express",   name: "Cobalt Card",
-    value: "~$500", portal: "+$100 via GCR",
-    badge: "Best No-Fee-Alt", badgeClass: "badge-blue",
-    href: "/cards/amex-cobalt",
-  },
-  {
-    src: "/cards/scotia-gold-amex.png", alt: "Scotia Gold Amex",
-    issuer: "Scotiabank",               name: "Gold American Express",
-    value: "~$885", portal: "+$150 via GCR",
-    badge: "Best Portal Bonus", badgeClass: "badge-green",
-    href: "/cards/scotia-amex-gold",
-  },
-];
+const FEATURED_CARD_IDS = ["amex-plat", "amex-cobalt", "scotia-amex-gold"];
+const FEATURED_CARD_BADGES: Record<string, { label: string; cls: string }> = {
+  "amex-plat":        { label: "Best Overall",    cls: "badge-amber" },
+  "amex-cobalt":      { label: "Best No-Fee-Alt", cls: "badge-blue"  },
+  "scotia-amex-gold": { label: "Best Portal Bonus", cls: "badge-green" },
+};
+const FEATURED_CARDS = FEATURED_CARD_IDS.map(id => {
+  const card = cards.find(c => c.id === id)!;
+  const bestPortal = card.portals[0];
+  const badge = FEATURED_CARD_BADGES[id];
+  return {
+    src: card.image,
+    alt: card.name,
+    issuer: card.issuer,
+    name: card.name,
+    value: card.firstYearValue,
+    portal: bestPortal ? `+$${bestPortal.bonus} via ${bestPortal.name}` : "Direct apply",
+    badge: badge.label,
+    badgeClass: badge.cls,
+    href: `/cards/${card.id}`,
+  };
+});
 
 
 const HOW_IT_WORKS_STEPS = [
@@ -40,7 +53,7 @@ const HOW_IT_WORKS_STEPS = [
       </svg>
     ),
     title: "Find the best card",
-    body: "Browse 75+ Canadian credit cards filtered by program, issuer, annual fee, and first-year value. We show the math up front.",
+    body: "Browse 155+ Canadian credit cards filtered by program, issuer, annual fee, and first-year value. We show the math up front.",
   },
   {
     number: "02",
@@ -124,11 +137,12 @@ const TRACKER_FEATURES = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: "#ffffff", color: "#0f172a" }}>
+      <QuizModal />
       <Navbar />
 
       {/* ── Hero ── */}
       <section style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0", overflow: "hidden" }}>
-        <div className="max-w-7xl mx-auto px-6 py-20 lg:py-28">
+        <div className="max-w-7xl mx-auto px-6 py-10 lg:py-28">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: copy */}
             <div>
@@ -140,22 +154,20 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-xl leading-relaxed mb-10 max-w-2xl" style={{ color: "#475569" }}>
-                Compare 75+ Canadian credit cards by first-year value, find the best rebate portal for each one, and track your welcome bonuses — all in one place.
+                Compare 155+ Canadian credit cards by first-year value, find the best rebate portal for each one, and track your welcome bonuses — all in one place.
               </p>
 
               <div className="flex flex-wrap gap-3 mb-16">
-                <Link href="/cards" className="btn-primary text-sm px-6 py-3">
-                  Browse all cards →
-                </Link>
-                <Link href="/auth" className="btn-secondary text-sm px-6 py-3">
-                  Track my cards free
+                <FindMyCardButton />
+                <Link href="/cards" className="btn-secondary text-sm px-6 py-3">
+                  Browse all cards
                 </Link>
               </div>
 
               {/* Stats row */}
               <div className="flex flex-wrap gap-8">
                 {[
-                  { value: "75+",    label: "Cards indexed" },
+                  { value: "155+",   label: "Cards indexed" },
                   { value: "4",      label: "Portals compared" },
                   { value: "$1,800", label: "Top first-year value" },
                   { value: "Free",   label: "No account required to browse" },
@@ -252,7 +264,7 @@ export default function LandingPage() {
                 Welcome bonuses are the biggest single-hit reward in personal finance. Stack a rebate portal on top and you&apos;re collecting cash from two sources at once.
               </p>
               <p className="leading-relaxed mb-8" style={{ color: "#64748b" }}>
-                Most Canadians leave this on the table because nobody showed them the math. AFK Wallet makes it visible before you apply.
+                Most Canadians leave this on the table because nobody showed them the math. PointsBinder makes it visible before you apply.
               </p>
               <Link href="/cards" className="btn-primary inline-block text-sm px-6 py-3">
                 Browse all deals →
@@ -296,7 +308,7 @@ export default function LandingPage() {
               <h2 className="text-3xl font-bold tracking-tight" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>Best cards right now</h2>
             </div>
             <Link href="/cards" className="text-sm font-semibold hidden sm:block" style={{ color: "#2563eb" }}>
-              View all 75+ cards →
+              View all 155+ cards →
             </Link>
           </div>
 
@@ -340,7 +352,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-6 text-center sm:hidden">
-            <Link href="/cards" className="text-sm font-semibold" style={{ color: "#2563eb" }}>View all 75+ cards →</Link>
+            <Link href="/cards" className="text-sm font-semibold" style={{ color: "#2563eb" }}>View all 155+ cards →</Link>
           </div>
         </div>
       </section>
@@ -358,7 +370,7 @@ export default function LandingPage() {
                 Miss your MSR deadline and you lose the welcome bonus entirely. Forget to cancel before your annual fee and you&apos;re paying $120–$799 for nothing.
               </p>
               <p className="leading-relaxed mb-8" style={{ color: "#64748b" }}>
-                AFK Wallet tracks every active deal — spend progress, fee dates, cancel windows — so every dollar gets captured.
+                PointsBinder tracks every active deal — spend progress, fee dates, cancel windows — so every dollar gets captured.
               </p>
               <Link href="/auth" className="btn-primary inline-block text-sm px-6 py-3">
                 Start tracking free →
@@ -423,7 +435,7 @@ export default function LandingPage() {
             Start earning more on every card.
           </h2>
           <p className="text-lg mb-10" style={{ color: "#94a3b8" }}>
-            Browse 75+ Canadian cards, compare portals, and track every deal — free, forever.
+            Browse 155+ Canadian cards, compare portals, and track every deal — free, forever.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/auth"  className="btn-primary text-sm px-7 py-3.5">Create your free account →</Link>
@@ -446,9 +458,9 @@ export default function LandingPage() {
               className="w-6 h-6 flex items-center justify-center rounded-md text-white text-xs font-bold"
               style={{ background: "#2563eb" }}
             >
-              A
+              P
             </div>
-            <span className="font-semibold text-sm" style={{ color: "#f1f5f9" }}>AFK Wallet</span>
+            <span className="font-semibold text-sm" style={{ color: "#f1f5f9" }}>PointsBinder</span>
           </div>
 
           <div className="flex gap-6 text-sm">

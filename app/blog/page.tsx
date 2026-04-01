@@ -9,14 +9,14 @@ export const metadata: Metadata = {
   keywords: ["credit card churning Canada guide", "Aeroplan strategy", "rebate portal Canada", "best credit card bonus guide"],
   alternates: { canonical: "/blog" },
   openGraph: {
-    title: "Blog — Credit Card Guides | AFK Wallet",
+    title: "Blog — Credit Card Guides | PointsBinder",
     description: "Guides and strategy for Canadian credit card rewards.",
     url: "/blog",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog | AFK Wallet",
+    title: "Blog | PointsBinder",
     description: "Guides and strategy for Canadian credit card rewards.",
   },
 };

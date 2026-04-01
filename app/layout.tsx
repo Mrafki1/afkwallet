@@ -15,22 +15,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ChurnCA — Best Canadian Credit Card Offers",
-    template: "%s | ChurnCA",
+    default: "PointsBinder — Best Canadian Credit Card Offers",
+    template: "%s | PointsBinder",
   },
   description: "Find the best Canadian credit card welcome bonuses, compare first-year value, and apply via cash back portals for extra rewards. Updated regularly.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://churning-site.vercel.app"),
   keywords: ["Canadian credit cards", "credit card churning Canada", "best credit card Canada", "welcome bonus Canada", "rebate portal", "Aeroplan credit card", "Amex Canada", "first year free credit card"],
   robots: { index: true, follow: true },
   openGraph: {
-    siteName: "ChurnCA",
+    siteName: "PointsBinder",
     type: "website",
     locale: "en_CA",
     description: "Find the best Canadian credit card welcome bonuses, compare first-year value, and apply via cash back portals for extra rewards.",
   },
   twitter: {
     card: "summary_large_image",
-    site: "@ChurnCA",
+    site: "@PointsBinder",
     description: "Find the best Canadian credit card welcome bonuses and apply via cash back portals.",
   },
 };
