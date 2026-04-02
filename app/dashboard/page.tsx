@@ -23,12 +23,22 @@ type DbCard = {
   name: string;
   issuer: string;
   msr: string | null;
+  image: string | null;
 };
 
 function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null;
   const diff = new Date(dateStr).getTime() - new Date().setHours(0, 0, 0, 0);
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function spendVelocity(uc: { msr_amount: number; msr_spent: number; msr_deadline: string | null }): string | null {
+  const remaining = uc.msr_amount - uc.msr_spent;
+  if (remaining <= 0 || !uc.msr_deadline) return null;
+  const days = daysUntil(uc.msr_deadline);
+  if (!days || days <= 0) return null;
+  const perDay = Math.ceil(remaining / days);
+  return `$${perDay.toLocaleString()}/day needed`;
 }
 
 function formatDate(dateStr: string | null): string {
@@ -282,7 +292,7 @@ function DashboardInner() {
       setUserEmail(user.email ?? "");
       const [{ data: ucData }, { data: cardData }] = await Promise.all([
         supabase.from("user_cards").select("*").order("apply_date", { ascending: false }),
-        supabase.from("cards").select("id, name, issuer, msr").eq("status", "published").order("name"),
+        supabase.from("cards").select("id, name, issuer, msr, image").eq("status", "published").order("name"),
       ]);
       setUserCards(ucData ?? []);
       setDbCards(cardData ?? []);
@@ -495,9 +505,36 @@ function DashboardInner() {
               </Link>
             </div>
           </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {userCards.map(uc => {
+        ) : (() => {
+          // Group cards: needs attention → active MSR → completed
+          const urgent      = userCards.filter(uc => {
+            const msrD = daysUntil(uc.msr_deadline);
+            const feeD = daysUntil(uc.annual_fee_date);
+            const msrDone = uc.msr_amount > 0 && uc.msr_spent >= uc.msr_amount;
+            return (!msrDone && msrD !== null && msrD <= 30) || (feeD !== null && feeD <= 60);
+          });
+          const active      = userCards.filter(uc => {
+            const msrDone = uc.msr_amount > 0 && uc.msr_spent >= uc.msr_amount;
+            return !msrDone && !urgent.includes(uc);
+          });
+          const completed   = userCards.filter(uc => {
+            const msrDone = uc.msr_amount === 0 || uc.msr_spent >= uc.msr_amount;
+            return msrDone && !urgent.includes(uc);
+          });
+
+          const groups = [
+            { label: "Needs Attention", cards: urgent,    color: "#b91c1c" },
+            { label: "Active",          cards: active,    color: "#2563eb" },
+            { label: "Completed",       cards: completed, color: "#16a34a" },
+          ].filter(g => g.cards.length > 0);
+
+          return (
+          <div className="flex flex-col gap-8">
+            {groups.map(group => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: group.color }}>{group.label}</p>
+                <div className="flex flex-col gap-4">
+            {group.cards.map(uc => {
               const msrDays    = daysUntil(uc.msr_deadline);
               const feeDays    = daysUntil(uc.annual_fee_date);
               const cancelDate = uc.annual_fee_date
@@ -505,15 +542,34 @@ function DashboardInner() {
                 : null;
               const cancelDays = daysUntil(cancelDate);
               const msrDone    = uc.msr_amount > 0 && uc.msr_spent >= uc.msr_amount;
+              const velocity   = spendVelocity(uc);
+              const dbCard     = dbCards.find(c => c.id === uc.card_id);
+              const cardImage  = dbCard?.image ?? null;
               return (
                 <div key={uc.id} className="rounded-2xl p-6" style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                  <div className="mb-4">
-                    <h2 className="font-bold text-lg leading-tight" style={{ color: "#0f172a" }}>{uc.card_name}</h2>
-                    <p className="text-xs mt-0.5 mb-2" style={{ color: "#94a3b8" }}>Applied {formatDate(uc.apply_date)}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {msrDays !== null && !msrDone && <StatusBadge days={msrDays} label="MSR deadline" />}
-                      {cancelDays !== null && <StatusBadge days={cancelDays} label="Cancel window" />}
-                      {feeDays !== null && <StatusBadge days={feeDays} label="Annual fee" />}
+                  <div className="flex gap-4 mb-4">
+                    {/* Card image */}
+                    {cardImage && (
+                      <div className="shrink-0 w-20 h-[50px] rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <img src={cardImage} alt={uc.card_name} className="w-full h-full object-contain p-1" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h2 className="font-bold text-lg leading-tight" style={{ color: "#0f172a" }}>{uc.card_name}</h2>
+                        {uc.card_id && (
+                          <Link href={`/cards/${uc.card_id}`} className="text-xs font-medium shrink-0 hover:underline" style={{ color: "#2563eb" }}>
+                            View card →
+                          </Link>
+                        )}
+                      </div>
+                      <p className="text-xs mt-0.5 mb-2" style={{ color: "#94a3b8" }}>Applied {formatDate(uc.apply_date)}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {msrDays !== null && !msrDone && <StatusBadge days={msrDays} label="MSR deadline" />}
+                        {cancelDays !== null && <StatusBadge days={cancelDays} label="Cancel window" />}
+                        {feeDays !== null && <StatusBadge days={feeDays} label="Annual fee" />}
+                        {velocity && <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }}>{velocity}</span>}
+                      </div>
                     </div>
                   </div>
 
@@ -615,8 +671,12 @@ function DashboardInner() {
                 </div>
               );
             })}
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Add / Edit modal */}
