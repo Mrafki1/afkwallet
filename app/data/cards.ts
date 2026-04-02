@@ -41,7 +41,7 @@ const FF  = (bonus: number, path = ""): Portal => ({ name: "FF",  bonus, url: pa
 const CCG = (bonus: number, path = ""): Portal => ({ name: "CCG", bonus, url: path ? `https://www.creditcardgenius.ca${path}` : "https://www.creditcardgenius.ca" });
 const FW  = (bonus: number, path = ""): Portal => ({ name: "FW",  bonus, url: path ? `https://finlywealth.com${path}` : "https://finlywealth.com" });
 
-export const cards: Card[
+export const cards: Card[] = [
   {
     id: "amex-biz-plat",
     name: "Amex Business Platinum",
