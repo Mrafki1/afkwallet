@@ -215,10 +215,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                 href={bestPortal ? bestPortal.url : card.directLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-sm"
-                style={{ background: "#2563eb" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = "#1d4ed8"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = "#2563eb"; }}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-sm"
               >
                 {bestPortal ? `Apply via ${bestPortal.name} (+$${bestPortal.bonus})` : "Apply Now"}
               </a>
