@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCard, getCards, getLastVerified } from "../../lib/cards-db";
+import { getCard, getCards, getLastVerified, getBonusHistory } from "../../lib/cards-db";
 import AlertSubscribe from "./AlertSubscribe";
 import CardImage from "./CardImage";
 import TrackButton from "./TrackButton";
@@ -50,7 +50,10 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const card = await getCard(id);
   if (!card) notFound();
-  const CARDS_LAST_VERIFIED = await getLastVerified();
+  const [CARDS_LAST_VERIFIED, bonusHistory] = await Promise.all([
+    getLastVerified(),
+    getBonusHistory(id),
+  ]);
 
   const sortedPortals = [...card.portals].sort((a, b) => b.bonus - a.bonus);
   const bestPortal = sortedPortals[0] ?? null;
@@ -313,6 +316,29 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
               <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
                 <h2 className="font-bold text-gray-900 text-lg mb-3">Lounge access</h2>
                 <p className="text-sm text-gray-700 leading-relaxed">{card.loungeDetails}</p>
+              </div>
+            )}
+
+            {/* Bonus history */}
+            {bonusHistory.length > 1 && (
+              <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                <h2 className="font-bold text-gray-900 text-lg mb-1">Bonus history</h2>
+                <p className="text-xs text-gray-400 mb-4">Historical welcome bonuses recorded by PointsBinder</p>
+                <div className="flex flex-col gap-2">
+                  {bonusHistory.map((entry, i) => (
+                    <div key={i} className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl ${i === 0 ? "bg-blue-50 border border-blue-100" : "bg-gray-50"}`}>
+                      <div>
+                        <p className={`text-sm font-bold ${i === 0 ? "text-blue-700" : "text-gray-700"}`}>{entry.points_bonus}</p>
+                        {entry.note && entry.note !== "Baseline — initial record" && (
+                          <p className="text-xs text-amber-600 mt-0.5">{entry.note}</p>
+                        )}
+                      </div>
+                      <span className={`text-xs shrink-0 ${i === 0 ? "text-blue-500" : "text-gray-400"}`}>
+                        {i === 0 ? "Current" : new Date(entry.recorded_at).toLocaleDateString("en-CA", { year: "numeric", month: "short" })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

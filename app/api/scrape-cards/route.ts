@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chromium } from "playwright-core";
 import chromiumBin from "@sparticuz/chromium";
-import { upsertCards } from "../../lib/cards-db";
+import { upsertCards, getCards, recordBonusHistory } from "../../lib/cards-db";
 import type { Card } from "../../data/cards";
 
 export const maxDuration = 300; // 5 minutes (Vercel Pro max)
@@ -231,6 +231,10 @@ export async function POST(req: NextRequest) {
   const startedAt = new Date().toISOString();
 
   try {
+    // Snapshot existing bonuses before scraping so we can detect changes
+    const existing = await getCards();
+    const existingBonuses = new Map(existing.map(c => [c.id, c.pointsBonus]));
+
     const cards = await scrapeAllCards();
 
     if (cards.length === 0) {
@@ -239,10 +243,24 @@ export async function POST(req: NextRequest) {
 
     const { inserted } = await upsertCards(cards);
 
+    // Record bonus history for any card whose bonus changed (or is new)
+    let historyLogged = 0;
+    for (const card of cards) {
+      const prev = existingBonuses.get(card.id);
+      const changed = prev !== undefined && prev !== card.pointsBonus;
+      const isNew   = prev === undefined;
+      if (changed || isNew) {
+        const note = changed ? `Changed from: ${prev}` : "First recorded";
+        await recordBonusHistory(card.id, card.pointsBonus, note);
+        historyLogged++;
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       scraped: cards.length,
       upserted: inserted,
+      historyLogged,
       startedAt,
       completedAt: new Date().toISOString(),
     });

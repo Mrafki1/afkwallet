@@ -174,6 +174,39 @@ export async function upsertCards(
   return { inserted, updated };
 }
 
+// ── Bonus history ─────────────────────────────────────────────────────────────
+
+export type BonusHistoryEntry = {
+  points_bonus: string;
+  recorded_at: string;
+  note: string | null;
+};
+
+export async function getBonusHistory(cardId: string): Promise<BonusHistoryEntry[]> {
+  const supabase = getServiceClient();
+  const { data, error } = await supabase
+    .from("bonus_history")
+    .select("points_bonus, recorded_at, note")
+    .eq("card_id", cardId)
+    .order("recorded_at", { ascending: false })
+    .limit(20);
+  if (error) return [];
+  return data ?? [];
+}
+
+export async function recordBonusHistory(
+  cardId: string,
+  pointsBonus: string,
+  note?: string
+): Promise<void> {
+  const supabase = getServiceClient();
+  const today = new Date().toISOString().split("T")[0];
+  await supabase.from("bonus_history").upsert(
+    { card_id: cardId, points_bonus: pointsBonus, recorded_at: today, note: note ?? null },
+    { onConflict: "card_id,recorded_at" }
+  );
+}
+
 export async function getCardsCount(): Promise<number> {
   const supabase = getServiceClient();
   const { count } = await supabase
