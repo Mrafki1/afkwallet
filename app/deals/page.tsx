@@ -165,7 +165,7 @@ export default async function DealsPage() {
         <div className="mt-16 card p-8 text-center" style={{ borderRadius: 16 }}>
           <h3 className="text-xl font-bold mb-2 tracking-tight" style={{ color: "#0f172a", letterSpacing: "-0.01em" }}>Not seeing what you need?</h3>
           <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "#64748b" }}>
-            Browse all 75+ Canadian cards — filtered by program, fee, issuer, or first-year bonus.
+            Browse all 155+ Canadian cards — filtered by program, fee, issuer, or first-year bonus.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/cards" className="btn-primary text-sm px-6 py-3">Browse all cards →</Link>
