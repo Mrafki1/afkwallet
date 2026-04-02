@@ -53,7 +53,7 @@ const HOW_IT_WORKS_STEPS = [
       </svg>
     ),
     title: "Find the best card",
-    body: "Browse 155+ Canadian credit cards filtered by program, issuer, annual fee, and first-year value. We show the math up front.",
+    body: "Browse 155+ Canadian credit cards filtered by program, issuer, annual fee, and first-year bonus. We show the math up front.",
   },
   {
     number: "02",
@@ -114,7 +114,7 @@ const TRACKER_FEATURES = [
   },
   {
     title: "Card Collection",
-    desc: "Your full card inventory with status, annual fee dates, and first-year value.",
+    desc: "Your full card inventory with status, annual fee dates, and first-year bonus.",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
@@ -154,7 +154,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-xl leading-relaxed mb-10 max-w-2xl" style={{ color: "#475569" }}>
-                Compare 155+ Canadian credit cards by first-year value, find the best rebate portal for each one, and track your welcome bonuses — all in one place.
+                Compare 155+ Canadian credit cards by first-year bonus, find the best rebate portal for each one, and track your welcome bonuses — all in one place.
               </p>
 
               <div className="flex flex-wrap gap-3 mb-16">
@@ -169,7 +169,7 @@ export default function LandingPage() {
                 {[
                   { value: "155+",   label: "Cards indexed" },
                   { value: "4",      label: "Portals compared" },
-                  { value: "$1,800", label: "Top first-year value" },
+                  { value: "$1,800", label: "Top first-year bonus" },
                   { value: "Free",   label: "No account required to browse" },
                 ].map(s => (
                   <div key={s.label}>
@@ -203,7 +203,7 @@ export default function LandingPage() {
                   className="absolute bottom-4 left-4 right-4 rounded-xl px-4 py-2.5 flex items-center justify-between"
                   style={{ background: "rgba(15,23,42,0.85)", backdropFilter: "blur(8px)" }}
                 >
-                  <span className="text-xs font-semibold" style={{ color: "#94a3b8" }}>1st Year Value</span>
+                  <span className="text-xs font-semibold" style={{ color: "#94a3b8" }}>First Year Bonus</span>
                   <span className="text-sm font-bold" style={{ color: "#4ade80" }}>~$1,800</span>
                 </div>
               </div>
@@ -251,12 +251,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── First Year Value ── */}
+      {/* ── First Year Bonus ── */}
       <section style={{ background: "#ffffff", borderBottom: "1px solid #e2e8f0" }}>
         <div className="max-w-7xl mx-auto px-6 py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="section-label mb-3">First Year Value</p>
+              <p className="section-label mb-3">First Year Bonus</p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>
                 One card.<br />$1,326 net value.
               </h2>
@@ -334,7 +334,7 @@ export default function LandingPage() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-lg p-3" style={{ background: "#f0fdf4" }}>
-                      <p className="text-xs font-medium mb-0.5" style={{ color: "#64748b" }}>1st Year Value</p>
+                      <p className="text-xs font-medium mb-0.5" style={{ color: "#64748b" }}>First Year Bonus</p>
                       <p className="font-bold text-sm" style={{ color: "#15803d" }}>{card.value}</p>
                     </div>
                     <div className="rounded-lg p-3" style={{ background: "#eff6ff" }}>

@@ -43,7 +43,7 @@ function Tooltip({ text, children }: { text: string; children: React.ReactNode }
 
 // ─── Tooltips ─────────────────────────────────────────────────────────────────
 const TOOLTIPS = {
-  firstYearValue: "Total estimated value in year one — welcome bonus + portal cash back minus the annual fee. Lets you compare cards on a level playing field.",
+  firstYearValue: "Total estimated bonus in year one — welcome bonus + portal cash back minus the annual fee. Lets you compare the welcome bonus for various cards.",
   welcomeBonus: "Points or cash back you earn after hitting the minimum spend. This is the main reason to apply for a new card. Higher is better.",
   annualFee: "Yearly fee charged by the card issuer. 'FYF' = First Year Free — the fee is waived for your first 12 months.",
   msr: "Minimum Spend Requirement — the total you need to charge to the card (usually within 3 months) to unlock the full welcome bonus.",
@@ -210,7 +210,7 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl p-2" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
             <p className="text-xs mb-0.5 leading-tight flex justify-center" style={{ color: "#94a3b8" }}>
-              <Tooltip text={TOOLTIPS.firstYearValue}>1st Year Value <span className="ml-0.5 text-[10px]">ⓘ</span></Tooltip>
+              <Tooltip text={TOOLTIPS.firstYearValue}>First Year Bonus <span className="ml-0.5 text-[10px]">ⓘ</span></Tooltip>
             </p>
             <p className="font-bold text-sm" style={{ color: "#2563eb" }}>{effectiveFYV(card)}</p>
           </div>
@@ -374,7 +374,7 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
           <tr>
             <th className="px-3 py-3 w-10 text-center text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>Compare</th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>Card</th>
-            <Th col="value"  label="1st Yr Value"  tooltip={TOOLTIPS.firstYearValue} />
+            <Th col="value"  label="1st Yr Bonus"  tooltip={TOOLTIPS.firstYearValue} />
             <Th col="fee"    label="Annual Fee"    tooltip={TOOLTIPS.annualFee} />
             <Th col="msr"    label="Min. Spend"    tooltip={TOOLTIPS.msr} extraClass="hidden sm:table-cell" />
             <Th col="roi"    label="Value/MSR"     tooltip={TOOLTIPS.roi} extraClass="hidden sm:table-cell" />
@@ -531,7 +531,7 @@ function CompareModal({ ids, onClose, allCards }: { ids: string[]; onClose: () =
         </div>
       ),
     },
-    { label: "1st Year Value", tooltip: TOOLTIPS.firstYearValue, render: c => <span className="font-black text-xl" style={{ color: "#2563eb" }}>{effectiveFYV(c)}</span> },
+    { label: "First Year Bonus", tooltip: TOOLTIPS.firstYearValue, render: c => <span className="font-black text-xl" style={{ color: "#2563eb" }}>{effectiveFYV(c)}</span> },
     { label: "Welcome Bonus",  tooltip: TOOLTIPS.welcomeBonus,  render: c => <span className="font-semibold text-sm" style={{ color: "#0f172a" }}>{c.pointsBonus}</span> },
     { label: "Annual Fee",     tooltip: TOOLTIPS.annualFee,     render: c => <span className="font-bold text-lg" style={{ color: c.annualFeeNum === 0 ? "#16a34a" : "#0f172a" }}>{c.annualFee}</span> },
     { label: "Min. Spend",     tooltip: TOOLTIPS.msr,           render: c => <span className="text-sm" style={{ color: "#64748b" }}>{c.msr}</span> },
@@ -844,7 +844,7 @@ export default function CardsPage() {
             Canadian Credit Cards
           </h1>
           <p className="text-sm" style={{ color: "#64748b" }}>
-            75+ cards sorted by first-year value. Apply via rebate portals to earn extra cash back on top of your welcome bonus.
+            75+ cards sorted by first-year bonus. Apply via rebate portals to earn extra cash back on top of your welcome bonus.
           </p>
         </div>
 

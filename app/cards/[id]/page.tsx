@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const card = await getCard(id);
   if (!card) return {};
-  const description = `${card.pointsBonus} welcome bonus. ${card.firstYearValue} first-year value. ${card.annualFee} annual fee. Compare rebate portals and apply via the highest payout.`;
+  const description = `${card.pointsBonus} welcome bonus. ${card.firstYearValue} first-year bonus. ${card.annualFee} annual fee. Compare rebate portals and apply via the highest payout.`;
   return {
     title: `${card.name} Review 2025`,
     description,
@@ -155,7 +155,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
             {/* Key stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-2xl p-4 text-center" style={{ background: "#eff6ff" }}>
-                <p className="text-xs font-medium mb-1" style={{ color: "#93c5fd" }}>1st Year Value</p>
+                <p className="text-xs font-medium mb-1" style={{ color: "#93c5fd" }}>First Year Bonus</p>
                 <p className="font-black text-xl" style={{ color: "#2563eb" }}>{effectiveFYV}</p>
               </div>
               <div className="bg-gray-50 rounded-2xl p-4 text-center">

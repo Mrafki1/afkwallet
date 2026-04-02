@@ -115,7 +115,7 @@ export const cards: Card[] = [
     firstYearValue: "~$500",
     pointsBonus: "up to 30,000 MR",
     msr: "$750/mo",
-    portals: [GCR(100, "/details/Amex-Cobalt/")],
+    portals: [GCR(150, "/details/Amex-Cobalt/")],
     directLink: "https://www.americanexpress.com/en-ca/credit-cards/cobalt-card",
     program: "Membership Rewards",
     tags: ["Transfer Partners"],

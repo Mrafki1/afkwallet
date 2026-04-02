@@ -97,7 +97,7 @@ export default async function DealsPage() {
                     {/* Stats */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {[
-                        { label: "1st Year Value", value: (() => { const base = parseInt(card.firstYearValue.replace(/[^0-9]/g, "")) || 0; const bonus = [...card.portals].sort((a, b) => b.bonus - a.bonus)[0]?.bonus ?? 0; return (!base || !bonus) ? card.firstYearValue : `~$${(base + bonus).toLocaleString()}`; })(), highlight: true },
+                        { label: "First Year Bonus", value: (() => { const base = parseInt(card.firstYearValue.replace(/[^0-9]/g, "")) || 0; const bonus = [...card.portals].sort((a, b) => b.bonus - a.bonus)[0]?.bonus ?? 0; return (!base || !bonus) ? card.firstYearValue : `~$${(base + bonus).toLocaleString()}`; })(), highlight: true },
                         { label: "Welcome Bonus",  value: card.pointsBonus,   highlight: false },
                         { label: "Annual Fee",      value: card.annualFee,     highlight: false },
                         { label: "MSR",             value: card.msr,           highlight: false },
@@ -154,7 +154,7 @@ export default async function DealsPage() {
               {/* Editor pick */}
               {i === 0 && (
                 <div style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }} className="px-6 py-3">
-                  <p className="text-xs font-medium" style={{ color: "#16a34a" }}>⭐ Editor&apos;s pick — highest first-year value of any current elevated offer</p>
+                  <p className="text-xs font-medium" style={{ color: "#16a34a" }}>⭐ Editor&apos;s pick — highest first-year bonus of any current elevated offer</p>
                 </div>
               )}
             </div>
@@ -165,7 +165,7 @@ export default async function DealsPage() {
         <div className="mt-16 card p-8 text-center" style={{ borderRadius: 16 }}>
           <h3 className="text-xl font-bold mb-2 tracking-tight" style={{ color: "#0f172a", letterSpacing: "-0.01em" }}>Not seeing what you need?</h3>
           <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: "#64748b" }}>
-            Browse all 75+ Canadian cards — filtered by program, fee, issuer, or first-year value.
+            Browse all 75+ Canadian cards — filtered by program, fee, issuer, or first-year bonus.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/cards" className="btn-primary text-sm px-6 py-3">Browse all cards →</Link>
