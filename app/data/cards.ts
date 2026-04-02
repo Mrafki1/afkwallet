@@ -41,7 +41,7 @@ const FF  = (bonus: number, path = ""): Portal => ({ name: "FF",  bonus, url: pa
 const CCG = (bonus: number, path = ""): Portal => ({ name: "CCG", bonus, url: path ? `https://www.creditcardgenius.ca${path}` : "https://www.creditcardgenius.ca" });
 const FW  = (bonus: number, path = ""): Portal => ({ name: "FW",  bonus, url: path ? `https://finlywealth.com${path}` : "https://finlywealth.com" });
 
-export const cards: Card[] = [
+export const cards: Card[
   {
     id: "amex-biz-plat",
     name: "Amex Business Platinum",
@@ -440,36 +440,6 @@ export const cards: Card[] = [
     pointsValue: "1–4% cash back rate",
   },
   {
-    id: "mbna-rewards-we",
-    name: "MBNA Rewards World Elite MC",
-    issuer: "MBNA / TD",
-    annualFee: "$120",
-    annualFeeNum: 120,
-    firstYearValue: "$400",
-    pointsBonus: "30,000 pts",
-    msr: "$2,000",
-    portals: [FF(125, "/credit-card/mbna-rewards-world-elite/"), CCG(100, "/credit-cards/mbna-rewards-world-elite-mastercard"), GCR(100, "/details/MBNA-Rewards-World-Elite/")],
-    directLink: "https://www.mbna.ca/en/credit-cards/rewards/world-elite-mastercard.html",
-    program: "MBNA Rewards",
-    tags: ["Transfer Partners"],
-    rewards: [
-      { multiplier: "5x", category: "restaurant & grocery" },
-      { multiplier: "5x", category: "digital media" },
-      { multiplier: "1x", category: "everywhere else" },
-    ],
-    featured: false,
-    image: "/cards/mbna-rewards-we.png",
-    gradient: "from-slate-600 to-slate-900",
-    network: "Mastercard",
-    foreignFee: "2.5%",
-    incomeReq: "$80,000 personal or $150,000 household",
-    insurance: ["Travel Medical ($2M)", "Trip Cancellation", "Trip Interruption", "Baggage Delay", "Purchase Protection", "Extended Warranty", "Rental Car"],
-    transferPartners: ["Aeroplan", "WestJet Dollars", "Alaska Mileage Plan", "American AAdvantage", "Asia Miles", "Flying Blue (Air France/KLM)", "United MileagePlus"],
-    loungeDetails: "No lounge access",
-    perks: ["Mastercard World Elite concierge", "Boingo Wi-Fi access worldwide"],
-    pointsValue: "~0.5–1.5¢/pt depending on redemption",
-  },
-  {
     id: "rbc-avion-plat",
     name: "RBC Avion Visa Platinum",
     issuer: "RBC",
@@ -729,7 +699,6 @@ export const cards: Card[] = [
     perks: ["Cash back redeemable anytime with no minimum", "Visa Infinite concierge"],
     pointsValue: "1–3% cash back rate",
   },
-  // ── TD Aeroplan ──────────────────────────────────────────────────────────
   {
     id: "td-aeroplan-vi",
     name: "TD Aeroplan Visa Infinite",
@@ -802,7 +771,6 @@ export const cards: Card[] = [
       { points: "NEXUS rebate (up to $100 CAD)", condition: "Apply for NEXUS program", note: "Once every 48 months" },
     ],
   },
-  // ── CIBC Aeroplan ─────────────────────────────────────────────────────────
   {
     id: "cibc-aeroplan-vi",
     name: "CIBC Aeroplan Visa Infinite",
@@ -863,7 +831,6 @@ export const cards: Card[] = [
     perks: ["NEXUS fee credit", "Free checked bags (cardholder + companions)", "Priority services on Air Canada", "Aeroplan Super Elite status boost"],
     pointsValue: "~1.5¢/pt average via Aeroplan",
   },
-  // ── BMO ───────────────────────────────────────────────────────────────────
   {
     id: "bmo-cashback-we",
     name: "BMO CashBack World Elite MC",
@@ -925,7 +892,6 @@ export const cards: Card[] = [
     perks: ["$50 anniversary lifestyle credit", "Add an authorized user free to boost points earning"],
     pointsValue: "~0.67¢/pt via BMO travel portal",
   },
-  // ── RBC ───────────────────────────────────────────────────────────────────
   {
     id: "rbc-avion-vi-privilege",
     name: "RBC Avion Visa Infinite Privilege",
@@ -981,7 +947,6 @@ export const cards: Card[] = [
     perks: ["Low annual fee entry point into Avion ecosystem", "Student fee waiver with RBC student banking"],
     pointsValue: "~1¢/pt via Avion travel chart",
   },
-  // ── National Bank ─────────────────────────────────────────────────────────
   {
     id: "nbc-world-elite",
     name: "National Bank World Elite MC",
@@ -1012,7 +977,6 @@ export const cards: Card[] = [
     perks: ["$150 annual travel credit (seat selection, baggage fees, airport parking)", "Unlimited travel medical with no age cap — best in class for older travellers", "Cancel for any reason option available"],
     pointsValue: "~1¢/pt via À la carte travel portal",
   },
-  // ── No-fee cards ──────────────────────────────────────────────────────────
   {
     id: "tangerine-money-back",
     name: "Tangerine Money-Back MC",
@@ -1132,7 +1096,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "3% on all USD purchases — top choice for US spending", "2% unlimited on all CAD purchases"],
     pointsValue: "2–3% cash back rate",
   },
-  // ── Amex ─────────────────────────────────────────────────────────────────
   {
     id: "amex-simplycash-preferred",
     name: "Amex SimplyCash Preferred",
@@ -1221,7 +1184,6 @@ export const cards: Card[] = [
     perks: ["Best lounge access per dollar of any Canadian card", "Strong travel insurance package", "Desjardins concierge"],
     pointsValue: "~0.5–1¢/pt depending on redemption",
   },
-  // ── BMO Premium ───────────────────────────────────────────────────────────
   {
     id: "bmo-eclipse-vi-privilege",
     name: "BMO eclipse Visa Infinite Privilege",
@@ -1280,7 +1242,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Up to 5,000 bonus points/year for good financial habits", "Entry point into BMO Rewards ecosystem"],
     pointsValue: "~0.67¢/pt via BMO travel portal",
   },
-  // ── RBC British Airways ───────────────────────────────────────────────────
   {
     id: "rbc-british-airways-vi",
     name: "RBC British Airways Visa Infinite",
@@ -1311,7 +1272,6 @@ export const cards: Card[] = [
     perks: ["10% off British Airways flights booked with Avios", "Companion voucher after $30,000 annual spend", "DoorDash DashPass included", "Avios transfer to 40+ airlines"],
     pointsValue: "~1.5–2¢/Avio for premium cabin redemptions",
   },
-  // ── National Bank Platinum ────────────────────────────────────────────────
   {
     id: "nbc-platinum",
     name: "National Bank Platinum MC",
@@ -1342,7 +1302,6 @@ export const cards: Card[] = [
     perks: ["No income requirement", "Good mid-tier entry into National Bank rewards", "Mobile device insurance ($1,000 max)"],
     pointsValue: "~1¢/pt via À la carte travel portal",
   },
-  // ── Scotiabank Scene+ no-fee ──────────────────────────────────────────────
   {
     id: "scotia-scene-plus-visa",
     name: "Scotiabank Scene+ Visa",
@@ -1372,7 +1331,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Points never expire", "Entry point into Scene+ — stackable with Scene+ grocery promotions"],
     pointsValue: "~1¢/pt",
   },
-  // ── Specialty / No-FX cards ───────────────────────────────────────────────
   {
     id: "home-trust-preferred-visa",
     name: "Home Trust Preferred Visa",
@@ -1430,7 +1388,6 @@ export const cards: Card[] = [
     perks: ["No foreign transaction fees on all currencies", "2% flat rate everywhere — no category restrictions", "Partner bonuses at Nike, Indigo, Lululemon and more"],
     pointsValue: "1 pt = 1¢ (fixed cash value)",
   },
-  // ── Manulife ──────────────────────────────────────────────────────────────
   {
     id: "manulife-mymoney-vi",
     name: "Manulife Money+ Visa Infinite",
@@ -1461,7 +1418,6 @@ export const cards: Card[] = [
     perks: ["No foreign transaction fees", "Strong grocery earn rate", "Best value for Manulife banking clients"],
     pointsValue: "~1¢/pt",
   },
-  // ── Amex no-fee + Business ────────────────────────────────────────────────
   {
     id: "amex-simplycash",
     name: "Amex SimplyCash Card",
@@ -1549,7 +1505,6 @@ export const cards: Card[] = [
     perks: ["NEXUS application fee credit", "Free checked bag on Air Canada (cardholder + up to 8)", "Priority boarding & check-in", "Aeroplan status boost", "Business expense tracking"],
     pointsValue: "~1.5¢/pt average via Aeroplan",
   },
-  // ── BMO VIPorter ──────────────────────────────────────────────────────────
   {
     id: "bmo-viporter-we",
     name: "BMO VIPorter World Elite MC",
@@ -1582,38 +1537,6 @@ export const cards: Card[] = [
     perks: ["Annual companion pass (one free companion flight)", "Free first checked bag on Porter", "Best card for Eastern Canada travellers flying Porter"],
     pointsValue: "~1–1.5¢/pt on Porter flights",
   },
-  // ── BMO no-fee cash back ───────────────────────────────────────────────────
-  {
-    id: "bmo-cashback-mc",
-    name: "BMO CashBack Mastercard",
-    issuer: "BMO",
-    annualFee: "$0",
-    annualFeeNum: 0,
-    firstYearValue: "~$125",
-    pointsBonus: "$125 cash back",
-    msr: "$2,500 (3 mo)",
-    portals: [GCR(25, "/details/BMO-CashBack-Mastercard/"), CCG(25, "/credit-cards/bmo-cashback-mastercard")],
-    directLink: "https://www.bmo.com/en-ca/main/personal/credit-cards/bmo-cashback-mastercard",
-    program: "Cash Back",
-    tags: ["Cash Back", "No Annual Fee"],
-    rewards: [
-      { multiplier: "3%", category: "grocery" },
-      { multiplier: "1%", category: "recurring bills" },
-      { multiplier: "0.5%", category: "everywhere else" },
-    ],
-    featured: false,
-    image: "/cards/bmo-cashback-mc.webp",
-    gradient: "from-blue-500 to-blue-800",
-    network: "Mastercard",
-    foreignFee: "2.5%",
-    incomeReq: "None stated",
-    insurance: ["Purchase Protection", "Extended Warranty"],
-    transferPartners: ["Cash back — no transfer partners"],
-    loungeDetails: "No lounge access",
-    perks: ["No annual fee", "3% grocery — best no-fee grocery rate from BMO", "No income requirement"],
-    pointsValue: "0.5–3% cash back rate",
-  },
-  // ── CIBC Aeroplan no-fee + Business ───────────────────────────────────────
   {
     id: "cibc-aeroplan-no-fee",
     name: "CIBC Aeroplan Visa Card",
@@ -1702,7 +1625,6 @@ export const cards: Card[] = [
     perks: ["Free first checked bag on Air Canada", "Business expense management tools", "Up to 3 additional cardholders"],
     pointsValue: "~1.5¢/pt average via Aeroplan",
   },
-  // ── RBC no-fee + WestJet lower tier ───────────────────────────────────────
   {
     id: "rbc-ion-visa",
     name: "RBC ION Visa",
@@ -1791,38 +1713,6 @@ export const cards: Card[] = [
     perks: ["Annual companion round-trip voucher (from $119 CAD)", "Free first checked bag for cardholder", "Low fee entry into WestJet ecosystem"],
     pointsValue: "~1¢/WestJet Dollar (fixed cash value)",
   },
-  // ── TD no-fee + Business Aeroplan ─────────────────────────────────────────
-  {
-    id: "td-rewards-visa",
-    name: "TD Rewards Visa Card",
-    issuer: "TD",
-    annualFee: "$0",
-    annualFeeNum: 0,
-    firstYearValue: "~$75",
-    pointsBonus: "15,152 pts",
-    msr: "$500 (90 days)",
-    portals: [GCR(15), CCG(15, "/credit-cards/td-rewards-visa")],
-    directLink: "https://www.td.com/ca/en/personal-banking/products/credit-cards/travel/td-rewards-visa-card",
-    program: "TD Rewards",
-    tags: ["No Annual Fee"],
-    rewards: [
-      { multiplier: "4 pts/$1", category: "Expedia for TD" },
-      { multiplier: "3 pts/$1", category: "grocery, restaurants & transit" },
-      { multiplier: "2 pts/$1", category: "recurring bills & streaming" },
-      { multiplier: "1 pt/$1",  category: "everywhere else" },
-    ],
-    featured: false,
-    image: "/cards/td-rewards-visa.png",
-    gradient: "from-green-500 to-green-800",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "None stated",
-    insurance: ["Purchase Protection", "Extended Warranty"],
-    transferPartners: ["TD Rewards (best value via Expedia for TD)"],
-    loungeDetails: "No lounge access",
-    perks: ["No annual fee", "Strong grocery & dining earn for a no-fee card", "Entry point into TD Rewards ecosystem"],
-    pointsValue: "~0.5¢/pt via Expedia for TD",
-  },
   {
     id: "td-aeroplan-plat",
     name: "TD Aeroplan Visa Platinum",
@@ -1881,7 +1771,6 @@ export const cards: Card[] = [
     perks: ["First year fee waived ($149 value)", "Free first checked bag on Air Canada", "Up to 2 additional cardholders free first year", "Business expense tools"],
     pointsValue: "~1.5¢/pt average via Aeroplan",
   },
-  // ── Scotiabank Privilege + mid-tier ───────────────────────────────────────
   {
     id: "scotia-passport-vi-privilege",
     name: "Scotia Passport Visa Infinite Privilege",
@@ -1970,7 +1859,6 @@ export const cards: Card[] = [
     perks: ["No annual fee ever", "Good intro offer for a no-fee card", "6-month balance transfer promo often available"],
     pointsValue: "0.5–1% cash back rate",
   },
-  // ── Neo Cathay + MBNA Amazon ───────────────────────────────────────────────
   {
     id: "neo-cathay-world-elite",
     name: "Cathay World Elite MC (by Neo)",
@@ -2032,7 +1920,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Best card to use at Amazon.ca for Prime members", "Rewards applied directly at Amazon checkout — no redemption friction"],
     pointsValue: "1–2.5% cash back rate",
   },
-  // ── MBNA Smart Cash ───────────────────────────────────────────────────────
   {
     id: "mbna-smart-cash",
     name: "MBNA Smart Cash Platinum Plus MC",
@@ -2062,7 +1949,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Longest intro cash back period (6 months) of any no-fee Canadian card", "Steady 2% on gas & grocery ongoing"],
     pointsValue: "0.5–5% cash back (2% ongoing on gas/grocery)",
   },
-  // ── Tangerine World upgrade ────────────────────────────────────────────────
   {
     id: "tangerine-world-mc",
     name: "Tangerine World Mastercard",
@@ -2092,7 +1978,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Travel insurance included (unlike basic version)", "2 free lounge visits via Mastercard Travel Pass", "Mastercard World benefits"],
     pointsValue: "0.5–2% cash back rate",
   },
-  // ── Desjardins Odyssey VI Privilege ───────────────────────────────────────
   {
     id: "desjardins-odyssey-vi-privilege",
     name: "Desjardins Odyssey Visa Infinite Privilege",
@@ -2123,7 +2008,6 @@ export const cards: Card[] = [
     perks: ["No foreign transaction fees", "Unlimited lounge access globally", "Best-in-class earn rates for Desjardins members — Desjardins members pay only $295", "Comprehensive travel insurance"],
     pointsValue: "~1¢/BONUSDOLLAR",
   },
-  // ── Desjardins Cash Back WE ───────────────────────────────────────────────
   {
     id: "desjardins-cashback-we",
     name: "Desjardins Cash Back World Elite MC",
@@ -2155,7 +2039,6 @@ export const cards: Card[] = [
     perks: ["4% on grocery with no annual cap is best-in-class for cash back on groceries", "Strong restaurant earn rate", "Solid choice for Desjardins credit union members"],
     pointsValue: "1–4% cash back rate",
   },
-  // ── ATB (Alberta) ──────────────────────────────────────────────────────────
   {
     id: "atb-world-elite",
     name: "ATB World Elite Mastercard",
@@ -2186,7 +2069,6 @@ export const cards: Card[] = [
     perks: ["Only available to Alberta residents", "Best travel earn rate of any Alberta-issued card", "40,000 point signup bonus ($200 value)"],
     pointsValue: "~0.5¢/pt (200 pts = $1)",
   },
-  // ── Triangle World Elite ───────────────────────────────────────────────────
   {
     id: "triangle-world-elite",
     name: "Triangle World Elite Mastercard",
@@ -2217,7 +2099,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "3% on groceries (excluding Costco/Walmart) with no cap is excellent", "5¢/litre at Gas+ and Petro-Canada", "Best card for Canadian Tire store purchases"],
     pointsValue: "~1¢ per CT Money cent",
   },
-  // ── Rogers no-fee lower tier ──────────────────────────────────────────────
   {
     id: "rogers-red-mc",
     name: "Rogers Red Mastercard",
@@ -2247,7 +2128,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "No income requirement (unlike Rogers WE)", "2% on everything for Rogers/Fido/Shaw customers"],
     pointsValue: "1–2% cash back rate",
   },
-  // ── PC World MC (mid-tier) ────────────────────────────────────────────────
   {
     id: "pc-world-mc",
     name: "PC Financial World Mastercard",
@@ -2279,7 +2159,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "No income requirement (unlike PC World Elite)", "Good mid-tier for Loblaw shoppers who don't meet WE income threshold"],
     pointsValue: "~1¢ per 100 PC pts ($0.01 towards groceries)",
   },
-  // ── RBC additions ─────────────────────────────────────────────────────────
   {
     id: "rbc-cashback-mc",
     name: "RBC Cash Back Mastercard",
@@ -2373,40 +2252,6 @@ export const cards: Card[] = [
     ],
   },
   {
-    id: "rbc-cathay-pacific-vi",
-    name: "RBC Cathay Pacific Visa Infinite",
-    issuer: "RBC",
-    annualFee: "$120",
-    annualFeeNum: 120,
-    firstYearValue: "$400",
-    pointsBonus: "35,000 Asia Miles",
-    msr: "$2,000 (3 mo)",
-    portals: [],
-    directLink: "https://www.rbc.com/creditcards/cathay-pacific-visa-infinite.html",
-    program: "Asia Miles",
-    tags: ["Transfer Partners", "Travel"],
-    rewards: [
-      { multiplier: "3x", category: "Cathay Pacific purchases" },
-      { multiplier: "1.5x", category: "grocery, gas & drugstore" },
-      { multiplier: "1x", category: "everywhere else" },
-    ],
-    featured: false,
-    image: "/cards/rbc-cathay-pacific-vi.png",
-    gradient: "from-green-700 to-emerald-900",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "$60,000 personal or $100,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Trip Interruption", "Baggage Delay", "Lost Baggage", "Purchase Protection", "Extended Warranty"],
-    transferPartners: ["Cathay Pacific Asia Miles"],
-    loungeDetails: "No lounge access",
-    perks: ["Good for Cathay Pacific loyalists", "Asia Miles transfer to 30+ partner airlines"],
-    pointsValue: "~1.5¢/mile via Cathay Pacific business class",
-    welcomeMilestones: [
-      { points: "35,000 Asia Miles", condition: "Spend $2,000 in the first 3 months" },
-    ],
-  },
-  // ── CIBC additions ────────────────────────────────────────────────────────
-  {
     id: "cibc-aventura-vi-privilege",
     name: "CIBC Aventura Visa Infinite Privilege",
     issuer: "CIBC",
@@ -2473,7 +2318,6 @@ export const cards: Card[] = [
       { points: "$100 cash back", condition: "Spend $500 in the first 4 months" },
     ],
   },
-  // ── BMO additions ─────────────────────────────────────────────────────────
   {
     id: "bmo-air-miles-mc",
     name: "BMO Air Miles Mastercard",
@@ -2570,7 +2414,6 @@ export const cards: Card[] = [
       { points: "3,000 Air Miles", condition: "Spend $5,000 in the first 3 months" },
     ],
   },
-  // ── National Bank additions ───────────────────────────────────────────────
   {
     id: "nbc-syncro",
     name: "NBC Syncro Mastercard",
@@ -2633,7 +2476,6 @@ export const cards: Card[] = [
       { points: "20,000 pts", condition: "Spend $3,000 in the first 3 months" },
     ],
   },
-  // ── MBNA additions ────────────────────────────────────────────────────────
   {
     id: "mbna-alaska",
     name: "MBNA Alaska Airlines Mastercard",
@@ -2699,39 +2541,6 @@ export const cards: Card[] = [
       { points: "10,000 pts", condition: "Spend $500 in the first 90 days" },
     ],
   },
-  // ── Capital One additions ─────────────────────────────────────────────────
-  {
-    id: "capital-one-aspire-cash-we",
-    name: "Capital One Aspire Cash World Elite",
-    issuer: "Capital One",
-    annualFee: "$120",
-    annualFeeNum: 120,
-    firstYearValue: "$280",
-    pointsBonus: "$200 cash back",
-    msr: "$1,000 (3 mo)",
-    portals: [],
-    directLink: "https://www.capitalone.ca/credit-cards/aspire-cash-world-elite/",
-    program: "Cash Back",
-    tags: ["Cash Back", "No FX Fee", "Lounge Access"],
-    rewards: [
-      { multiplier: "1.5%", category: "all purchases" },
-    ],
-    featured: false,
-    image: "/cards/capital-one-aspire-cash-we.png",
-    gradient: "from-red-700 to-red-900",
-    network: "Mastercard",
-    foreignFee: "None",
-    incomeReq: "$80,000 personal or $150,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Trip Interruption", "Baggage Delay", "Purchase Protection", "Extended Warranty", "Rental Car"],
-    transferPartners: [],
-    loungeDetails: "Priority Pass (2 complimentary visits/year)",
-    perks: ["No foreign transaction fee", "Flat 1.5% cash back on everything", "Great for travel abroad"],
-    pointsValue: "1¢ per cash back dollar",
-    welcomeMilestones: [
-      { points: "$200 cash back", condition: "Spend $1,000 in the first 3 months" },
-    ],
-  },
-  // ── Scotiabank additions ──────────────────────────────────────────────────
   {
     id: "scotia-scene-no-fee",
     name: "Scotia Scene+ Visa",
@@ -2764,7 +2573,6 @@ export const cards: Card[] = [
       { points: "7,500 pts", condition: "Spend $500 in the first 3 months" },
     ],
   },
-  // ── Brim additions ────────────────────────────────────────────────────────
   {
     id: "brim-world-mc",
     name: "Brim World Mastercard",
@@ -2827,7 +2635,6 @@ export const cards: Card[] = [
       { points: "2,000 pts", condition: "Spend $500 in the first 3 months" },
     ],
   },
-  // ── Meridian additions ────────────────────────────────────────────────────
   {
     id: "meridian-vi-cashback",
     name: "Meridian Visa Infinite Cash Back",
@@ -2861,7 +2668,6 @@ export const cards: Card[] = [
       { points: "$100 cash back", condition: "Spend $1,000 in the first 3 months" },
     ],
   },
-  // ── PC Financial additions ────────────────────────────────────────────────
   {
     id: "pc-mc",
     name: "PC Financial Mastercard",
@@ -2895,7 +2701,6 @@ export const cards: Card[] = [
       { points: "20,000 pts ($20 value)", condition: "Awarded upon account opening" },
     ],
   },
-  // ── Triangle additions ────────────────────────────────────────────────────
   {
     id: "triangle-mc",
     name: "Triangle Mastercard",
@@ -2926,7 +2731,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "High earn rate at Canadian Tire family of stores", "CT Money redeemable at all Canadian Tire stores"],
     pointsValue: "~1¢ per CT Money dollar",
   },
-  // ── Neo Financial additions ───────────────────────────────────────────────
   {
     id: "neo-mc",
     name: "Neo Financial Mastercard",
@@ -2956,7 +2760,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Variable cash back — averages 5%+ at Neo partners like Amazon, Loblaws & hundreds more", "Instant cash back paid monthly"],
     pointsValue: "1¢ per cash back dollar",
   },
-  // ── Walmart additions ─────────────────────────────────────────────────────
   {
     id: "walmart-rewards-mc",
     name: "Walmart Rewards Mastercard",
@@ -2986,7 +2789,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Redeem Walmart Dollars at checkout instantly", "Good for frequent Walmart shoppers"],
     pointsValue: "1¢ per Walmart Dollar",
   },
-  // ── Original TD ───────────────────────────────────────────────────────────
   {
     id: "td-plat-travel",
     name: "TD Platinum Travel Visa",
@@ -3016,8 +2818,6 @@ export const cards: Card[] = [
     perks: ["Lower income threshold than FCT VI", "Good entry-level travel card for TD customers"],
     pointsValue: "~0.5¢/pt via Expedia4TD",
   },
-
-  // ── Scotiabank ─────────────────────────────────────────────────────────────
   {
     id: "scotia-passport-vi-infinite",
     name: "Scotiabank Passport Visa Infinite",
@@ -3140,8 +2940,6 @@ export const cards: Card[] = [
     perks: ["1.5x on all business spend", "Strong gas & transit multiplier", "Good for small business owners"],
     pointsValue: "~1¢/pt",
   },
-
-  // ── TD ─────────────────────────────────────────────────────────────────────
   {
     id: "td-cashback-vi-infinite",
     name: "TD Cash Back Visa Infinite",
@@ -3235,130 +3033,6 @@ export const cards: Card[] = [
     perks: ["9x on Expedia4TD travel is market-leading for TD Rewards", "High earn on dining and recurring bills", "Dedicated business card"],
     pointsValue: "~0.5¢/pt via Expedia4TD",
   },
-
-  // ── CIBC ───────────────────────────────────────────────────────────────────
-  {
-    id: "cibc-aeroplan-vi-infinite",
-    name: "CIBC Aeroplan Visa Infinite",
-    issuer: "CIBC",
-    annualFee: "$139",
-    annualFeeNum: 139,
-    firstYearValue: "~$720",
-    pointsBonus: "50,000 Aeroplan",
-    msr: "$3,000",
-    portals: [GCR(50), CCG(50)],
-    directLink: "https://www.cibc.com/en/personal-banking/credit-cards/aeroplan/aeroplan-visa-infinite.html",
-    program: "Aeroplan",
-    tags: ["Transfer Partners", "Travel"],
-    rewards: [
-      { multiplier: "1.5x", category: "gas, grocery & Air Canada" },
-      { multiplier: "1x", category: "all other purchases" },
-    ],
-    featured: false,
-    image: "/cards/cibc-aeroplan-vi.png",
-    gradient: "from-red-600 to-red-900",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "$60,000 personal / $100,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Flight Delay", "Baggage", "Auto Rental"],
-    transferPartners: ["Aeroplan (Star Alliance)"],
-    loungeDetails: "No lounge access",
-    perks: ["Solid entry-level Aeroplan earner", "Travel medical up to $5M", "Better welcome bonus during promos"],
-    pointsValue: "~1.5-2.2¢/pt on premium redemptions",
-  },
-  {
-    id: "cibc-aeroplan-vi-infinite-privilege",
-    name: "CIBC Aeroplan Visa Infinite Privilege",
-    issuer: "CIBC",
-    annualFee: "$599",
-    annualFeeNum: 599,
-    firstYearValue: "~$1,350",
-    pointsBonus: "85,000 Aeroplan",
-    msr: "$10,000",
-    portals: [GCR(100)],
-    directLink: "https://www.cibc.com/en/personal-banking/credit-cards/aeroplan/aeroplan-visa-infinite-privilege.html",
-    program: "Aeroplan",
-    tags: ["Lounge Access", "Transfer Partners", "Travel", "Travel Credit"],
-    rewards: [
-      { multiplier: "2x", category: "Air Canada & Air Canada Vacations" },
-      { multiplier: "1.5x", category: "dining, gas & grocery" },
-      { multiplier: "1.25x", category: "all other purchases" },
-    ],
-    featured: false,
-    image: "/cards/cibc-aeroplan-vi-privilege.png",
-    gradient: "from-slate-700 to-red-900",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "$150,000 personal / $200,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Trip Interruption", "Flight Delay", "Baggage", "Rental Car"],
-    transferPartners: ["Aeroplan (Star Alliance)"],
-    loungeDetails: "Unlimited Air Canada Maple Leaf Lounge + 6 Priority Pass visits",
-    perks: ["$200 travel credit", "Aeroplan 25K Elite status boost", "Unlimited Maple Leaf Lounge"],
-    pointsValue: "~1.5-2.2¢/pt on premium redemptions",
-  },
-  {
-    id: "cibc-dividend-vi-infinite",
-    name: "CIBC Dividend Visa Infinite",
-    issuer: "CIBC",
-    annualFee: "$120",
-    annualFeeNum: 120,
-    firstYearValue: "~$510",
-    pointsBonus: "10% cash back (first 4 statements, up to $3,000/cat)",
-    msr: "$0",
-    portals: [GCR(30)],
-    directLink: "https://www.cibc.com/en/personal-banking/credit-cards/dividend-visa-infinite.html",
-    program: "Cash Back",
-    tags: ["Cash Back"],
-    rewards: [
-      { multiplier: "4%", category: "grocery" },
-      { multiplier: "4%", category: "gas" },
-      { multiplier: "2%", category: "dining, transit & recurring bills" },
-      { multiplier: "1%", category: "all other purchases" },
-    ],
-    featured: false,
-    image: "/cards/cibc-dividend-vi.png",
-    gradient: "from-red-700 to-slate-800",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "$60,000 personal / $100,000 household",
-    insurance: ["Travel Medical", "Purchase Protection", "Extended Warranty", "Auto Rental"],
-    transferPartners: [],
-    loungeDetails: "No lounge access",
-    perks: ["4% on grocery AND gas — double header", "Easy to redeem cash back", "Strong ongoing earn rate"],
-    pointsValue: "Cash back (1¢/pt equivalent)",
-  },
-  {
-    id: "cibc-aventura-vi",
-    name: "CIBC Aventura Visa Infinite",
-    issuer: "CIBC",
-    annualFee: "$139",
-    annualFeeNum: 139,
-    firstYearValue: "~$680",
-    pointsBonus: "35,000 Aventura",
-    msr: "$3,000",
-    portals: [GCR(50)],
-    directLink: "https://www.cibc.com/en/personal-banking/credit-cards/aventura-visa-infinite.html",
-    program: "Aventura",
-    tags: ["Transfer Partners", "Travel", "Lounge Access"],
-    rewards: [
-      { multiplier: "2x", category: "travel (Aventura Travel Centre)" },
-      { multiplier: "1.5x", category: "grocery, gas & pharmacy" },
-      { multiplier: "1x", category: "all other purchases" },
-    ],
-    featured: false,
-    image: "/cards/cibc-aventura-vi.png",
-    gradient: "from-red-600 to-slate-900",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "$60,000 personal / $100,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Purchase Protection", "Extended Warranty"],
-    transferPartners: ["Air Canada Aeroplan", "British Airways Avios", "Etihad Guest", "Air France-KLM Flying Blue"],
-    loungeDetails: "4 free lounge visits per year via Visa Airport Companion",
-    perks: ["Flexible transfer to 3 airline programs", "4 free airport lounge visits", "Travel flexibility via CIBC Aventura booking portal"],
-    pointsValue: "~1-2¢/pt depending on redemption",
-  },
-
-  // ── BMO ────────────────────────────────────────────────────────────────────
   {
     id: "bmo-eclipse-vi-infinite",
     name: "BMO eclipse Visa Infinite",
@@ -3478,154 +3152,6 @@ export const cards: Card[] = [
     perks: ["5% on grocery (industry leading cash back rate)", "Up to $500 annual cash back cap on grocery", "Strong recurring bills rate"],
     pointsValue: "Cash back (1¢/pt equivalent)",
   },
-
-  // ── RBC ────────────────────────────────────────────────────────────────────
-  {
-    id: "rbc-avion-vi-infinite",
-    name: "RBC Avion Visa Infinite",
-    issuer: "RBC",
-    annualFee: "$120",
-    annualFeeNum: 120,
-    firstYearValue: "~$650",
-    pointsBonus: "55,000 RBC Avion",
-    msr: "$5,000",
-    portals: [GCR(50), CCG(50)],
-    directLink: "https://www.rbcroyalbank.com/credit-cards/avion-visa-infinite.html",
-    program: "RBC Avion",
-    tags: ["Transfer Partners", "Travel"],
-    rewards: [
-      { multiplier: "1.25x", category: "all purchases" },
-    ],
-    featured: false,
-    image: "/cards/rbc-avion-vi.png",
-    gradient: "from-blue-600 to-blue-900",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "$60,000 personal / $100,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Flight Delay", "Baggage", "Auto Rental"],
-    transferPartners: ["British Airways Avios", "American Airlines AAdvantage", "WestJet Rewards", "Cathay Pacific Asia Miles"],
-    loungeDetails: "No lounge access",
-    perks: ["Transfer to 4 airline programs", "Flat 1.25x earn is simple and consistent", "No category to track"],
-    pointsValue: "~1.2¢/pt via airline transfer",
-  },
-  {
-    id: "rbc-avion-vi-infinite-privilege",
-    name: "RBC Avion Visa Infinite Privilege",
-    issuer: "RBC",
-    annualFee: "$399",
-    annualFeeNum: 399,
-    firstYearValue: "~$1,050",
-    pointsBonus: "75,000 RBC Avion",
-    msr: "$5,000",
-    portals: [GCR(100)],
-    directLink: "https://www.rbcroyalbank.com/credit-cards/avion-visa-infinite-privilege.html",
-    program: "RBC Avion",
-    tags: ["Lounge Access", "Transfer Partners", "Travel"],
-    rewards: [
-      { multiplier: "1.25x", category: "all purchases" },
-    ],
-    featured: false,
-    image: "/cards/rbc-avion-vi-privilege.png",
-    gradient: "from-slate-600 to-blue-900",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "$200,000 personal",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Trip Interruption", "Flight Delay", "Baggage", "Rental Car"],
-    transferPartners: ["British Airways Avios", "American Airlines AAdvantage", "WestJet Rewards", "Cathay Pacific Asia Miles"],
-    loungeDetails: "Unlimited Priority Pass membership + Visa Airport Companion",
-    perks: ["Unlimited lounge access worldwide", "Visa Infinite Privilege concierge", "Premium travel insurance suite"],
-    pointsValue: "~1.2¢/pt via airline transfer",
-  },
-  {
-    id: "rbc-westjet-we",
-    name: "RBC WestJet World Elite Mastercard",
-    issuer: "RBC",
-    annualFee: "$119",
-    annualFeeNum: 119,
-    firstYearValue: "~$600",
-    pointsBonus: "450 WestJet dollars",
-    msr: "$5,000",
-    portals: [GCR(50)],
-    directLink: "https://www.rbcroyalbank.com/credit-cards/westjet-world-elite-mastercard.html",
-    program: "WestJet Rewards",
-    tags: ["Travel", "Domestic"],
-    rewards: [
-      { multiplier: "2%", category: "WestJet flights & vacations" },
-      { multiplier: "1.5%", category: "all other purchases" },
-    ],
-    featured: false,
-    image: "/cards/rbc-westjet-we.png",
-    gradient: "from-teal-600 to-blue-900",
-    network: "Mastercard",
-    foreignFee: "2.5%",
-    incomeReq: "$80,000 personal / $150,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Flight Delay", "Baggage"],
-    transferPartners: [],
-    loungeDetails: "No lounge access",
-    perks: ["Companion voucher on first purchase and annually", "Round-trip companion fare from $119", "Free checked bag for cardholder and up to 8 companions"],
-    pointsValue: "~1.1¢/WestJet dollar (redeems like cash vs WestJet)",
-  },
-  {
-    id: "rbc-ionfamily-vi",
-    name: "RBC ION+ Visa",
-    issuer: "RBC",
-    annualFee: "$48",
-    annualFeeNum: 48,
-    firstYearValue: "~$280",
-    pointsBonus: "3,500 Avion",
-    msr: "$0",
-    portals: [],
-    directLink: "https://www.rbcroyalbank.com/credit-cards/ion-plus-visa.html",
-    program: "RBC Avion",
-    tags: ["Travel"],
-    rewards: [
-      { multiplier: "3x", category: "grocery, dining, rides & streaming" },
-      { multiplier: "1x", category: "all other purchases" },
-    ],
-    featured: false,
-    image: "/cards/rbc-ion-plus.png",
-    gradient: "from-blue-500 to-sky-900",
-    network: "Visa",
-    foreignFee: "2.5%",
-    incomeReq: "None stated",
-    insurance: ["Purchase Protection", "Extended Warranty"],
-    transferPartners: ["British Airways Avios", "American Airlines AAdvantage", "WestJet Rewards"],
-    loungeDetails: "No lounge access",
-    perks: ["Low $48 fee with transfer partner access", "3x on everyday categories", "Good entry-level Avion card"],
-    pointsValue: "~1.2¢/pt via airline transfer",
-  },
-
-  // ── National Bank ──────────────────────────────────────────────────────────
-  {
-    id: "nbc-world-elite-mc",
-    name: "National Bank World Elite Mastercard",
-    issuer: "National Bank",
-    annualFee: "$150",
-    annualFeeNum: 150,
-    firstYearValue: "~$750",
-    pointsBonus: "20,000 NBC Rewards",
-    msr: "$3,000",
-    portals: [GCR(50)],
-    directLink: "https://www.nbc.ca/en/personal/credit-cards/nbc-world-elite-mastercard.html",
-    program: "NBC Rewards",
-    tags: ["Travel", "No FX Fee", "Lounge Access"],
-    rewards: [
-      { multiplier: "5x", category: "dining" },
-      { multiplier: "3x", category: "grocery, gas & recurring bills" },
-      { multiplier: "1x", category: "all other purchases" },
-    ],
-    featured: false,
-    image: "/cards/nbc-world-elite-mc.png",
-    gradient: "from-red-600 to-slate-800",
-    network: "Mastercard",
-    foreignFee: "0%",
-    incomeReq: "$80,000 personal / $150,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Flight Delay", "Baggage", "Auto Rental"],
-    transferPartners: [],
-    loungeDetails: "4 free lounge visits via Mastercard Airport Experiences",
-    perks: ["No foreign transaction fee", "Up to $150 annual travel credit", "4 free lounge visits"],
-    pointsValue: "~1¢/pt on travel",
-  },
   {
     id: "nbc-vi-privilege",
     name: "National Bank Visa Infinite Privilege",
@@ -3656,8 +3182,6 @@ export const cards: Card[] = [
     perks: ["No FX fee", "Unlimited lounge access", "$150 annual travel credit", "Premium travel insurance"],
     pointsValue: "~1¢/pt on travel",
   },
-
-  // ── MBNA ───────────────────────────────────────────────────────────────────
   {
     id: "mbna-true-line-gold-mc",
     name: "MBNA True Line Gold Mastercard",
@@ -3716,8 +3240,6 @@ export const cards: Card[] = [
     perks: ["5% on grocery AND gas ongoing (capped at $500/month each)", "Simple cash back structure", "Good gas card pairing"],
     pointsValue: "Cash back (1¢/pt equivalent)",
   },
-
-  // ── Desjardins ─────────────────────────────────────────────────────────────
   {
     id: "desjardins-odyssey-vi",
     name: "Desjardins Odyssey Visa Infinite",
@@ -3775,36 +3297,6 @@ export const cards: Card[] = [
     loungeDetails: "No lounge access",
     perks: ["No annual fee", "Simple 1% earn on everything", "Good starter card for Desjardins members"],
     pointsValue: "~1¢/BONUSDOLLAR",
-  },
-
-  // ── American Express ────────────────────────────────────────────────────────
-  {
-    id: "amex-green",
-    name: "American Express Green Card",
-    issuer: "American Express",
-    annualFee: "$0",
-    annualFeeNum: 0,
-    firstYearValue: "~$220",
-    pointsBonus: "10,000 MR",
-    msr: "$0",
-    portals: [GCR(30)],
-    directLink: "https://www.americanexpress.com/en-ca/credit-cards/green-card",
-    program: "Membership Rewards",
-    tags: ["Transfer Partners", "No Annual Fee"],
-    rewards: [
-      { multiplier: "1x", category: "all purchases" },
-    ],
-    featured: false,
-    image: "/cards/amex-green.png",
-    gradient: "from-emerald-500 to-green-800",
-    network: "American Express",
-    foreignFee: "2.5%",
-    incomeReq: "None",
-    insurance: ["Purchase Protection", "Extended Warranty", "Buyer's Assurance"],
-    transferPartners: ["Aeroplan", "British Airways Avios", "Marriott Bonvoy", "Hilton Honors", "Delta SkyMiles", "Asia Miles"],
-    loungeDetails: "No lounge access",
-    perks: ["Access to full Amex MR transfer partner network at $0 fee", "Good starter Amex card", "Buyer's Assurance Protection"],
-    pointsValue: "~1.5¢/pt via Aeroplan transfer",
   },
   {
     id: "amex-biz-edge",
@@ -3867,36 +3359,6 @@ export const cards: Card[] = [
     pointsValue: "~1.5¢/pt via Aeroplan transfer",
   },
   {
-    id: "amex-biz-gold",
-    name: "American Express Business Gold",
-    issuer: "American Express",
-    annualFee: "$199",
-    annualFeeNum: 199,
-    firstYearValue: "~$920",
-    pointsBonus: "75,000 MR",
-    msr: "$10,000",
-    portals: [GCR(100), CCG(75)],
-    directLink: "https://www.americanexpress.com/en-ca/business/credit-cards/business-gold-rewards",
-    program: "Membership Rewards",
-    tags: ["Transfer Partners", "Business", "Travel"],
-    rewards: [
-      { multiplier: "2x", category: "all eligible purchases" },
-    ],
-    featured: false,
-    image: "/cards/amex-biz-gold.png",
-    gradient: "from-amber-600 to-orange-900",
-    network: "American Express",
-    foreignFee: "2.5%",
-    incomeReq: "Business required",
-    insurance: ["Purchase Protection", "Extended Warranty", "Travel Emergency Assistance"],
-    transferPartners: ["Aeroplan", "British Airways Avios", "Marriott Bonvoy", "Hilton Honors", "Delta SkyMiles"],
-    loungeDetails: "No lounge access",
-    perks: ["2x on all eligible business purchases", "Access to full MR transfer network", "Flexible redemption options"],
-    pointsValue: "~1.5¢/pt via Aeroplan transfer",
-  },
-
-  // ── Capital One ─────────────────────────────────────────────────────────────
-  {
     id: "capital-one-costco",
     name: "Capital One Costco Mastercard",
     issuer: "Capital One",
@@ -3926,36 +3388,6 @@ export const cards: Card[] = [
     perks: ["Only credit card accepted at Costco", "No annual fee", "Cash back paid annually as Costco gift card"],
     pointsValue: "Cash back (1¢/pt equivalent)",
   },
-  {
-    id: "capital-one-aspire-travel-we",
-    name: "Capital One Aspire Travel World Elite MC",
-    issuer: "Capital One",
-    annualFee: "$156",
-    annualFeeNum: 156,
-    firstYearValue: "~$700",
-    pointsBonus: "35,000 Travel Miles",
-    msr: "$3,000",
-    portals: [],
-    directLink: "https://www.capitalone.ca/credit-cards/aspire-travel-world-elite-mastercard/",
-    program: "Capital One Travel",
-    tags: ["Travel", "No FX Fee"],
-    rewards: [
-      { multiplier: "2x", category: "all purchases" },
-    ],
-    featured: false,
-    image: "/cards/capital-one-aspire-travel-we.png",
-    gradient: "from-slate-700 to-blue-900",
-    network: "Mastercard",
-    foreignFee: "0%",
-    incomeReq: "$80,000 personal / $150,000 household",
-    insurance: ["Travel Medical ($5M)", "Trip Cancellation", "Flight Delay", "Baggage"],
-    transferPartners: [],
-    loungeDetails: "2 free lounge visits per year",
-    perks: ["No FX fee", "2x on all purchases — flat and simple", "$100 annual travel credit", "2 lounge visits/year"],
-    pointsValue: "~1¢/mile on travel purchases",
-  },
-
-  // ── HSBC ───────────────────────────────────────────────────────────────────
   {
     id: "hsbc-world-elite-mc",
     name: "HSBC World Elite Mastercard",
@@ -4015,8 +3447,6 @@ export const cards: Card[] = [
     perks: ["No annual fee", "Simple 1% cash back", "Good for HSBC banking customers"],
     pointsValue: "Cash back (1¢/pt equivalent)",
   },
-
-  // ── Student / No-Fee Cards ─────────────────────────────────────────────────
   {
     id: "td-rewards-vi",
     name: "TD Rewards Visa",
@@ -4161,5 +3591,5 @@ export const cards: Card[] = [
     loungeDetails: "No lounge access",
     perks: ["No annual fee entry into Aeroplan", "Good starter card for TD customers", "Easy path to upgrade to Infinite"],
     pointsValue: "~1.5-2.2¢/pt on premium redemptions",
-  },
+  }
 ];
