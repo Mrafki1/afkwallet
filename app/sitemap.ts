@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getCardIds } from "./lib/cards-db";
 import { getAllPosts } from "./lib/posts";
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://churning-site.vercel.app";
+const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pointsbinder.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [

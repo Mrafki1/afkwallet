@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | PointsBinder",
   },
   description: "Find the best Canadian credit card welcome bonuses, compare first-year value, and apply via cash back portals for extra rewards. Updated regularly.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://churning-site.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://pointsbinder.com"),
   keywords: ["Canadian credit cards", "credit card churning Canada", "best credit card Canada", "welcome bonus Canada", "rebate portal", "Aeroplan credit card", "Amex Canada", "first year free credit card"],
   robots: { index: true, follow: true },
   openGraph: {

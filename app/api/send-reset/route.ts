@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   const token_hash = data.properties.hashed_token;
-  const resetLink = `https://pointsbinder.com/auth/reset?token_hash=${token_hash}&type=recovery`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pointsbinder.com";
+  const resetLink = `${siteUrl}/auth/reset?token_hash=${token_hash}&type=recovery`;
 
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error: emailError } = await resend.emails.send({
