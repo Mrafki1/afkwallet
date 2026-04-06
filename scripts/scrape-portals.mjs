@@ -280,6 +280,9 @@ async function scrapeFF(browser) {
         const rebateLink = card.querySelector(".wpgb-block-3, a[href*='/rebate/']");
         const url = rebateLink?.href || "https://frugalflyer.ca/rebates/";
 
+        // Skip bank accounts / chequing products — not credit cards
+        if (/chequing|savings account|banking package|\bpackage\b/i.test(name)) continue;
+
         items.push({ name, bonus, url });
       }
 

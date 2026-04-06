@@ -182,6 +182,8 @@ async function scrapeFF(ctx: BrowserContext): Promise<PortalHit[]> {
         const bonus = flyerMatch ? parseInt(flyerMatch[1]) : null;
         const rebateLink = card.querySelector(".wpgb-block-3 a, a[href*='/rebate/']") as HTMLAnchorElement | null;
         const url = rebateLink?.href || "https://frugalflyer.ca/rebates/";
+        // Skip bank accounts / chequing products — not credit cards
+        if (/chequing|savings account|banking package|\bpackage\b/i.test(name)) continue;
         items.push({ name, bonus, url });
       }
       return items;
