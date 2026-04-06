@@ -70,10 +70,23 @@ function mergePortal(existing: Portal[], portalName: string, bonus: number | nul
 }
 
 const HOMEPAGES = new Set([
+  "https://www.greatcanadianrebates.ca/",
+  "https://www.greatcanadianrebates.ca",
   "https://www.greatcanadianrebates.ca/display/CreditCards/",
+  "https://www.greatcanadianrebates.ca/display/CreditCards",
+  "https://frugalflyer.ca/",
+  "https://frugalflyer.ca",
   "https://frugalflyer.ca/rebates/",
+  "https://frugalflyer.ca/rebates",
+  "https://finlywealth.com/",
+  "https://finlywealth.com",
   "https://finlywealth.com/rebates/",
+  "https://finlywealth.com/rebates",
   "https://creditcardgenius.ca/offers",
+  "https://www.creditcardgenius.ca/",
+  "https://www.creditcardgenius.ca",
+  "https://creditcardgenius.ca/",
+  "https://creditcardgenius.ca",
 ]);
 function isHomepage(url: string) {
   try { return HOMEPAGES.has(url) || new URL(url).pathname.replace(/\/$/, "").split("/").filter(Boolean).length < 2; }
