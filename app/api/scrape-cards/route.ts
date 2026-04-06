@@ -95,7 +95,7 @@ async function scrapeAllCards(): Promise<ScrapedCard[]> {
   const isVercel = !!process.env.VERCEL;
   const browser = await chromium.launch({
     args: isVercel ? chromiumBin.args : ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-    defaultViewport: isVercel ? chromiumBin.defaultViewport : null,
+    // defaultViewport is not a valid Playwright LaunchOption (Puppeteer only)
     executablePath: isVercel ? await chromiumBin.executablePath() : undefined,
     headless: true,
   });

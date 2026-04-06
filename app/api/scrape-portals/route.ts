@@ -297,7 +297,7 @@ export async function POST(req: NextRequest) {
   const isVercel = !!process.env.VERCEL;
   const browser = await chromium.launch({
     args: isVercel ? chromiumBin.args : ["--no-sandbox", "--disable-setuid-sandbox"],
-    defaultViewport: isVercel ? chromiumBin.defaultViewport : null,
+    // defaultViewport is not a valid Playwright LaunchOption (Puppeteer only)
     executablePath: isVercel ? await chromiumBin.executablePath() : undefined,
     headless: true,
   });
