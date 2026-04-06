@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 
-export default function Navbar({ activePage }: { activePage?: "cards" | "blog" | "deals" }) {
+export default function Navbar({ activePage }: { activePage?: "cards" | "blog" | "deals" | "about" }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -59,7 +59,7 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
             <Link href="/cards"         className={linkClass("cards")}>Cards</Link>
             <Link href="/deals"         className={linkClass("deals")}>⚡ Hot Deals</Link>
             <Link href="/blog"          className={linkClass("blog")}>Blog</Link>
-            <Link href="/#how-it-works" className={linkClass()}>How It Works</Link>
+            <Link href="/about"         className={linkClass("about")}>About</Link>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("pb:open-quiz"))}
               className="text-sm font-medium transition-colors text-[#374151] hover:text-[#0f172a]"
@@ -102,10 +102,10 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
           style={{ background: "#ffffff", borderColor: "#e2e8f0" }}
         >
           {[
-            { href: "/cards",         label: "Cards",           page: "cards" },
-            { href: "/deals",         label: "⚡ Hot Deals",    page: "deals" },
-            { href: "/blog",          label: "Blog",            page: "blog"  },
-            { href: "/#how-it-works", label: "How It Works",    page: ""      },
+            { href: "/cards",  label: "Cards",        page: "cards" },
+            { href: "/deals",  label: "⚡ Hot Deals", page: "deals" },
+            { href: "/blog",   label: "Blog",         page: "blog"  },
+            { href: "/about",  label: "About",        page: "about" },
           ].map(item => (
             <Link
               key={item.href}

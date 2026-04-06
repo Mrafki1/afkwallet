@@ -146,15 +146,15 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: copy */}
             <div>
-              <div className="badge badge-blue mb-6">🇨🇦 Canadian Credit Card Rewards</div>
+              <div className="badge badge-blue mb-6">🇨🇦 Built for Canadian credit card rewards</div>
 
               <h1 className="text-5xl sm:text-6xl font-bold leading-[1.08] tracking-tight mb-6" style={{ color: "#0f172a", letterSpacing: "-0.03em" }}>
-                Maximize every<br />credit card bonus<br />
-                <span style={{ color: "#2563eb" }}>in Canada.</span>
+                Which portal pays<br />the most for your<br />
+                <span style={{ color: "#2563eb" }}>next credit card?</span>
               </h1>
 
               <p className="text-xl leading-relaxed mb-10 max-w-2xl" style={{ color: "#475569" }}>
-                Compare 155+ Canadian credit cards by first-year bonus, find the best rebate portal for each one, and track your welcome bonuses — all in one place.
+                GCR, Frugal Flyer, FinlyWealth, or CreditCardGenius — we check all four automatically and show you which one pays the highest cash back for every Canadian credit card. Updated every week.
               </p>
 
               <div className="flex flex-wrap gap-3 mb-16">
@@ -167,10 +167,10 @@ export default function LandingPage() {
               {/* Stats row */}
               <div className="flex flex-wrap gap-8">
                 {[
-                  { value: "155+",   label: "Cards indexed" },
-                  { value: "4",      label: "Portals compared" },
-                  { value: "$1,800", label: "Top first-year bonus" },
-                  { value: "Free",   label: "No account required to browse" },
+                  { value: "155+",      label: "Canadian cards tracked" },
+                  { value: "4",         label: "Portals compared per card" },
+                  { value: "$1,800",    label: "Top first-year bonus" },
+                  { value: "Weekly",    label: "Portal rates updated" },
                 ].map(s => (
                   <div key={s.label}>
                     <p className="text-2xl font-bold tracking-tight" style={{ color: "#0f172a", letterSpacing: "-0.02em" }}>{s.value}</p>
@@ -468,8 +468,8 @@ export default function LandingPage() {
               { href: "/cards",     label: "Cards"     },
               { href: "/deals",     label: "Hot Deals" },
               { href: "/blog",      label: "Blog"      },
+              { href: "/about",     label: "About"     },
               { href: "/auth",      label: "Sign up"   },
-              { href: "/dashboard", label: "Dashboard" },
             ].map(l => (
               <Link key={l.href} href={l.href} style={{ color: "#64748b" }} className="hover:text-white transition-colors">{l.label}</Link>
             ))}
