@@ -515,7 +515,11 @@ async function main() {
       matched++;
 
       if (!updates[dbCard.id]) updates[dbCard.id] = { card: dbCard, portalsMap: {} };
-      updates[dbCard.id].portalsMap[portal.id] = { bonus: pc.bonus, url: pc.url };
+      // Keep the best (highest) bonus if the same card matches multiple portal entries
+      const existingMatch = updates[dbCard.id].portalsMap[portal.id];
+      if (!existingMatch || (pc.bonus ?? 0) > (existingMatch.bonus ?? 0)) {
+        updates[dbCard.id].portalsMap[portal.id] = { bonus: pc.bonus, url: pc.url };
+      }
 
       const storedBonus = (dbCard.portals ?? []).find(p => p.name === portal.id)?.bonus;
       const changed = storedBonus != null && storedBonus !== pc.bonus;
@@ -545,7 +549,8 @@ async function main() {
     console.log(`\n🗄️   Updating ${Object.keys(updates).length} cards in Supabase…`);
     let updated = 0;
     for (const { card, portalsMap } of Object.values(updates)) {
-      let currentPortals = [...(card.portals ?? [])];
+      // Filter out any stale bad URLs from ALL portals while writing this card
+      let currentPortals = (card.portals ?? []).filter(p => isCardSpecificUrl(p.url));
       for (const [portalName, { bonus, url }] of Object.entries(portalsMap)) {
         currentPortals = mergePortal(currentPortals, portalName, bonus, url);
       }
@@ -557,6 +562,28 @@ async function main() {
       else updated++;
     }
     console.log(`  ✅  ${updated} cards updated`);
+  }
+
+  // Cleanup: remove bad portal URLs from cards not touched in this run
+  if (!DRY_RUN) {
+    const updatedIds = new Set(Object.keys(updates));
+    const toClean = dbCards.filter(c =>
+      !updatedIds.has(String(c.id)) &&
+      (c.portals ?? []).some(p => !isCardSpecificUrl(p.url))
+    );
+    if (toClean.length > 0) {
+      console.log(`\n🧹  Cleaning bad URLs from ${toClean.length} card(s)…`);
+      let cleaned = 0;
+      for (const card of toClean) {
+        const cleanPortals = (card.portals ?? []).filter(p => isCardSpecificUrl(p.url));
+        const removed = card.portals.filter(p => !isCardSpecificUrl(p.url)).map(p => `${p.name}(${p.url})`).join(", ");
+        console.log(`  🗑️  ${card.name}: ${removed}`);
+        const { error } = await supabase.from("cards").update({ portals: cleanPortals }).eq("id", card.id);
+        if (error) console.error(`  ❌  ${card.id}: ${error.message}`);
+        else cleaned++;
+      }
+      console.log(`  ✅  ${cleaned} cleaned`);
+    }
   }
 
   // Summary
