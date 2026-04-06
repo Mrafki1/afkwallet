@@ -22,26 +22,48 @@ function ResetForm() {
   const supabase     = createClient();
 
   useEffect(() => {
-    // If the callback route failed (code expired / already used), show error immediately
     if (searchParams.get("error") === "invalid") {
       setInvalid(true);
       return;
     }
 
-    // The server-side callback route already exchanged the code for a session.
-    // Just verify the session is active.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    const code        = searchParams.get("code");
+    const token_hash  = searchParams.get("token_hash");
+    const type        = searchParams.get("type");
+
+    async function init() {
+      // If Supabase redirected here with a code (PKCE), exchange it now
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) { setInvalid(true); return; }
         setReady(true);
-      } else {
-        // No session — wait briefly for PASSWORD_RECOVERY event (implicit-flow fallback)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-          if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
-        });
-        const timeout = setTimeout(() => setInvalid(true), 5000);
-        return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+        return;
       }
-    });
+
+      // token_hash flow (email OTP)
+      if (token_hash && type) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash,
+          type: type as "recovery",
+        });
+        if (error) { setInvalid(true); return; }
+        setReady(true);
+        return;
+      }
+
+      // No code in URL — session may already exist (came via /auth/callback)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) { setReady(true); return; }
+
+      // Last resort: listen for PASSWORD_RECOVERY event
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
+      });
+      const timeout = setTimeout(() => setInvalid(true), 5000);
+      return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+    }
+
+    init();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
