@@ -27,19 +27,30 @@ function ResetForm() {
       return;
     }
 
-    // Implicit flow: Supabase redirects to /auth/reset#access_token=xxx&type=recovery
-    // The client auto-processes the hash and fires PASSWORD_RECOVERY event.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
-    });
+    const code = searchParams.get("code");
 
-    // Also check if session already exists (e.g. came via /auth/callback)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
-    });
+    async function init() {
+      // PKCE: Supabase redirects to /auth/reset?code=xxx — exchange it here
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) { setInvalid(true); return; }
+        setReady(true);
+        return;
+      }
 
-    const timeout = setTimeout(() => setInvalid(true), 8000);
-    return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+      // No code — check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) { setReady(true); return; }
+
+      // Fallback: wait for PASSWORD_RECOVERY event
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
+      });
+      const timeout = setTimeout(() => setInvalid(true), 8000);
+      return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+    }
+
+    init();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
