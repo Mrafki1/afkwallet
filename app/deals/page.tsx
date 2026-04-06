@@ -24,7 +24,12 @@ function BestPortal({ portals, directLink }: { portals: Portal[]; directLink: st
 
 export default async function DealsPage() {
   const allCards = await getCards();
-  const elevatedCards = allCards.filter(c => c.elevated);
+  const elevatedCards = allCards
+    .filter(c => c.elevated)
+    .sort((a, b) => {
+      const parse = (v: string) => parseInt(v.replace(/[^0-9]/g, "")) || 0;
+      return parse(b.firstYearValue) - parse(a.firstYearValue);
+    });
   const lastVerified = await getLastVerified();
   const LAST_UPDATED = new Date(lastVerified).toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" });
   return (
