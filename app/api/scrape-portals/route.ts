@@ -261,6 +261,10 @@ async function scrapeFW(ctx: BrowserContext): Promise<PortalHit[]> {
 
 // ── Route handler ─────────────────────────────────────────────────────────
 
+export async function GET(req: NextRequest) {
+  return POST(req);
+}
+
 export async function POST(req: NextRequest) {
   const auth   = req.headers.get("authorization") ?? "";
   const secret = process.env.CRON_SECRET ?? "";
