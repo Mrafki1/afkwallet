@@ -205,6 +205,8 @@ async function scrapeGCR(browser) {
           ? "https://www.greatcanadianrebates.ca" + shopPath
           : "https://www.greatcanadianrebates.ca/display/CreditCards/";
 
+        // Skip French-language entries (format: "Issuer : French Card Name")
+        if (name.includes(" : ")) continue;
         if (name.length > 3) {
           items.push({ name, bonus, url });
         }

@@ -141,6 +141,8 @@ async function scrapeGCR(ctx: BrowserContext): Promise<PortalHit[]> {
         const bonus = bonusMatch ? Math.round(parseFloat(bonusMatch[1])) : null;
         const detailsEl = row.querySelector("a.moredetails") as HTMLAnchorElement | null;
         const url = detailsEl?.href ? detailsEl.href : "https://www.greatcanadianrebates.ca/display/CreditCards/";
+        // Skip French-language entries (format: "Issuer : French Card Name")
+        if (name.includes(" : ")) continue;
         if (name.length > 3) items.push({ name, bonus, url });
       }
       const seen = new Map<string, typeof items[0]>();
