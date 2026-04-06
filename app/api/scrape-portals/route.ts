@@ -174,7 +174,7 @@ async function scrapeFF(ctx: BrowserContext): Promise<PortalHit[]> {
       const cards = document.querySelectorAll("article.wpgb-card, article[class*='wpgb']");
       for (const card of cards) {
         const nameEl = card.querySelector("h3 a, h4 a, .wpgb-block-1 a, [class*='block-1'] a") as HTMLAnchorElement | null;
-        let name = (nameEl?.textContent?.trim() ?? "").replace(/[®™©*]/g, "").trim();
+        const name = (nameEl?.textContent?.trim() ?? "").replace(/[®™©*]/g, "").trim();
         if (!name || name.length < 5) continue;
         const amountEl = card.querySelector(".wpgb-block-2, [class*='block-2']");
         const amountText = amountEl?.textContent ?? "";
