@@ -27,27 +27,26 @@ function ResetForm() {
       return;
     }
 
-    const code = searchParams.get("code");
+    const token_hash = searchParams.get("token_hash");
+    const type       = searchParams.get("type");
 
     async function init() {
-      // PKCE: Supabase redirects to /auth/reset?code=xxx — exchange it here
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+      // Server-generated reset link: verify OTP token directly (no PKCE)
+      if (token_hash && type) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash,
+          type: type as "recovery",
+        });
         if (error) { setInvalid(true); return; }
         setReady(true);
         return;
       }
 
-      // No code — check for existing session
+      // Fallback: check existing session
       const { data: { session } } = await supabase.auth.getSession();
       if (session) { setReady(true); return; }
 
-      // Fallback: wait for PASSWORD_RECOVERY event
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
-      });
-      const timeout = setTimeout(() => setInvalid(true), 8000);
-      return () => { subscription.unsubscribe(); clearTimeout(timeout); };
+      setInvalid(true);
     }
 
     init();
