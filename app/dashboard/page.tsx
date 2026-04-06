@@ -432,75 +432,99 @@ function DashboardInner() {
     );
   }
 
+  const activeMsr   = userCards.filter(c => c.msr_amount > 0 && c.msr_spent < c.msr_amount);
+  const msrRemaining = activeMsr.reduce((sum, c) => sum + (c.msr_amount - c.msr_spent), 0);
+  const urgentCount  = userCards.filter(c => {
+    const msrD = daysUntil(c.msr_deadline);
+    const feeD = daysUntil(c.annual_fee_date ? new Date(new Date(c.annual_fee_date).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null);
+    return (msrD !== null && msrD <= 30 && c.msr_spent < c.msr_amount) || (feeD !== null && feeD <= 30);
+  }).length;
+  const firstName = userEmail.split("@")[0];
+
   return (
-    <div className="min-h-screen" style={{ background: "#f8fafc" }}>
-      {/* Navbar */}
-      <nav className="sticky top-0 z-20" style={{ background: "rgba(255,255,255,0.95)", borderBottom: "1px solid #e2e8f0", backdropFilter: "blur(8px)" }}>
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: "#f1f5f9" }}>
+
+      {/* ── Dark header ─────────────────────────────────────────── */}
+      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)" }}>
+        {/* Navbar */}
+        <nav className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-6 h-6 flex items-center justify-center rounded-md text-white text-xs font-bold" style={{ background: "#2563eb" }}>P</div>
-            <span className="font-bold text-sm" style={{ color: "#0f172a" }}>PointsBinder</span>
+            <div className="w-7 h-7 flex items-center justify-center rounded-lg text-white text-xs font-bold" style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)" }}>P</div>
+            <span className="font-bold text-sm text-white">PointsBinder</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-sm hidden sm:block" style={{ color: "#64748b" }}>{userEmail}</span>
-            <button onClick={handleLogout} className="text-sm transition-colors" style={{ color: "#64748b" }}>
+            <span className="text-sm hidden sm:block" style={{ color: "rgba(255,255,255,0.5)" }}>{userEmail}</span>
+            <button onClick={handleLogout} className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.5)" }}>
               Log out
             </button>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: "#0f172a" }}>My Cards</h1>
-            <p className="text-sm mt-1" style={{ color: "#64748b" }}>Track your MSR progress and annual fee deadlines.</p>
-          </div>
-          <button
-            onClick={openAdd}
-            className="btn-primary text-sm font-semibold px-4 py-2"
-            style={{ borderRadius: 10 }}
-          >
-            + Add Card
-          </button>
-        </div>
-
-        {/* Summary stats */}
-        {userCards.length > 0 && (() => {
-          const activeMsr    = userCards.filter(c => c.msr_amount > 0 && c.msr_spent < c.msr_amount);
-          const remaining    = activeMsr.reduce((sum, c) => sum + (c.msr_amount - c.msr_spent), 0);
-          const urgentCount  = userCards.filter(c => {
-            const msrD = daysUntil(c.msr_deadline);
-            const feeD = daysUntil(c.annual_fee_date ? new Date(new Date(c.annual_fee_date).getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null);
-            return (msrD !== null && msrD <= 30 && c.msr_spent < c.msr_amount) || (feeD !== null && feeD <= 30);
-          }).length;
-          return (
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {[
-                { label: "Cards tracked", value: String(userCards.length) },
-                { label: "MSR remaining", value: remaining > 0 ? `$${remaining.toLocaleString()}` : "All done ✓" },
-                { label: "Action needed", value: urgentCount > 0 ? `${urgentCount} deadline${urgentCount > 1 ? "s" : ""}` : "All clear ✓", urgent: urgentCount > 0 },
-              ].map(stat => (
-                <div key={stat.label} className="rounded-xl p-4" style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}>
-                  <p className="text-xs mb-1" style={{ color: "#94a3b8" }}>{stat.label}</p>
-                  <p className="text-xl font-bold tracking-tight" style={{ color: stat.urgent ? "#b91c1c" : "#0f172a", letterSpacing: "-0.02em" }}>{stat.value}</p>
-                </div>
-              ))}
+        {/* Hero */}
+        <div className="max-w-5xl mx-auto px-6 pt-6 pb-10">
+          <div className="flex items-end justify-between gap-4 mb-8">
+            <div>
+              <p className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>Welcome back</p>
+              <h1 className="text-3xl font-bold text-white tracking-tight" style={{ letterSpacing: "-0.03em" }}>
+                {firstName}&apos;s Dashboard
+              </h1>
             </div>
-          );
-        })()}
+            <button
+              onClick={openAdd}
+              className="shrink-0 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:opacity-90"
+              style={{ background: "#2563eb", color: "#fff", boxShadow: "0 0 20px rgba(37,99,235,0.4)" }}
+            >
+              + Add Card
+            </button>
+          </div>
 
-        {/* Cards list */}
+          {/* Stat tiles */}
+          <div className="grid grid-cols-3 gap-4">
+            {/* Cards tracked */}
+            <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <p className="text-xs font-medium mb-2" style={{ color: "rgba(255,255,255,0.45)" }}>Cards Tracked</p>
+              <p className="text-3xl font-bold text-white" style={{ letterSpacing: "-0.03em" }}>{userCards.length}</p>
+              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>in your wallet</p>
+            </div>
+            {/* MSR remaining */}
+            <div className="rounded-2xl p-5" style={{ background: msrRemaining > 0 ? "rgba(251,191,36,0.12)" : "rgba(34,197,94,0.1)", border: msrRemaining > 0 ? "1px solid rgba(251,191,36,0.25)" : "1px solid rgba(34,197,94,0.2)" }}>
+              <p className="text-xs font-medium mb-2" style={{ color: msrRemaining > 0 ? "rgba(251,191,36,0.7)" : "rgba(34,197,94,0.7)" }}>MSR Remaining</p>
+              <p className="text-3xl font-bold" style={{ color: msrRemaining > 0 ? "#fbbf24" : "#4ade80", letterSpacing: "-0.03em" }}>
+                {msrRemaining > 0 ? `$${msrRemaining.toLocaleString()}` : "✓"}
+              </p>
+              <p className="text-xs mt-1" style={{ color: msrRemaining > 0 ? "rgba(251,191,36,0.45)" : "rgba(34,197,94,0.45)" }}>
+                {msrRemaining > 0 ? `across ${activeMsr.length} card${activeMsr.length !== 1 ? "s" : ""}` : "all complete"}
+              </p>
+            </div>
+            {/* Action needed */}
+            <div className="rounded-2xl p-5" style={{ background: urgentCount > 0 ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.07)", border: urgentCount > 0 ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.1)" }}>
+              <p className="text-xs font-medium mb-2" style={{ color: urgentCount > 0 ? "rgba(239,68,68,0.7)" : "rgba(255,255,255,0.45)" }}>Action Needed</p>
+              <p className="text-3xl font-bold" style={{ color: urgentCount > 0 ? "#f87171" : "white", letterSpacing: "-0.03em" }}>
+                {urgentCount > 0 ? urgentCount : "✓"}
+              </p>
+              <p className="text-xs mt-1" style={{ color: urgentCount > 0 ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.35)" }}>
+                {urgentCount > 0 ? `deadline${urgentCount > 1 ? "s" : ""} this month` : "all clear"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Cards list ───────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+
         {userCards.length === 0 ? (
-          <div className="text-center py-20 rounded-2xl" style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}>
-            <p className="text-lg font-medium mb-1" style={{ color: "#94a3b8" }}>No cards tracked yet.</p>
-            <p className="text-sm mb-4" style={{ color: "#94a3b8" }}>Add your first card to start tracking MSR progress and deadlines.</p>
+          <div className="text-center py-24 rounded-2xl" style={{ background: "#ffffff", border: "1px solid #e2e8f0" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#eff6ff" }}>
+              <span className="text-2xl">💳</span>
+            </div>
+            <p className="text-lg font-bold mb-1" style={{ color: "#0f172a" }}>No cards yet</p>
+            <p className="text-sm mb-6" style={{ color: "#94a3b8" }}>Add your first card to track MSR progress and annual fee deadlines.</p>
             <div className="flex gap-3 justify-center">
-              <button onClick={openAdd} className="btn-primary text-sm font-semibold px-4 py-2" style={{ borderRadius: 10 }}>
+              <button onClick={openAdd} className="btn-primary text-sm font-semibold px-5 py-2.5" style={{ borderRadius: 10 }}>
                 + Add Card
               </button>
-              <Link href="/cards" className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors" style={{ border: "1px solid #e2e8f0", color: "#64748b" }}>
+              <Link href="/cards" className="text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors" style={{ border: "1px solid #e2e8f0", color: "#64748b" }}>
                 Browse cards →
               </Link>
             </div>
@@ -523,16 +547,20 @@ function DashboardInner() {
           });
 
           const groups = [
-            { label: "Needs Attention", cards: urgent,    color: "#b91c1c" },
-            { label: "Active",          cards: active,    color: "#2563eb" },
-            { label: "Completed",       cards: completed, color: "#16a34a" },
+            { label: "Needs Attention", cards: urgent,    color: "#ef4444", borderColor: "#fca5a5", bg: "#fef2f2" },
+            { label: "Active",          cards: active,    color: "#2563eb", borderColor: "#93c5fd", bg: "#eff6ff" },
+            { label: "Completed",       cards: completed, color: "#16a34a", borderColor: "#86efac", bg: "#f0fdf4" },
           ].filter(g => g.cards.length > 0);
 
           return (
           <div className="flex flex-col gap-8">
             {groups.map(group => (
               <div key={group.label}>
-                <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: group.color }}>{group.label}</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 rounded-full" style={{ background: group.color }} />
+                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: group.color }}>{group.label}</p>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: group.bg, color: group.color }}>{group.cards.length}</span>
+                </div>
                 <div className="flex flex-col gap-4">
             {group.cards.map(uc => {
               const msrDays    = daysUntil(uc.msr_deadline);
@@ -546,27 +574,32 @@ function DashboardInner() {
               const dbCard     = dbCards.find(c => c.id === uc.card_id);
               const cardImage  = dbCard?.image ?? null;
               return (
-                <div key={uc.id} className="rounded-2xl p-6" style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                  <div className="flex gap-4 mb-4">
-                    {/* Card image */}
-                    {cardImage && (
-                      <div className="shrink-0 w-20 h-[50px] rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                        <img src={cardImage} alt={uc.card_name} className="w-full h-full object-contain p-1" />
+                <div key={uc.id} className="rounded-2xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", borderLeft: `4px solid ${group.borderColor}` }}>
+                  <div className="p-6">
+                  <div className="flex gap-5 mb-5">
+                    {/* Card image — proper credit card ratio */}
+                    {cardImage ? (
+                      <div className="shrink-0 rounded-xl overflow-hidden flex items-center justify-center" style={{ width: 110, height: 70, background: "#f1f5f9", border: "1px solid #e2e8f0" }}>
+                        <img src={cardImage} alt={uc.card_name} className="w-full h-full object-contain p-1.5" />
+                      </div>
+                    ) : (
+                      <div className="shrink-0 rounded-xl flex items-center justify-center" style={{ width: 110, height: 70, background: "#f1f5f9", border: "1px solid #e2e8f0" }}>
+                        <span className="text-2xl">💳</span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <h2 className="font-bold text-lg leading-tight" style={{ color: "#0f172a" }}>{uc.card_name}</h2>
+                        <h2 className="font-bold text-base leading-tight" style={{ color: "#0f172a" }}>{uc.card_name}</h2>
                         {uc.card_id && (
-                          <Link href={`/cards/${uc.card_id}`} className="text-xs font-medium shrink-0 hover:underline" style={{ color: "#2563eb" }}>
-                            View card →
+                          <Link href={`/cards/${uc.card_id}`} className="text-xs font-semibold shrink-0 px-2.5 py-1 rounded-lg transition-colors hover:opacity-80" style={{ background: "#eff6ff", color: "#2563eb" }}>
+                            View →
                           </Link>
                         )}
                       </div>
-                      <p className="text-xs mt-0.5 mb-2" style={{ color: "#94a3b8" }}>Applied {formatDate(uc.apply_date)}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {msrDays !== null && !msrDone && <StatusBadge days={msrDays} label="MSR deadline" />}
-                        {cancelDays !== null && <StatusBadge days={cancelDays} label="Cancel window" />}
+                      <p className="text-xs mt-1 mb-2.5" style={{ color: "#94a3b8" }}>Applied {formatDate(uc.apply_date)}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {msrDays !== null && !msrDone && <StatusBadge days={msrDays} label="MSR" />}
+                        {cancelDays !== null && <StatusBadge days={cancelDays} label="Cancel by" />}
                         {feeDays !== null && <StatusBadge days={feeDays} label="Annual fee" />}
                         {velocity && <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }}>{velocity}</span>}
                       </div>
@@ -621,7 +654,8 @@ function DashboardInner() {
                           ) : (
                             <button
                               onClick={() => { setMsrUpdateId(uc.id); setMsrUpdateInput(""); }}
-                              className="text-xs font-medium hover:underline" style={{ color: "#2563eb" }}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-full transition-colors hover:opacity-90"
+                              style={{ background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }}
                             >
                               + Log spending
                             </button>
@@ -632,42 +666,41 @@ function DashboardInner() {
                   )}
 
                   {/* Dates row */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-                    <div className="rounded-xl p-3" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                      <p className="text-xs mb-0.5" style={{ color: "#94a3b8" }}>Annual Fee Date</p>
-                      <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{formatDate(uc.annual_fee_date)}</p>
-                    </div>
-                    <div className="rounded-xl p-3" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                      <p className="text-xs mb-0.5" style={{ color: "#94a3b8" }}>Cancel By</p>
-                      <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{formatDate(cancelDate)}</p>
-                    </div>
-                    <div className="rounded-xl p-3" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                      <p className="text-xs mb-0.5" style={{ color: "#94a3b8" }}>MSR Deadline</p>
-                      <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{formatDate(uc.msr_deadline)}</p>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {[
+                      { label: "Annual Fee", value: formatDate(uc.annual_fee_date) },
+                      { label: "Cancel By",  value: formatDate(cancelDate) },
+                      { label: "MSR Due",    value: formatDate(uc.msr_deadline) },
+                    ].map(d => (
+                      <div key={d.label} className="rounded-xl p-3 text-center" style={{ background: "#f8fafc", border: "1px solid #f1f5f9" }}>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide mb-1" style={{ color: "#94a3b8" }}>{d.label}</p>
+                        <p className="text-xs font-bold" style={{ color: "#0f172a" }}>{d.value}</p>
+                      </div>
+                    ))}
                   </div>
 
                   {uc.notes && (
                     <p className="text-xs italic mb-4" style={{ color: "#64748b" }}>&ldquo;{uc.notes}&rdquo;</p>
                   )}
 
-                  <div className="flex gap-3 items-center">
+                  <div className="flex gap-2 items-center">
                     <button
                       onClick={() => toggleBenefits(uc.id)}
-                      className="text-xs font-medium hover:underline transition-colors" style={{ color: "#2563eb" }}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                      style={{ background: benefitsOpen.has(uc.id) ? "#eff6ff" : "#f8fafc", color: benefitsOpen.has(uc.id) ? "#2563eb" : "#64748b", border: "1px solid #e2e8f0" }}
                     >
-                      {benefitsOpen.has(uc.id) ? "Hide benefits ↑" : "View benefits ↓"}
+                      {benefitsOpen.has(uc.id) ? "Hide benefits ↑" : "Benefits ↓"}
                     </button>
-                    <span style={{ color: "#e2e8f0" }}>|</span>
-                    <button onClick={() => openEdit(uc)} className="text-xs font-medium transition-colors hover:underline" style={{ color: "#64748b" }}>
+                    <button onClick={() => openEdit(uc)} className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors" style={{ background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" }}>
                       Edit
                     </button>
-                    <button onClick={() => handleDelete(uc.id)} className="text-xs font-medium transition-colors hover:underline" style={{ color: "#ef4444" }}>
+                    <button onClick={() => handleDelete(uc.id)} className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors" style={{ background: "#fef2f2", color: "#ef4444", border: "1px solid #fecaca" }}>
                       Remove
                     </button>
                   </div>
 
                   {benefitsOpen.has(uc.id) && <BenefitsPanel cardId={uc.card_id} />}
+                  </div>
                 </div>
               );
             })}
