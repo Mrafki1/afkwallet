@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCard, getCards, getLastVerified, getBonusHistory } from "../../lib/cards-db";
+import { getCard, getCards, getLastVerified, getBonusHistory, getPortalsLastScraped } from "../../lib/cards-db";
 import AlertSubscribe from "./AlertSubscribe";
 import CardImage from "./CardImage";
 import TrackButton from "./TrackButton";
@@ -50,9 +50,10 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const card = await getCard(id);
   if (!card) notFound();
-  const [CARDS_LAST_VERIFIED, bonusHistory] = await Promise.all([
+  const [CARDS_LAST_VERIFIED, bonusHistory, portalsLastScraped] = await Promise.all([
     getLastVerified(),
     getBonusHistory(id),
+    getPortalsLastScraped(),
   ]);
 
   const sortedPortals = [...card.portals].sort((a, b) => b.bonus - a.bonus);
@@ -181,7 +182,14 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
             {/* Portal comparison */}
             {sortedPortals.length > 0 && (
               <div>
-                <p className="text-xs text-gray-400 font-semibold uppercase tracking-widest mb-3">Apply via rebate portal</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-widest">Apply via rebate portal</p>
+                  {portalsLastScraped && (
+                    <p className="text-[11px]" style={{ color: "#94a3b8" }}>
+                      Updated {new Date(portalsLastScraped).toLocaleDateString("en-CA", { month: "short", day: "numeric" })}
+                    </p>
+                  )}
+                </div>
                 <div className="flex flex-col gap-2">
                   {sortedPortals.map((portal, i) => (
                     <a

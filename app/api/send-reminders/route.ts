@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { createHmac } from "crypto";
+
+function unsubscribeUrl(userId: string): string {
+  const token = createHmac("sha256", process.env.CRON_SECRET ?? "").update(userId).digest("hex");
+  return `${process.env.NEXT_PUBLIC_SITE_URL}/api/unsubscribe?uid=${userId}&token=${token}`;
+}
 
 function addDays(days: number): string {
   const d = new Date();
@@ -58,8 +64,8 @@ export async function GET(request: NextRequest) {
       const { data: { user } } = await supabase.auth.admin.getUserById(card.user_id);
       if (!user?.email) continue;
 
-      const { data: prefs } = await supabase.from("user_notification_prefs").select("fee_reminder").eq("user_id", card.user_id).maybeSingle();
-      if (prefs?.fee_reminder === false) continue;
+      const { data: prefs } = await supabase.from("user_notification_prefs").select("fee_reminder, email_opted_out").eq("user_id", card.user_id).maybeSingle();
+      if (prefs?.email_opted_out || prefs?.fee_reminder === false) continue;
 
       const cancelBy = new Date(card.annual_fee_date);
       cancelBy.setDate(cancelBy.getDate() - 30);
@@ -79,6 +85,7 @@ export async function GET(request: NextRequest) {
           `,
           ctaText: "View my dashboard",
           ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+          unsubscribeUrl: unsubscribeUrl(card.user_id),
         }),
       });
       sent++;
@@ -93,8 +100,8 @@ export async function GET(request: NextRequest) {
       const { data: { user } } = await supabase.auth.admin.getUserById(card.user_id);
       if (!user?.email) continue;
 
-      const { data: prefs } = await supabase.from("user_notification_prefs").select("msr_reminder").eq("user_id", card.user_id).maybeSingle();
-      if (prefs?.msr_reminder === false) continue;
+      const { data: prefs } = await supabase.from("user_notification_prefs").select("msr_reminder, email_opted_out").eq("user_id", card.user_id).maybeSingle();
+      if (prefs?.email_opted_out || prefs?.msr_reminder === false) continue;
 
       const remaining = card.msr_amount - card.msr_spent;
       const pct = Math.round((card.msr_spent / card.msr_amount) * 100);
@@ -112,6 +119,7 @@ export async function GET(request: NextRequest) {
           `,
           ctaText: "Log spending",
           ctaUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+          unsubscribeUrl: unsubscribeUrl(card.user_id),
         }),
       });
       sent++;
@@ -124,8 +132,8 @@ export async function GET(request: NextRequest) {
 }
 
 // ── Simple email template ───────────────────────────────────────────────────
-function emailHtml({ title, preheader, body, ctaText, ctaUrl }: {
-  title: string; preheader: string; body: string; ctaText: string; ctaUrl: string;
+function emailHtml({ title, preheader, body, ctaText, ctaUrl, unsubscribeUrl }: {
+  title: string; preheader: string; body: string; ctaText: string; ctaUrl: string; unsubscribeUrl: string;
 }) {
   return `<!DOCTYPE html>
 <html>
@@ -136,7 +144,7 @@ function emailHtml({ title, preheader, body, ctaText, ctaUrl }: {
     <tr><td align="center">
       <table width="100%" style="max-width:520px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;">
         <!-- Header -->
-        <tr><td style="background:#7f1d1d;padding:24px 32px;">
+        <tr><td style="background:#0f172a;padding:24px 32px;">
           <p style="margin:0;color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px;">PointsBinder</p>
         </td></tr>
         <!-- Body -->
@@ -144,12 +152,13 @@ function emailHtml({ title, preheader, body, ctaText, ctaUrl }: {
           <h1 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;line-height:1.3;">${title}</h1>
           <div style="font-size:14px;color:#4b5563;line-height:1.7;">${body}</div>
           <div style="margin-top:28px;">
-            <a href="${ctaUrl}" style="display:inline-block;background:#7f1d1d;color:#fff;font-size:14px;font-weight:600;padding:12px 24px;border-radius:10px;text-decoration:none;">${ctaText} →</a>
+            <a href="${ctaUrl}" style="display:inline-block;background:#2563eb;color:#fff;font-size:14px;font-weight:600;padding:12px 24px;border-radius:10px;text-decoration:none;">${ctaText} →</a>
           </div>
         </td></tr>
         <!-- Footer -->
         <tr><td style="padding:20px 32px;border-top:1px solid #f3f4f6;">
           <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you track cards on PointsBinder. Offers change frequently — always verify before acting.</p>
+          <p style="margin:8px 0 0;font-size:12px;color:#9ca3af;"><a href="${unsubscribeUrl}" style="color:#9ca3af;text-decoration:underline;">Unsubscribe from all reminder emails</a></p>
         </td></tr>
       </table>
     </td></tr>

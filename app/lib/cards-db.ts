@@ -207,6 +207,16 @@ export async function recordBonusHistory(
   );
 }
 
+export async function getPortalsLastScraped(): Promise<string | null> {
+  const supabase = getServiceClient();
+  const { data } = await supabase
+    .from("site_metadata")
+    .select("updated_at")
+    .eq("key", "portals_last_scraped")
+    .single();
+  return data?.updated_at ?? null;
+}
+
 export async function getCardsCount(): Promise<number> {
   const supabase = getServiceClient();
   const { count } = await supabase

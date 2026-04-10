@@ -354,6 +354,13 @@ export async function POST(req: NextRequest) {
     if (!error) updated++;
   }
 
+  // Update last-scraped timestamp in site_metadata
+  await supabase.from("site_metadata").upsert({
+    key: "portals_last_scraped",
+    value: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
+
   return NextResponse.json({
     ok: true,
     updated,
