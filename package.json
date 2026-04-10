@@ -28,6 +28,7 @@
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.3",
     "@tailwindcss/typography": "^0.5.19",
+    "@vercel/speed-insights": "^2.0.0",
     "gray-matter": "^4.0.3",
     "next": "15.5.14",
     "playwright-core": "^1.59.1",
