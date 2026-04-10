@@ -125,8 +125,24 @@ function CardCombobox({ value, onChange, allCards }: { value: string; onChange: 
   );
 }
 
+// Maps DB card IDs (from CCG scraper) → local cards.ts IDs where they differ
+const CARD_ID_ALIASES: Record<string, string> = {
+  "cibc-aventura-gold-visa":                   "cibc-aventura-gold",
+  "bmo-eclipse-vi-infinite":                   "bmo-eclipse-vi",
+  "bmo-eclipse-vi-infinite-privilege":         "bmo-eclipse-vi-privilege",
+  "bmo-ascend-world-elite-mc":                 "bmo-ascend",
+  "bmo-cashback-we-mc":                        "bmo-cashback-we",
+  "amex-marriott-bonvoy":                      "amex-marriott-pers",
+  "amex-marriott-bonvoy-business":             "amex-marriott-biz",
+  "tangerine-moneyback-mastercard":            "tangerine-money-back",
+  "td-aeroplan-visa-infinite":                 "td-aeroplan-vi",
+  "td-travel-visa-platinum":                   "td-plat-travel",
+  "mbna-smart-cash-platinum-plus-mastercard":  "mbna-smart-cash",
+};
+
 function BenefitsPanel({ cardId }: { cardId: string }) {
-  const card = cards.find(c => c.id === cardId);
+  const resolvedId = CARD_ID_ALIASES[cardId] ?? cardId;
+  const card = cards.find(c => c.id === resolvedId);
   if (!card) return <p className="text-xs text-gray-400 py-2">No benefit data available for this card yet.</p>;
   return (
     <div className="mt-3 border-t border-gray-100 pt-3 flex flex-col gap-4">
