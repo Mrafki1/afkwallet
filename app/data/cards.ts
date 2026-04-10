@@ -3327,8 +3327,6 @@ export const cards: Card[] = [
     loungeDetails: "No lounge access",
     perks: ["Best lower-fee business Amex in Canada", "Access to full MR transfer network", "Strong business category multipliers"],
     pointsValue: "~1.5¢/pt via Aeroplan transfer",
-    elevated: true,
-    elevatedNote: "Currently 45,000 MR points — elevated from standard 30,000",
   },
   {
     id: "amex-gold-rewards",
