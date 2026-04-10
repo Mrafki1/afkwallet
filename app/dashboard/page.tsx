@@ -333,6 +333,9 @@ function DashboardInner() {
   const [msrUpdateInput, setMsrUpdateInput] = useState("");
   const [msrSaving, setMsrSaving]         = useState(false);
 
+  const [notifPrefs, setNotifPrefs]       = useState({ msr_reminder: true, fee_reminder: true });
+  const [notifSaving, setNotifSaving]     = useState(false);
+
   const router       = useRouter();
   const searchParams = useSearchParams();
   const supabase     = createClient();
@@ -356,12 +359,14 @@ function DashboardInner() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }
       setUserEmail(user.email ?? "");
-      const [{ data: ucData }, { data: cardData }] = await Promise.all([
+      const [{ data: ucData }, { data: cardData }, { data: prefsData }] = await Promise.all([
         supabase.from("user_cards").select("*").order("apply_date", { ascending: false }),
         supabase.from("cards").select("id, name, issuer, msr, image").eq("status", "published").order("name"),
+        supabase.from("user_notification_prefs").select("msr_reminder, fee_reminder").eq("user_id", user.id).maybeSingle(),
       ]);
       setUserCards(ucData ?? []);
       setDbCards(cardData ?? []);
+      if (prefsData) setNotifPrefs({ msr_reminder: prefsData.msr_reminder, fee_reminder: prefsData.fee_reminder });
       setLoading(false);
       const addCardId = searchParams.get("add");
       if (addCardId) {
@@ -422,6 +427,15 @@ function DashboardInner() {
     setUserCards(prev => prev.filter(c => c.id !== id));
   }
   async function handleLogout() { await supabase.auth.signOut(); router.push("/"); }
+  async function handleNotifToggle(key: "msr_reminder" | "fee_reminder") {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
+    setNotifPrefs(updated);
+    setNotifSaving(true);
+    await supabase.from("user_notification_prefs").upsert({ user_id: user.id, ...updated, updated_at: new Date().toISOString() });
+    setNotifSaving(false);
+  }
   async function handleMsrUpdate(uc: UserCard) {
     const added = parseInt(msrUpdateInput);
     if (!added || added <= 0) { setMsrUpdateId(null); return; }
@@ -763,6 +777,50 @@ function DashboardInner() {
 
           </div>
         )}
+      </div>
+
+      {/* ── Notifications panel ──────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-6 pb-10">
+        <div className="rounded-2xl p-6" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-sm font-bold" style={{ color: "#0f172a" }}>Email Notifications</h2>
+            {notifSaving && <span className="text-[11px]" style={{ color: "#94a3b8" }}>Saving…</span>}
+          </div>
+          <p className="text-xs mb-5" style={{ color: "#94a3b8" }}>Choose which reminder emails you want to receive.</p>
+          <div className="flex flex-col gap-4">
+            {([
+              { key: "msr_reminder" as const, label: "MSR deadline reminder", desc: "Email 7 days before a minimum spend deadline is due" },
+              { key: "fee_reminder" as const, label: "Annual fee reminder",    desc: "Email 30 days before an annual fee is charged" },
+            ]).map(({ key, label, desc }) => (
+              <div key={key} className="flex items-center justify-between gap-4 py-3" style={{ borderTop: "1px solid #f1f5f9" }}>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>{desc}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleNotifToggle(key)}
+                  className="relative shrink-0 rounded-full transition-colors duration-200"
+                  style={{
+                    width: 44, height: 24,
+                    background: notifPrefs[key] ? "#2563eb" : "#e2e8f0",
+                  }}
+                  aria-label={notifPrefs[key] ? `Disable ${label}` : `Enable ${label}`}
+                >
+                  <span
+                    className="absolute top-0.5 rounded-full transition-transform duration-200"
+                    style={{
+                      width: 20, height: 20,
+                      background: "#fff",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                      left: notifPrefs[key] ? 22 : 2,
+                    }}
+                  />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── Add / Edit modal ─────────────────────────────────────────── */}

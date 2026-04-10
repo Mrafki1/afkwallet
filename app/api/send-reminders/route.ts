@@ -58,6 +58,9 @@ export async function GET(request: NextRequest) {
       const { data: { user } } = await supabase.auth.admin.getUserById(card.user_id);
       if (!user?.email) continue;
 
+      const { data: prefs } = await supabase.from("user_notification_prefs").select("fee_reminder").eq("user_id", card.user_id).maybeSingle();
+      if (prefs?.fee_reminder === false) continue;
+
       const cancelBy = new Date(card.annual_fee_date);
       cancelBy.setDate(cancelBy.getDate() - 30);
       const cancelByStr = cancelBy.toISOString().split("T")[0];
@@ -89,6 +92,9 @@ export async function GET(request: NextRequest) {
     try {
       const { data: { user } } = await supabase.auth.admin.getUserById(card.user_id);
       if (!user?.email) continue;
+
+      const { data: prefs } = await supabase.from("user_notification_prefs").select("msr_reminder").eq("user_id", card.user_id).maybeSingle();
+      if (prefs?.msr_reminder === false) continue;
 
       const remaining = card.msr_amount - card.msr_spent;
       const pct = Math.round((card.msr_spent / card.msr_amount) * 100);
