@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCards } from "../../lib/cards-db";
 import type { Card } from "../../data/cards";
+import { withUtm } from "../../lib/utm";
 import Navbar from "../../components/Navbar";
 
 export const dynamic = "force-dynamic";
@@ -176,89 +177,137 @@ export default async function BestOfPage({
         </div>
       </div>
 
-      {/* Card list */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      {/* Card grid */}
+      <div className="max-w-7xl mx-auto px-6 py-10">
         {filtered.length === 0 ? (
           <p className="text-center text-gray-500 py-20">No cards found in this category.</p>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((card, i) => {
-              const bestPortal = [...card.portals].sort((a, b) => b.bonus - a.bonus)[0] ?? null;
-              const fyv = parseInt(card.firstYearValue.replace(/[^0-9]/g, "")) || 0;
-              const fyvWithPortal = bestPortal ? `~$${fyv + bestPortal.bonus}` : card.firstYearValue;
+              const sortedPortals = [...card.portals].sort((a, b) => b.bonus - a.bonus);
+              const bestPortal = sortedPortals[0] ?? null;
+              const base = parseInt(card.firstYearValue.replace(/[^0-9]/g, "")) || 0;
+              const fyv = bestPortal ? `~$${(base + bestPortal.bonus).toLocaleString()}` : card.firstYearValue;
 
               return (
                 <div
                   key={card.id}
-                  className="bg-white rounded-2xl flex flex-col sm:flex-row gap-6 items-start overflow-hidden"
+                  className="bg-white rounded-2xl overflow-hidden flex flex-col"
                   style={{ border: "1px solid #e2e8f0" }}
                 >
-                  {/* Rank */}
+                  {/* Top banner: rank + HOT badge */}
                   <div
-                    className="hidden sm:flex w-16 shrink-0 items-center justify-center self-stretch text-2xl font-black"
-                    style={{ background: i === 0 ? "#eff6ff" : "#f8fafc", color: i === 0 ? "#2563eb" : "#cbd5e1" }}
+                    className="px-4 py-2 flex items-center justify-between"
+                    style={{ background: card.elevated ? "#fffbeb" : "#f8fafc", borderBottom: `1px solid ${card.elevated ? "#fde68a" : "#f1f5f9"}` }}
                   >
-                    #{i + 1}
-                  </div>
-
-                  {/* Card image */}
-                  <div className="sm:hidden w-full h-1.5" style={{ background: i === 0 ? "#2563eb" : "#e2e8f0" }} />
-                  <div className="px-5 pt-5 sm:pt-5 sm:pl-0 sm:py-5 shrink-0">
-                    <div className="relative w-32 h-20 rounded-xl overflow-hidden" style={{ background: "#f8fafc" }}>
-                      <Image src={card.image} alt={card.name} fill className="object-contain p-2" />
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex-1 px-5 pb-5 sm:py-5 sm:px-0 flex flex-col gap-3">
-                    <div>
-                      {card.elevated && (
-                        <span className="text-xs font-bold bg-red-600 text-white px-2 py-0.5 rounded-full mr-2">🔥 HOT</span>
-                      )}
-                      <p className="text-xs font-semibold uppercase tracking-wide inline" style={{ color: "#94a3b8" }}>{card.issuer}</p>
-                      <h2 className="font-bold text-lg mt-0.5" style={{ color: "#0f172a" }}>{card.name}</h2>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                      <div className="rounded-lg px-3 py-2" style={{ background: "#f0fdf4" }}>
-                        <p className="text-xs font-medium mb-0.5" style={{ color: "#64748b" }}>First-year value</p>
-                        <p className="font-black text-sm" style={{ color: "#15803d" }}>{fyvWithPortal}</p>
-                      </div>
-                      <div className="rounded-lg px-3 py-2" style={{ background: "#eff6ff" }}>
-                        <p className="text-xs font-medium mb-0.5" style={{ color: "#64748b" }}>Welcome bonus</p>
-                        <p className="font-bold text-sm" style={{ color: "#1d4ed8" }}>{card.pointsBonus}</p>
-                      </div>
-                      <div className="rounded-lg px-3 py-2" style={{ background: "#f8fafc" }}>
-                        <p className="text-xs font-medium mb-0.5" style={{ color: "#64748b" }}>Annual fee</p>
-                        <p className="font-bold text-sm" style={{ color: "#0f172a" }}>{card.annualFee}</p>
-                      </div>
-                      {bestPortal && (
-                        <div className="rounded-lg px-3 py-2" style={{ background: "#fefce8" }}>
-                          <p className="text-xs font-medium mb-0.5" style={{ color: "#64748b" }}>Best portal</p>
-                          <p className="font-bold text-sm" style={{ color: "#92400e" }}>+${bestPortal.bonus} via {bestPortal.name}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {card.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {card.tags.slice(0, 4).map(tag => (
-                          <span key={tag} className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#f1f5f9", color: "#64748b" }}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                    {card.elevated ? (
+                      <span className="text-xs font-bold" style={{ color: "#b45309" }}>🔥 Elevated Offer</span>
+                    ) : (
+                      <span className="text-xs font-bold" style={{ color: "#94a3b8" }}>#{i + 1}</span>
+                    )}
+                    {i === 0 && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#eff6ff", color: "#1d4ed8" }}>
+                        #1 Pick
+                      </span>
                     )}
                   </div>
 
-                  {/* CTA */}
-                  <div className="px-5 pb-5 sm:py-5 sm:pr-6 sm:pl-0 flex items-center sm:self-center">
-                    <Link
-                      href={`/cards/${card.id}`}
-                      className="btn-primary text-sm px-5 py-2.5 whitespace-nowrap"
-                    >
-                      View details →
-                    </Link>
+                  {/* Card image */}
+                  <Link href={`/cards/${card.id}`} className="relative mx-5 mt-5 aspect-[1.8/1] rounded-xl overflow-hidden block" style={{ background: "#f8fafc" }}>
+                    <Image src={card.image} alt={card.name} fill className="object-contain p-3 hover:scale-105 transition-transform duration-200" />
+                  </Link>
+
+                  {/* Content */}
+                  <div className="p-5 flex flex-col gap-3 flex-1">
+
+                    {/* Name */}
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: "#94a3b8" }}>{card.issuer}</p>
+                      <h2 className="font-bold text-base leading-snug" style={{ color: "#0f172a" }}>{card.name}</h2>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="rounded-lg p-2.5 text-center" style={{ background: "#f0fdf4" }}>
+                        <p className="text-[10px] font-medium mb-0.5" style={{ color: "#64748b" }}>Year 1 value</p>
+                        <p className="font-black text-sm" style={{ color: "#15803d" }}>{fyv}</p>
+                      </div>
+                      <div className="rounded-lg p-2.5 text-center" style={{ background: "#eff6ff" }}>
+                        <p className="text-[10px] font-medium mb-0.5" style={{ color: "#64748b" }}>Bonus</p>
+                        <p className="font-bold text-xs leading-tight" style={{ color: "#1d4ed8" }}>{card.pointsBonus}</p>
+                      </div>
+                      <div className="rounded-lg p-2.5 text-center" style={{ background: "#f8fafc" }}>
+                        <p className="text-[10px] font-medium mb-0.5" style={{ color: "#64748b" }}>Annual fee</p>
+                        <p className="font-bold text-sm" style={{ color: "#0f172a" }}>{card.annualFee}</p>
+                      </div>
+                    </div>
+
+                    {/* Best portal */}
+                    {bestPortal && (
+                      <a
+                        href={withUtm(bestPortal.url, card.id, bestPortal.name)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors"
+                        style={{ background: "#f0fdf4", border: "1.5px solid #86efac" }}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: "#16a34a", color: "#fff" }}>BEST</span>
+                          <span className="text-xs font-semibold" style={{ color: "#15803d" }}>{bestPortal.name}</span>
+                        </div>
+                        <span className="text-sm font-black" style={{ color: "#15803d" }}>+${bestPortal.bonus}</span>
+                      </a>
+                    )}
+
+                    {/* Other portals */}
+                    {sortedPortals.length > 1 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {sortedPortals.slice(1).map(portal => (
+                          <a
+                            key={portal.name}
+                            href={withUtm(portal.url, card.id, portal.name)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium px-2.5 py-1 rounded-full transition-colors"
+                            style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#64748b" }}
+                          >
+                            {portal.name} +${portal.bonus}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* CTAs */}
+                    <div className="flex gap-2 mt-auto pt-1">
+                      {bestPortal ? (
+                        <a
+                          href={withUtm(bestPortal.url, card.id, bestPortal.name)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-primary flex-1 text-center text-xs py-2.5"
+                          style={{ borderRadius: 8 }}
+                        >
+                          Apply via {bestPortal.name} →
+                        </a>
+                      ) : (
+                        <a
+                          href={card.directLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-primary flex-1 text-center text-xs py-2.5"
+                          style={{ borderRadius: 8 }}
+                        >
+                          Apply direct →
+                        </a>
+                      )}
+                      <Link
+                        href={`/cards/${card.id}`}
+                        className="btn-secondary text-xs py-2.5 px-4 shrink-0"
+                        style={{ borderRadius: 8 }}
+                      >
+                        Details
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
@@ -266,9 +315,9 @@ export default async function BestOfPage({
           </div>
         )}
 
-        <div className="mt-10 p-5 rounded-xl text-sm" style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e" }}>
-          Rankings are based on estimated first-year value including portal cash back. Individual results vary. Always verify offer terms before applying.
-        </div>
+        <p className="mt-8 text-xs text-center" style={{ color: "#94a3b8" }}>
+          Rankings based on estimated first-year value including portal cash back. Individual results vary. Always verify offer terms before applying.
+        </p>
       </div>
     </div>
   );
