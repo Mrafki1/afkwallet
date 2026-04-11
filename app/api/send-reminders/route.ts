@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { createHmac } from "crypto";
+import { pingHealthcheck } from "../../lib/healthcheck";
 
 function unsubscribeUrl(userId: string): string {
   const token = createHmac("sha256", process.env.CRON_SECRET ?? "").update(userId).digest("hex");
@@ -128,6 +129,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  await pingHealthcheck("HEALTHCHECK_URL_SEND_REMINDERS");
   return NextResponse.json({ sent, errors, feeReminders: feeCards?.length ?? 0, msrReminders: incompleteMsr.length });
 }
 

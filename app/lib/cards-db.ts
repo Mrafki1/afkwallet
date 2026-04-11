@@ -207,6 +207,32 @@ export async function recordBonusHistory(
   );
 }
 
+// ── Card change tracking ──────────────────────────────────────────────────────
+
+export type CardChange = {
+  card_id: string;
+  field: "points_bonus" | "annual_fee" | "msr";
+  old_value: string | null;
+  new_value: string;
+  note?: string;
+};
+
+export async function recordCardChanges(changes: CardChange[]): Promise<void> {
+  if (changes.length === 0) return;
+  const supabase = getServiceClient();
+  const today = new Date().toISOString().split("T")[0];
+  const rows = changes.map(c => ({
+    card_id:     c.card_id,
+    field:       c.field,
+    old_value:   c.old_value ?? null,
+    new_value:   c.new_value,
+    recorded_at: today,
+    note:        c.note ?? null,
+  }));
+  const { error } = await supabase.from("card_changes").insert(rows);
+  if (error) console.warn("recordCardChanges:", error.message);
+}
+
 export async function getPortalsLastScraped(): Promise<string | null> {
   const supabase = getServiceClient();
   const { data } = await supabase
@@ -224,4 +250,60 @@ export async function getCardsCount(): Promise<number> {
     .select("id", { count: "exact", head: true })
     .eq("status", "published");
   return count ?? 0;
+}
+
+// ── Admin queries ─────────────────────────────────────────────────────────────
+
+export type RecentChange = {
+  id: string;
+  card_id: string;
+  card_name: string | null;
+  field: string;
+  old_value: string | null;
+  new_value: string;
+  recorded_at: string;
+  note: string | null;
+};
+
+export async function getRecentChanges(limit = 50): Promise<RecentChange[]> {
+  const supabase = getServiceClient();
+  const { data, error } = await supabase
+    .from("card_changes")
+    .select("id, card_id, field, old_value, new_value, recorded_at, note")
+    .order("recorded_at", { ascending: false })
+    .limit(limit);
+  if (error) return [];
+
+  // Enrich with card names
+  const cardIds = [...new Set((data ?? []).map(r => r.card_id))];
+  let nameMap: Record<string, string> = {};
+  if (cardIds.length > 0) {
+    const { data: cards } = await supabase
+      .from("cards")
+      .select("id, name")
+      .in("id", cardIds);
+    nameMap = Object.fromEntries((cards ?? []).map(c => [c.id, c.name]));
+  }
+
+  return (data ?? []).map(r => ({ ...r, card_name: nameMap[r.card_id] ?? null }));
+}
+
+export async function getElevatedCards(): Promise<Card[]> {
+  const supabase = getServiceClient();
+  const { data, error } = await supabase
+    .from("cards")
+    .select("*")
+    .eq("elevated", true)
+    .eq("status", "published")
+    .order("name");
+  if (error) return [];
+  return (data ?? []).map(rowToCard);
+}
+
+export async function setCardElevated(cardId: string, elevated: boolean, note?: string): Promise<void> {
+  const supabase = getServiceClient();
+  await supabase
+    .from("cards")
+    .update({ elevated, elevated_note: note ?? null })
+    .eq("id", cardId);
 }

@@ -1,8 +1,9 @@
 ---
 title: "What Is a Rebate Portal — and Why You Should Always Use One"
-date: "2025-03-01"
+date: "2026-03-28"
 description: "Rebate portals like GCR and Frugal Flyer pay you extra cash just for applying through their link. Here's how they work and how to find the best one."
 tags: ["Rebate Portals", "GCR", "Frugal Flyer", "Beginner Guide"]
+image: "https://images.unsplash.com/photo-1481487196290-9152257d54e1?w=1200&h=630&fit=crop&q=80"
 ---
 
 Every time you apply for a credit card, you're leaving money on the table if you go directly to the issuer's website. Rebate portals exist to fix that — and the extra cash is real.

@@ -1,8 +1,9 @@
 ---
 title: "How to Hit Your Minimum Spend Requirement (MSR) in Canada"
-date: "2025-03-08"
+date: "2026-04-05"
 description: "Practical strategies for meeting credit card minimum spend requirements without overspending or gaming the system."
 tags: ["MSR", "Beginner Guide", "Strategy"]
+image: "https://images.unsplash.com/photo-1483181994823-12c503a179ea?w=1200&h=630&fit=crop&q=80"
 ---
 
 The minimum spend requirement (MSR) is the one obstacle between you and your welcome bonus. Most Canadian cards require $2,000–$10,000 in spending within 3–6 months. Here's how to hit it without stress.

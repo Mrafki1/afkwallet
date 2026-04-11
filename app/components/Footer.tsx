@@ -21,20 +21,35 @@ export default function Footer() {
           </div>
 
           {/* Links */}
-          <nav className="flex flex-wrap gap-x-6 gap-y-2">
-            {[
-              { href: "/cards",      label: "Cards"       },
-              { href: "/deals",      label: "Hot Deals"   },
-              { href: "/blog",       label: "Blog"        },
-              { href: "/about",      label: "About"       },
-              { href: "/privacy",    label: "Privacy"     },
-              { href: "/terms",      label: "Terms"       },
-              { href: "/disclosure", label: "Disclosure"  },
-            ].map(({ href, label }) => (
-              <Link key={href} href={href} className="text-xs hover:text-gray-900 transition-colors" style={{ color: "#64748b" }}>
-                {label}
-              </Link>
-            ))}
+          <nav className="flex flex-col gap-4">
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {[
+                { href: "/cards",              label: "Cards"       },
+                { href: "/compare",            label: "Compare"     },
+                { href: "/deals",              label: "Hot Deals"   },
+                { href: "/best/travel-cards",  label: "Best Travel" },
+                { href: "/best/no-fee-cards",  label: "Best No-Fee" },
+                { href: "/issuers",            label: "By Issuer"   },
+                { href: "/programs",           label: "By Program"  },
+                { href: "/blog",               label: "Blog"        },
+                { href: "/about",              label: "About"       },
+              ].map(({ href, label }) => (
+                <Link key={href} href={href} className="text-xs hover:text-gray-900 transition-colors" style={{ color: "#64748b" }}>
+                  {label}
+                </Link>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {[
+                { href: "/privacy",    label: "Privacy"     },
+                { href: "/terms",      label: "Terms"       },
+                { href: "/disclosure", label: "Disclosure"  },
+              ].map(({ href, label }) => (
+                <Link key={href} href={href} className="text-xs hover:text-gray-900 transition-colors" style={{ color: "#94a3b8" }}>
+                  {label}
+                </Link>
+              ))}
+            </div>
           </nav>
         </div>
 

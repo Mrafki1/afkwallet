@@ -1,8 +1,9 @@
 ---
-title: "Scotiabank Gold American Express Review (2025)"
-date: "2025-03-05"
+title: "Scotiabank Gold American Express Review (2026)"
+date: "2026-04-03"
 description: "A detailed review of the Scotia Gold Amex — the best no-fee-first-year card in Canada for dining and travel earn rates."
 tags: ["Scotiabank", "Review", "No FX Fees", "Scene+"]
+image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&h=630&fit=crop&q=80"
 ---
 
 The Scotiabank Gold American Express Card is one of the most popular cards in Canada for good reason: it combines a strong welcome bonus, an exceptional dining earn rate, no foreign transaction fees, and a first-year fee waiver. Here's the full breakdown.

@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { pingHealthcheck } from "../../lib/healthcheck";
 import { createClient } from "@supabase/supabase-js";
 
 export const maxDuration = 60;
@@ -167,6 +168,7 @@ export async function GET(req: NextRequest) {
     if (!error) updated++;
   }
 
+  await pingHealthcheck("HEALTHCHECK_URL_CHECK_LINKS");
   return NextResponse.json({
     ok: true,
     checked,

@@ -12,6 +12,7 @@ export type PostMeta = {
   date: string;
   description: string;
   tags?: string[];
+  image?: string;
 };
 
 export type Post = PostMeta & {
@@ -30,6 +31,7 @@ export function getAllPosts(): PostMeta[] {
       date: data.date as string,
       description: data.description as string,
       tags: data.tags as string[] | undefined,
+      image: data.image as string | undefined,
     };
   });
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -47,6 +49,7 @@ export async function getPost(slug: string): Promise<Post | null> {
     date: data.date as string,
     description: data.description as string,
     tags: data.tags as string[] | undefined,
+    image: data.image as string | undefined,
     contentHtml: processed.toString(),
   };
 }

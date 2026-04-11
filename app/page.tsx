@@ -395,6 +395,51 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Browse by Category ── */}
+      <section style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <p className="section-label mb-3" style={{ color: "#475569" }}>Browse by Category</p>
+          <h2 className="text-3xl font-bold tracking-tight text-white mb-10" style={{ letterSpacing: "-0.02em" }}>
+            Find the right card for you
+          </h2>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+            {[
+              { href: "/best/travel-cards",    label: "Best Travel Cards",        icon: "✈️" },
+              { href: "/best/no-fee-cards",     label: "Best No-Fee Cards",        icon: "🆓" },
+              { href: "/best/cash-back-cards",  label: "Best Cash Back",           icon: "💵" },
+              { href: "/best/lounge-access",    label: "Best Lounge Access",       icon: "🛋️" },
+              { href: "/best/no-fx-fee",        label: "Best No FX Fee",           icon: "🌍" },
+            ].map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex flex-col items-center gap-2 rounded-2xl p-5 text-center transition-colors"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+              >
+                <span className="text-2xl">{item.icon}</span>
+                <span className="text-sm font-semibold leading-snug text-white">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link href="/issuers" className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              style={{ background: "rgba(255,255,255,0.08)", color: "#94a3b8", border: "1px solid rgba(255,255,255,0.1)" }}>
+              Browse by issuer →
+            </Link>
+            <Link href="/programs" className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              style={{ background: "rgba(255,255,255,0.08)", color: "#94a3b8", border: "1px solid rgba(255,255,255,0.1)" }}>
+              Browse by program →
+            </Link>
+            <Link href="/compare" className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              style={{ background: "rgba(255,255,255,0.08)", color: "#94a3b8", border: "1px solid rgba(255,255,255,0.1)" }}>
+              Compare cards side by side →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── Blog Previews ── */}
       <section style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
         <div className="max-w-7xl mx-auto px-6 py-20">
@@ -412,7 +457,7 @@ export default function LandingPage() {
             {[
               { title: "Credit Card Churning Canada: A Beginner's Guide", slug: "credit-card-churning-canada-beginners-guide", tag: "Beginner" },
               { title: "How to Hit Your Minimum Spend Requirement (MSR)",  slug: "how-to-hit-minimum-spend-requirement-canada",    tag: "Strategy" },
-              { title: "Best Aeroplan Credit Card in Canada (2025)",        slug: "best-aeroplan-credit-card-canada-2025",          tag: "Top Picks" },
+              { title: "Best Aeroplan Credit Card in Canada (2026)",        slug: "best-aeroplan-credit-card-canada-2025",          tag: "Top Picks" },
             ].map(post => (
               <Link
                 key={post.slug}

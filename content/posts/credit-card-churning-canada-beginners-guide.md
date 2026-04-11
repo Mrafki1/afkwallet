@@ -1,8 +1,9 @@
 ---
-title: "Credit Card Churning Canada: A Beginner's Guide"
-date: "2025-03-20"
+title: "Credit Card Churning Canada: A Beginner's Guide (2026)"
+date: "2026-04-10"
 description: "What credit card churning is, how it works in Canada, and how to get started without hurting your credit score."
 tags: ["Beginner Guide", "Churning", "Credit Score"]
+image: "https://images.unsplash.com/photo-1488229297935-1f5b8a34dcab?w=1200&h=630&fit=crop&q=80"
 ---
 
 Credit card churning is the practice of signing up for credit cards specifically to earn welcome bonuses, then cancelling or downgrading before the next annual fee hits. Done right, it's one of the most efficient ways to earn free flights, hotel nights, and cash back in Canada.

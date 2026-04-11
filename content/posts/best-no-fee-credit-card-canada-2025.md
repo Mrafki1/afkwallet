@@ -1,8 +1,9 @@
 ---
-title: "Best No-Fee Credit Cards in Canada (2025)"
-date: "2025-03-16"
+title: "Best No-Fee Credit Cards in Canada (2026)"
+date: "2026-04-09"
 description: "The top Canadian credit cards with no annual fee — for travel points, cash back, and everyday spending."
 tags: ["No Annual Fee", "Cash Back", "Beginner Guide"]
+image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1200&h=630&fit=crop&q=80"
 ---
 
 No annual fee cards don't get enough credit. The best ones offer real ongoing value — strong earn rates, useful insurance, and in some cases access to full loyalty ecosystems — without any cost to hold.

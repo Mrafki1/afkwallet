@@ -1,8 +1,9 @@
 ---
-title: "Best Canadian Credit Card Welcome Bonuses Right Now (2025)"
-date: "2025-03-15"
+title: "Best Canadian Credit Card Welcome Bonuses Right Now (2026)"
+date: "2026-04-10"
 description: "A breakdown of the highest-value welcome offers available to Canadians right now, ranked by first-year value."
 tags: ["Welcome Bonuses", "Top Picks", "Amex", "Travel"]
+image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=630&fit=crop&q=80"
 ---
 
 If you only apply for one or two cards a year, picking the right welcome bonus makes a massive difference. A well-timed application can net you $1,000–$2,500+ in value — without changing how you spend.

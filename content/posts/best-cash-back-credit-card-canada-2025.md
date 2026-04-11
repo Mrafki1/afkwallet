@@ -1,8 +1,9 @@
 ---
-title: "Best Cash Back Credit Cards in Canada (2025)"
-date: "2025-03-10"
+title: "Best Cash Back Credit Cards in Canada (2026)"
+date: "2026-04-08"
 description: "The top Canadian cash back credit cards ranked by category — groceries, dining, gas, and flat-rate spending."
 tags: ["Cash Back", "Top Picks", "No Annual Fee"]
+image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=1200&h=630&fit=crop&q=80"
 ---
 
 Not everyone wants to deal with points programs and transfer partners. Cash back cards give you real dollars back with no redemption complexity. Here are the best ones in Canada right now, broken down by use case.

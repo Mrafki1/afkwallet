@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabase";
 
-export default function Navbar({ activePage }: { activePage?: "cards" | "blog" | "deals" | "about" }) {
+export default function Navbar({ activePage }: { activePage?: "cards" | "blog" | "deals" | "about" | "compare" }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -57,6 +57,7 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
 
           <div className="hidden md:flex items-center gap-6">
             <Link href="/cards"         className={linkClass("cards")}>Cards</Link>
+            <Link href="/compare"       className={linkClass("compare")}>Compare</Link>
             <Link href="/deals"         className={linkClass("deals")}>⚡ Hot Deals</Link>
             <Link href="/blog"          className={linkClass("blog")}>Blog</Link>
             <Link href="/about"         className={linkClass("about")}>About</Link>
@@ -102,10 +103,11 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
           style={{ background: "#ffffff", borderColor: "#e2e8f0" }}
         >
           {[
-            { href: "/cards",  label: "Cards",        page: "cards" },
-            { href: "/deals",  label: "⚡ Hot Deals", page: "deals" },
-            { href: "/blog",   label: "Blog",         page: "blog"  },
-            { href: "/about",  label: "About",        page: "about" },
+            { href: "/cards",   label: "Cards",        page: "cards"   },
+            { href: "/compare", label: "Compare",      page: "compare" },
+            { href: "/deals",   label: "⚡ Hot Deals", page: "deals"   },
+            { href: "/blog",    label: "Blog",         page: "blog"    },
+            { href: "/about",   label: "About",        page: "about"   },
           ].map(item => (
             <Link
               key={item.href}

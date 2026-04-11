@@ -1,8 +1,9 @@
 ---
-title: "Best Aeroplan Credit Card in Canada (2025)"
-date: "2025-03-18"
+title: "Best Aeroplan Credit Cards in Canada (2026)"
+date: "2026-04-10"
 description: "A comparison of every Canadian Aeroplan credit card — TD, CIBC, and Amex — ranked by welcome bonus, first-year value, and perks."
 tags: ["Aeroplan", "Top Picks", "TD", "CIBC", "Amex"]
+image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&h=630&fit=crop&q=80"
 ---
 
 Aeroplan is Canada's dominant travel loyalty program, and there are now 8+ credit cards across three issuers that earn it directly. Choosing the right one depends on whether you want the biggest bonus, the best ongoing earn rate, lounge access, or a low fee.

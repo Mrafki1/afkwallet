@@ -9,6 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { pingHealthcheck } from "../../lib/healthcheck";
 import { chromium } from "playwright-core";
 import chromiumBin from "@sparticuz/chromium";
 import { createClient } from "@supabase/supabase-js";
@@ -361,6 +362,7 @@ export async function POST(req: NextRequest) {
     updated_at: new Date().toISOString(),
   });
 
+  await pingHealthcheck("HEALTHCHECK_URL_SCRAPE_PORTALS");
   return NextResponse.json({
     ok: true,
     updated,

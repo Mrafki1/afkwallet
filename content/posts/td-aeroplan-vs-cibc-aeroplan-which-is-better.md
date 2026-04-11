@@ -1,8 +1,9 @@
 ---
-title: "TD Aeroplan vs CIBC Aeroplan: Which Card Should You Get?"
-date: "2025-03-02"
+title: "TD Aeroplan vs CIBC Aeroplan: Which Card Should You Get? (2026)"
+date: "2026-04-01"
 description: "A side-by-side comparison of the TD Aeroplan Visa Infinite and CIBC Aeroplan Visa Infinite — and why most churners get both."
 tags: ["Aeroplan", "TD", "CIBC", "Comparison"]
+image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&q=80"
 ---
 
 The TD Aeroplan Visa Infinite and CIBC Aeroplan Visa Infinite are so similar that most reviews struggle to differentiate them. They have the same annual fee, nearly the same earn rates, the same free checked bag perk, and nearly the same welcome bonus structure.

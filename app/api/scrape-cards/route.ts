@@ -10,8 +10,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { chromium } from "playwright-core";
 import chromiumBin from "@sparticuz/chromium";
-import { upsertCards, getCards, recordBonusHistory } from "../../lib/cards-db";
+import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
+import { upsertCards, getCards, recordBonusHistory, recordCardChanges } from "../../lib/cards-db";
+import { pingHealthcheck } from "../../lib/healthcheck";
 import type { Card } from "../../data/cards";
+import type { CardChange } from "../../lib/cards-db";
 
 export const maxDuration = 300; // 5 minutes (Vercel Pro max)
 export const dynamic = "force-dynamic";
@@ -89,13 +93,24 @@ function slugToId(slug: string): string {
     .slice(0, 60);
 }
 
+// ── Elevation helpers ─────────────────────────────────────────────────────
+
+/**
+ * Parse a rough numeric points value from a string like "60,000 pts" or "75,000 points (CAD $750)".
+ * Returns 0 if unparseable.
+ */
+function parsePoints(bonus: string): number {
+  if (!bonus) return 0;
+  const m = bonus.replace(/,/g, "").match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
 // ── Main scrape logic ─────────────────────────────────────────────────────
 
 async function scrapeAllCards(): Promise<ScrapedCard[]> {
   const isVercel = !!process.env.VERCEL;
   const browser = await chromium.launch({
     args: isVercel ? chromiumBin.args : ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-    // defaultViewport is not a valid Playwright LaunchOption (Puppeteer only)
     executablePath: isVercel ? await chromiumBin.executablePath() : undefined,
     headless: true,
   });
@@ -199,6 +214,7 @@ async function scrapeAllCards(): Promise<ScrapedCard[]> {
           perks:           [],
           welcomeMilestones: [],
           elevated:        false,
+          lastVerified:    new Date().toISOString().slice(0, 10),
           source:          "ccg_scrape",
           status:          "published",
         };
@@ -218,6 +234,120 @@ async function scrapeAllCards(): Promise<ScrapedCard[]> {
   return results;
 }
 
+// ── Admin email digest ────────────────────────────────────────────────────
+
+type ChangeDigest = {
+  newCards: string[];
+  bonusChanges: { name: string; id: string; old: string; new: string; direction: "up" | "down" | "changed" }[];
+  feeChanges:   { name: string; id: string; old: string; new: string }[];
+  msrChanges:   { name: string; id: string; old: string; new: string }[];
+};
+
+async function sendAdminDigest(digest: ChangeDigest, scraped: number): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const resendKey  = process.env.RESEND_API_KEY;
+  const fromEmail  = process.env.EMAIL_FROM;
+  const siteUrl    = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+
+  if (!adminEmail || !resendKey || !fromEmail) return;
+
+  const totalChanges = digest.newCards.length + digest.bonusChanges.length + digest.feeChanges.length + digest.msrChanges.length;
+  if (totalChanges === 0) return; // Nothing to report
+
+  const resend = new Resend(resendKey);
+
+  const rows = (items: string[]) => items.map(r => `<tr>${r}</tr>`).join("");
+
+  const bonusRows = digest.bonusChanges.map(c => {
+    const arrow = c.direction === "up" ? "⬆️" : c.direction === "down" ? "⬇️" : "↔️";
+    const color = c.direction === "up" ? "#15803d" : c.direction === "down" ? "#b91c1c" : "#1d4ed8";
+    return `<td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;">${arrow} <a href="${siteUrl}/cards/${c.id}" style="color:#2563eb;text-decoration:none;font-weight:600;">${c.name}</a></td>
+            <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;">${c.old}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:${color};font-weight:600;">${c.new}</td>`;
+  });
+
+  const feeRows = digest.feeChanges.map(c =>
+    `<td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;"><a href="${siteUrl}/cards/${c.id}" style="color:#2563eb;text-decoration:none;">${c.name}</a></td>
+     <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;">${c.old}</td>
+     <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;font-weight:600;">${c.new}</td>`
+  );
+
+  const msrRows = digest.msrChanges.map(c =>
+    `<td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;"><a href="${siteUrl}/cards/${c.id}" style="color:#2563eb;text-decoration:none;">${c.name}</a></td>
+     <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;color:#6b7280;">${c.old}</td>
+     <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;font-weight:600;">${c.new}</td>`
+  );
+
+  const newCardRows = digest.newCards.map(name =>
+    `<li style="padding:4px 0;color:#374151;">${name}</li>`
+  );
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" style="max-width:640px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;">
+        <tr><td style="background:#0f172a;padding:24px 32px;">
+          <p style="margin:0;color:#fff;font-size:18px;font-weight:700;">PointsBinder — Weekly Scrape Digest</p>
+          <p style="margin:4px 0 0;color:#94a3b8;font-size:13px;">${new Date().toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })} · ${scraped} cards scraped · ${totalChanges} change${totalChanges !== 1 ? "s" : ""} detected</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+
+          ${digest.bonusChanges.length > 0 ? `
+          <h2 style="margin:0 0 12px;font-size:16px;font-weight:700;color:#111827;">Welcome Bonus Changes (${digest.bonusChanges.length})</h2>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:28px;font-size:13px;">
+            <thead><tr style="background:#f8fafc;">
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Card</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Before</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">After</th>
+            </tr></thead>
+            <tbody>${rows(bonusRows)}</tbody>
+          </table>` : ""}
+
+          ${digest.feeChanges.length > 0 ? `
+          <h2 style="margin:0 0 12px;font-size:16px;font-weight:700;color:#111827;">Annual Fee Changes (${digest.feeChanges.length})</h2>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:28px;font-size:13px;">
+            <thead><tr style="background:#f8fafc;">
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Card</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Before</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">After</th>
+            </tr></thead>
+            <tbody>${rows(feeRows)}</tbody>
+          </table>` : ""}
+
+          ${digest.msrChanges.length > 0 ? `
+          <h2 style="margin:0 0 12px;font-size:16px;font-weight:700;color:#111827;">MSR Changes (${digest.msrChanges.length})</h2>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:28px;font-size:13px;">
+            <thead><tr style="background:#f8fafc;">
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Card</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Before</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">After</th>
+            </tr></thead>
+            <tbody>${rows(msrRows)}</tbody>
+          </table>` : ""}
+
+          ${digest.newCards.length > 0 ? `
+          <h2 style="margin:0 0 12px;font-size:16px;font-weight:700;color:#111827;">New Cards Added (${digest.newCards.length})</h2>
+          <ul style="margin:0 0 28px;padding-left:20px;font-size:13px;">${newCardRows.join("")}</ul>` : ""}
+
+          <p style="margin:0;font-size:12px;color:#9ca3af;">This is an automated digest from your weekly CCG scrape. <a href="${siteUrl}/admin" style="color:#9ca3af;">Admin panel</a></p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await resend.emails.send({
+    from: fromEmail,
+    to: adminEmail,
+    subject: `[PointsBinder] ${totalChanges} card change${totalChanges !== 1 ? "s" : ""} detected — ${new Date().toLocaleDateString("en-CA")}`,
+    html,
+  });
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
@@ -235,9 +365,9 @@ export async function POST(req: NextRequest) {
   const startedAt = new Date().toISOString();
 
   try {
-    // Snapshot existing bonuses before scraping so we can detect changes
+    // ── Snapshot existing card data before scraping ────────────────────────
     const existing = await getCards();
-    const existingBonuses = new Map(existing.map(c => [c.id, c.pointsBonus]));
+    const existingMap = new Map(existing.map(c => [c.id, c]));
 
     const cards = await scrapeAllCards();
 
@@ -245,26 +375,111 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "No cards scraped" }, { status: 500 });
     }
 
-    const { inserted } = await upsertCards(cards);
+    // ── Detect changes & build elevation overrides ────────────────────────
+    const allChanges: CardChange[] = [];
+    const digest: ChangeDigest = { newCards: [], bonusChanges: [], feeChanges: [], msrChanges: [] };
 
-    // Record bonus history for any card whose bonus changed (or is new)
-    let historyLogged = 0;
+    // Cards that need elevated flag updated in DB (id → elevated value)
+    const elevationUpdates: { id: string; elevated: boolean }[] = [];
+
     for (const card of cards) {
-      const prev = existingBonuses.get(card.id);
-      const changed = prev !== undefined && prev !== card.pointsBonus;
-      const isNew   = prev === undefined;
-      if (changed || isNew) {
-        const note = changed ? `Changed from: ${prev}` : "First recorded";
-        await recordBonusHistory(card.id, card.pointsBonus, note);
-        historyLogged++;
+      const prev = existingMap.get(card.id);
+
+      if (!prev) {
+        // Brand new card
+        digest.newCards.push(card.name);
+        await recordBonusHistory(card.id, card.pointsBonus, "First recorded");
+        continue;
+      }
+
+      // ── points_bonus ──
+      if (prev.pointsBonus !== card.pointsBonus) {
+        const prevPts = parsePoints(prev.pointsBonus);
+        const newPts  = parsePoints(card.pointsBonus);
+        const direction = newPts > prevPts ? "up" : newPts < prevPts ? "down" : "changed";
+
+        allChanges.push({
+          card_id:   card.id,
+          field:     "points_bonus",
+          old_value: prev.pointsBonus,
+          new_value: card.pointsBonus,
+          note:      `${direction === "up" ? "Increased" : direction === "down" ? "Decreased" : "Changed"} from ${prev.pointsBonus}`,
+        });
+        digest.bonusChanges.push({ name: card.name, id: card.id, old: prev.pointsBonus, new: card.pointsBonus, direction });
+        await recordBonusHistory(card.id, card.pointsBonus, `Changed from: ${prev.pointsBonus}`);
+
+        // Auto-elevation: set elevated=true on increase, clear on decrease/change
+        if (direction === "up") {
+          card.elevated = true;
+          elevationUpdates.push({ id: card.id, elevated: true });
+        } else if (direction === "down") {
+          card.elevated = false;
+          elevationUpdates.push({ id: card.id, elevated: false });
+        }
+      } else {
+        // Preserve existing elevated flag when bonus hasn't changed
+        card.elevated = prev.elevated ?? false;
+      }
+
+      // ── annual_fee ──
+      if (prev.annualFee !== card.annualFee) {
+        allChanges.push({
+          card_id:   card.id,
+          field:     "annual_fee",
+          old_value: prev.annualFee,
+          new_value: card.annualFee,
+          note:      `Changed from ${prev.annualFee}`,
+        });
+        digest.feeChanges.push({ name: card.name, id: card.id, old: prev.annualFee, new: card.annualFee });
+      }
+
+      // ── msr ──
+      if (prev.msr !== card.msr) {
+        allChanges.push({
+          card_id:   card.id,
+          field:     "msr",
+          old_value: prev.msr ?? null,
+          new_value: card.msr ?? "",
+          note:      `Changed from ${prev.msr}`,
+        });
+        digest.msrChanges.push({ name: card.name, id: card.id, old: prev.msr ?? "", new: card.msr ?? "" });
       }
     }
+
+    // ── Upsert all cards ──────────────────────────────────────────────────
+    const { inserted } = await upsertCards(cards);
+
+    // ── Apply elevation overrides directly if scraper reset them ─────────
+    // (upsertCards already includes card.elevated set above, but belt+suspenders
+    //  for any cards where the scraper always emits elevated:false)
+    if (elevationUpdates.length > 0) {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } }
+      );
+      for (const { id, elevated } of elevationUpdates) {
+        await supabase.from("cards").update({ elevated }).eq("id", id);
+      }
+    }
+
+    // ── Persist all detected changes ──────────────────────────────────────
+    await recordCardChanges(allChanges);
+
+    // ── Send admin digest email ───────────────────────────────────────────
+    await sendAdminDigest(digest, cards.length);
+
+    await pingHealthcheck("HEALTHCHECK_URL_SCRAPE_CARDS");
 
     return NextResponse.json({
       ok: true,
       scraped: cards.length,
       upserted: inserted,
-      historyLogged,
+      changes: allChanges.length,
+      newCards: digest.newCards.length,
+      bonusChanges: digest.bonusChanges.length,
+      feeChanges: digest.feeChanges.length,
+      msrChanges: digest.msrChanges.length,
       startedAt,
       completedAt: new Date().toISOString(),
     });

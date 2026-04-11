@@ -1,8 +1,9 @@
 ---
-title: "Amex Platinum Canada Review (2025): Is the $799 Fee Worth It?"
-date: "2025-03-12"
+title: "Amex Platinum Canada Review (2026): Is the $799 Fee Worth It?"
+date: "2026-04-07"
 description: "A detailed review of the American Express Platinum Card in Canada — welcome bonus, perks, credits, and whether it's worth the $799 annual fee."
 tags: ["Amex", "Review", "Premium Cards", "Lounge Access"]
+image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&h=630&fit=crop&q=80"
 ---
 
 The American Express Platinum Card is the most talked-about premium credit card in Canada. At $799 per year, it's also the most expensive. Here's an honest breakdown of whether it justifies the cost.

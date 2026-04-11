@@ -5,6 +5,7 @@ import { getCard, getCards, getLastVerified, getBonusHistory, getPortalsLastScra
 import AlertSubscribe from "./AlertSubscribe";
 import CardImage from "./CardImage";
 import TrackButton from "./TrackButton";
+import { withUtm } from "../../lib/utm";
 
 export const dynamic = "force-dynamic";
 
@@ -14,19 +15,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!card) return {};
   const description = `${card.pointsBonus} welcome bonus. ${card.firstYearValue} first-year bonus. ${card.annualFee} annual fee. Compare rebate portals and apply via the highest payout.`;
   return {
-    title: `${card.name} Review 2025`,
+    title: `${card.name} Review 2026`,
     description,
     keywords: [card.name, card.issuer, card.program, "credit card Canada", "welcome bonus", "rebate portal"],
     alternates: { canonical: `/cards/${id}` },
     openGraph: {
-      title: `${card.name} Review 2025 | PointsBinder`,
+      title: `${card.name} Review 2026 | PointsBinder`,
       description,
       url: `/cards/${id}`,
       images: [{ url: card.image, width: 600, height: 375, alt: card.name }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${card.name} Review 2025 | PointsBinder`,
+      title: `${card.name} Review 2026 | PointsBinder`,
       description,
       images: [card.image],
     },
@@ -79,8 +80,40 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
     { label: "Extended Warranty",   has: !!card.insurance?.includes("Extended Warranty") },
   ];
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pointsbinder.com";
+  const cardJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FinancialProduct",
+    "name": card.name,
+    "description": `${card.pointsBonus} welcome bonus. ${card.firstYearValue} estimated first-year value. ${card.annualFee} annual fee. Compare rebate portals and apply via the highest payout.`,
+    "url": `${siteUrl}/cards/${card.id}`,
+    "provider": {
+      "@type": "BankOrCreditUnion",
+      "name": card.issuer,
+    },
+    "feesAndCommissionsSpecification": `${card.annualFee} annual fee`,
+    "offers": {
+      "@type": "Offer",
+      "price": String(card.annualFeeNum),
+      "priceCurrency": "CAD",
+      "description": "Annual fee",
+    },
+    ...(card.image ? { "image": `${siteUrl}${card.image}` } : {}),
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": siteUrl },
+      { "@type": "ListItem", "position": 2, "name": "Credit Cards", "item": `${siteUrl}/cards` },
+      { "@type": "ListItem", "position": 3, "name": card.name, "item": `${siteUrl}/cards/${card.id}` },
+    ],
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "#f8fafc" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(cardJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       {/* ── Navbar ── */}
       <nav className="sticky top-0 z-20 bg-white" style={{ borderBottom: "1px solid #e2e8f0" }}>
@@ -194,7 +227,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                   {sortedPortals.map((portal, i) => (
                     <a
                       key={portal.name}
-                      href={portal.url}
+                      href={withUtm(portal.url, card.id, portal.name)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${

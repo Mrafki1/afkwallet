@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "../lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cards } from "../data/cards";
+import OnboardingFlow from "./OnboardingFlow";
 
 type UserCard = {
   id: string;
@@ -349,6 +350,7 @@ function DashboardInner() {
   const [msrUpdateInput, setMsrUpdateInput] = useState("");
   const [msrSaving, setMsrSaving]         = useState(false);
 
+  const [userId, setUserId]               = useState("");
   const [notifPrefs, setNotifPrefs]       = useState({ msr_reminder: true, fee_reminder: true });
   const [notifSaving, setNotifSaving]     = useState(false);
 
@@ -375,6 +377,7 @@ function DashboardInner() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }
       setUserEmail(user.email ?? "");
+      setUserId(user.id);
       const [{ data: ucData }, { data: cardData }, { data: prefsData }] = await Promise.all([
         supabase.from("user_cards").select("*").order("apply_date", { ascending: false }),
         supabase.from("cards").select("id, name, issuer, msr, image").eq("status", "published").order("name"),
@@ -524,6 +527,7 @@ function DashboardInner() {
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm hidden sm:block" style={{ color: "rgba(255,255,255,0.45)" }}>{userEmail}</span>
+            <Link href="/settings" className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Settings</Link>
             <button onClick={handleLogout} className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>Log out</button>
           </div>
         </nav>
@@ -619,17 +623,14 @@ function DashboardInner() {
         )}
 
         {userCards.length === 0 ? (
-          <div className="text-center py-24 rounded-2xl" style={{ background: "#fff", border: "1px solid #e2e8f0" }}>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#eff6ff" }}>
-              <span className="text-2xl">💳</span>
-            </div>
-            <p className="text-lg font-bold mb-1" style={{ color: "#0f172a" }}>No cards yet</p>
-            <p className="text-sm mb-6" style={{ color: "#94a3b8" }}>Add your first card to track MSR progress and annual fee deadlines.</p>
-            <div className="flex gap-3 justify-center">
-              <button onClick={openAdd} className="text-sm font-semibold px-5 py-2.5 rounded-xl text-white" style={{ background: "#2563eb" }}>+ Add Card</button>
-              <Link href="/cards" className="text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors" style={{ border: "1px solid #e2e8f0", color: "#64748b" }}>Browse cards →</Link>
-            </div>
-          </div>
+          <OnboardingFlow
+            dbCards={dbCards}
+            userId={userId}
+            onComplete={async () => {
+              const { data } = await supabase.from("user_cards").select("*").order("apply_date", { ascending: false });
+              setUserCards(data ?? []);
+            }}
+          />
         ) : (
           <div className="flex gap-6 items-start">
 
