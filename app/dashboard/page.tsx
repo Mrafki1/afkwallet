@@ -127,115 +127,133 @@ function CardCombobox({ value, onChange, allCards }: { value: string; onChange: 
 }
 
 // ── Downgrade paths ───────────────────────────────────────────────────────────
-// Keyed by the card_id of the premium card being tracked.
-// `url` is the issuer's product page for the downgrade target.
+// Only includes paths to a $0 annual fee card.
+// The whole point: keep the account open (preserving credit history &
+// utilization) without paying another fee after collecting the welcome bonus.
+// Keyed by resolved card ID (after CARD_ID_ALIASES lookup).
 type DowngradePath = {
   toName: string;
-  annualFee: string;
   url: string;
   note: string;
 };
 const DOWNGRADE_PATHS: Record<string, DowngradePath> = {
-  // CIBC
+  // ── CIBC Aventura family ─────────────────────────────────────────────────
   "cibc-aventura-vi": {
-    toName: "CIBC Aventura Visa",
-    annualFee: "$0",
+    toName: "CIBC Aventura Visa (No Fee)",
     url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-card.html",
-    note: "Keep your Aventura points and account history. Call CIBC and ask to product-change.",
+    note: "Your Aventura points stay intact. Call CIBC and request a product change to the no-fee Aventura Visa.",
   },
   "cibc-aventura-gold": {
-    toName: "CIBC Aventura Visa",
-    annualFee: "$0",
+    toName: "CIBC Aventura Visa (No Fee)",
     url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-card.html",
-    note: "Keep your Aventura points and account history. Call CIBC and ask to product-change.",
+    note: "Your Aventura points stay intact. Call CIBC and request a product change to the no-fee Aventura Visa.",
   },
   "cibc-aventura-vi-privilege": {
-    toName: "CIBC Aventura Visa Infinite",
-    annualFee: "$139",
-    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-infinite-card.html",
-    note: "Step down to Infinite to keep the account open. Or go further to the no-fee Aventura Visa.",
+    toName: "CIBC Aventura Visa (No Fee)",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-card.html",
+    note: "You can skip tiers — go directly to the no-fee Aventura Visa. Call CIBC to request the product change.",
   },
+  // ── CIBC Aeroplan family ─────────────────────────────────────────────────
   "cibc-aeroplan-vi": {
-    toName: "CIBC Aeroplan Visa",
-    annualFee: "$0",
-    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aeroplan-visa-card.html",
-    note: "Keep earning Aeroplan with no annual fee. Call CIBC to product-change.",
+    toName: "CIBC Aeroplan Visa (No Fee)",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/aeroplan-cards/aeroplan-visa-card.html",
+    note: "Keep earning Aeroplan at no cost. Your existing miles are safe. Call CIBC to product-change.",
   },
   "cibc-aeroplan-vi-privilege": {
-    toName: "CIBC Aeroplan Visa Infinite",
-    annualFee: "$139",
-    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aeroplan-visa-infinite-card.html",
-    note: "Step down to Infinite before considering full cancellation.",
+    toName: "CIBC Aeroplan Visa (No Fee)",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/aeroplan-cards/aeroplan-visa-card.html",
+    note: "You can skip tiers — go directly to the no-fee Aeroplan Visa. Call CIBC to request the product change.",
   },
-  // TD
+  // ── TD Aeroplan family ───────────────────────────────────────────────────
   "td-aeroplan-vi": {
-    toName: "TD Aeroplan Visa Platinum",
-    annualFee: "$89",
-    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/td-aeroplan-visa-platinum-card/",
-    note: "Lower annual fee, same Aeroplan earn. Call TD to request a product change.",
+    toName: "TD Aeroplan Visa (No Fee)",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-card",
+    note: "Keep your Aeroplan earn and account history at zero cost. Call TD to request a product change.",
   },
   "td-aeroplan-vi-privilege": {
-    toName: "TD Aeroplan Visa Infinite",
-    annualFee: "$139",
-    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/td-aeroplan-visa-infinite-card/",
-    note: "Step down to Infinite to cut the fee while keeping the account open.",
+    toName: "TD Aeroplan Visa (No Fee)",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-card",
+    note: "You can skip tiers — go directly to the no-fee Aeroplan Visa. Call TD to request the product change.",
   },
   "td-aeroplan-vi-infinite-privilege": {
-    toName: "TD Aeroplan Visa Infinite",
-    annualFee: "$139",
-    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/td-aeroplan-visa-infinite-card/",
-    note: "Step down to Infinite to cut the fee while keeping the account open.",
+    toName: "TD Aeroplan Visa (No Fee)",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-card",
+    note: "You can skip tiers — go directly to the no-fee Aeroplan Visa. Call TD to request the product change.",
   },
-  // Scotiabank
+  "td-aeroplan-plat": {
+    toName: "TD Aeroplan Visa (No Fee)",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-card",
+    note: "First year is fee-waived, but year 2 costs $89. Downgrade to the no-fee Aeroplan Visa before renewal.",
+  },
+  // ── Scotiabank Scene+ family ─────────────────────────────────────────────
   "scotia-amex-gold": {
-    toName: "Scotia Scene+ Visa",
-    annualFee: "$0",
-    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/scene/scene-visa-card.html",
-    note: "Keep your Scene+ points and credit history. Call Scotia to product-change.",
+    toName: "Scotia Scene+ Visa (No Fee)",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/scene-plus-visa-card.html",
+    note: "Your Scene+ balance stays intact. Call Scotia and request a product change to the no-fee Scene+ Visa.",
+  },
+  "scotia-gold-amex": {
+    toName: "Scotia Scene+ Visa (No Fee)",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/scene-plus-visa-card.html",
+    note: "Your Scene+ balance stays intact. Call Scotia and request a product change to the no-fee Scene+ Visa.",
   },
   "scotia-passport-vi": {
-    toName: "Scotia Scene+ Visa",
-    annualFee: "$0",
-    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/scene/scene-visa-card.html",
-    note: "No-fee downgrade option. You lose the travel perks but keep the account open.",
+    toName: "Scotia Scene+ Visa (No Fee)",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/scene-plus-visa-card.html",
+    note: "You give up the lounge visits and no-FX fee, but the account stays open at zero cost.",
+  },
+  "scotia-passport-vi-infinite": {
+    toName: "Scotia Scene+ Visa (No Fee)",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/scene-plus-visa-card.html",
+    note: "You give up the lounge visits and no-FX fee, but the account stays open at zero cost.",
   },
   "scotia-passport-vi-privilege": {
-    toName: "Scotiabank Passport Visa Infinite",
-    annualFee: "$150",
-    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/passport-visa-infinite-card.html",
-    note: "Step down to Passport Infinite to reduce the fee while keeping lounge access.",
+    toName: "Scotia Scene+ Visa (No Fee)",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/scene-plus-visa-card.html",
+    note: "You can skip tiers — go directly to the no-fee Scene+ Visa. Call Scotia to request the product change.",
   },
-  // RBC
+  // ── Scotiabank Momentum family ───────────────────────────────────────────
+  "scotia-momentum-vi": {
+    toName: "Scotia Momentum No-Fee Visa",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/no-fee-momentum-visa-card.html",
+    note: "Stay in the Momentum cash-back family at no cost. Call Scotia to product-change.",
+  },
+  "scotia-momentum-vi-infinite": {
+    toName: "Scotia Momentum No-Fee Visa",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/no-fee-momentum-visa-card.html",
+    note: "Stay in the Momentum cash-back family at no cost. Call Scotia to product-change.",
+  },
+  // ── RBC Avion family ─────────────────────────────────────────────────────
   "rbc-avion-vi": {
-    toName: "RBC Avion Visa Platinum",
-    annualFee: "$50",
-    url: "https://www.rbcroyalbank.com/credit-cards/avion-visa-platinum.html",
-    note: "Keep your Avion points and account history at a much lower fee.",
+    toName: "RBC ION Visa (No Fee)",
+    url: "https://www.rbc.com/creditcards/rbc-ion-visa.html",
+    note: "Same Avion Rewards program, no annual fee. Your points stay intact. Call RBC to product-change.",
   },
   "rbc-avion-vi-privilege": {
-    toName: "RBC Avion Visa Infinite",
-    annualFee: "$120",
-    url: "https://www.rbcroyalbank.com/credit-cards/avion-visa-infinite.html",
-    note: "Step down to Infinite to cut the fee while keeping Avion earn rates.",
+    toName: "RBC ION Visa (No Fee)",
+    url: "https://www.rbc.com/creditcards/rbc-ion-visa.html",
+    note: "You can skip tiers — go directly to the no-fee ION Visa. Call RBC to request the product change.",
   },
-  // BMO
-  "bmo-ascend": {
-    toName: "BMO Eclipse Rise Visa",
-    annualFee: "$0",
-    url: "https://www.bmo.com/main/personal/credit-cards/bmo-eclipse-rise-visa-card/",
-    note: "No-fee option in the Eclipse family. Call BMO to product-change.",
+  "rbc-avion-plat": {
+    toName: "RBC ION Visa (No Fee)",
+    url: "https://www.rbc.com/creditcards/rbc-ion-visa.html",
+    note: "Same Avion program at zero cost. Call RBC to product-change before the $50 fee renews.",
   },
+  // ── BMO Eclipse family ───────────────────────────────────────────────────
   "bmo-eclipse-vi": {
-    toName: "BMO Eclipse Rise Visa",
-    annualFee: "$0",
-    url: "https://www.bmo.com/main/personal/credit-cards/bmo-eclipse-rise-visa-card/",
-    note: "Keep your account open with no annual fee. Call BMO to product-change.",
+    toName: "BMO Eclipse Rise Visa (No Fee)",
+    url: "https://www.bmo.com/en-ca/main/personal/credit-cards/bmo-eclipse-rise-visa-card/",
+    note: "Same BMO Rewards earn, no annual fee. Call BMO to product-change.",
   },
   "bmo-eclipse-vi-privilege": {
-    toName: "BMO Eclipse Visa Infinite",
-    annualFee: "$120",
-    url: "https://www.bmo.com/main/personal/credit-cards/bmo-eclipse-visa-infinite-card/",
-    note: "Step down to Infinite before considering full cancellation.",
+    toName: "BMO Eclipse Rise Visa (No Fee)",
+    url: "https://www.bmo.com/en-ca/main/personal/credit-cards/bmo-eclipse-rise-visa-card/",
+    note: "You can skip tiers — go directly to the no-fee Eclipse Rise. Call BMO to request the product change.",
+  },
+  // ── BMO CashBack family ──────────────────────────────────────────────────
+  "bmo-cashback-we": {
+    toName: "BMO CashBack Mastercard (No Fee)",
+    url: "https://www.bmo.com/en-ca/main/personal/credit-cards/cashback-mastercard/",
+    note: "Stay in the BMO cash-back family at no cost. Call BMO to product-change.",
   },
 };
 
@@ -884,7 +902,7 @@ function DashboardInner() {
                             style={{ background: benefitsOpen.has(uc.id) ? "#eff6ff" : "#f8fafc", color: benefitsOpen.has(uc.id) ? "#2563eb" : "#64748b", border: "1px solid #e2e8f0" }}>
                             {benefitsOpen.has(uc.id) ? "Hide ↑" : "Benefits ↓"}
                           </button>
-                          {DOWNGRADE_PATHS[uc.card_id] && (
+                          {DOWNGRADE_PATHS[CARD_ID_ALIASES[uc.card_id] ?? uc.card_id] && (
                             <button onClick={() => toggleDowngrade(uc.id)}
                               className="text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors"
                               style={{
@@ -908,8 +926,8 @@ function DashboardInner() {
                         </div>
 
                         {/* Downgrade panel */}
-                        {downgradeOpen.has(uc.id) && DOWNGRADE_PATHS[uc.card_id] && (() => {
-                          const dp = DOWNGRADE_PATHS[uc.card_id];
+                        {downgradeOpen.has(uc.id) && DOWNGRADE_PATHS[CARD_ID_ALIASES[uc.card_id] ?? uc.card_id] && (() => {
+                          const dp = DOWNGRADE_PATHS[CARD_ID_ALIASES[uc.card_id] ?? uc.card_id];
                           return (
                             <div className="mt-3 rounded-xl p-3.5" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
                               <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#a16207" }}>
@@ -918,9 +936,7 @@ function DashboardInner() {
                               <div className="flex items-start justify-between gap-2 mb-2">
                                 <div>
                                   <p className="text-xs font-bold" style={{ color: "#0f172a" }}>{dp.toName}</p>
-                                  <p className="text-[11px] font-semibold" style={{ color: "#16a34a" }}>
-                                    {dp.annualFee === "$0" ? "No annual fee" : `${dp.annualFee}/yr annual fee`}
-                                  </p>
+                                  <p className="text-[11px] font-semibold" style={{ color: "#16a34a" }}>No annual fee</p>
                                 </div>
                                 <a
                                   href={dp.url}
