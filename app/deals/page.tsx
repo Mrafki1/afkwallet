@@ -8,13 +8,15 @@ export const dynamic = "force-dynamic";
 
 export default async function DealsPage() {
   const allCards = await getCards();
+  const effectiveFyv = (c: typeof allCards[0]) => {
+    const base = parseInt(c.firstYearValue.replace(/[^0-9]/g, "")) || 0;
+    const bestPortal = [...c.portals].sort((a, b) => b.bonus - a.bonus)[0];
+    return base + (bestPortal?.bonus ?? 0);
+  };
+
   const elevatedCards = allCards
     .filter(c => c.elevated)
-    .sort((a, b) => {
-      const av = parseInt(a.firstYearValue.replace(/[^0-9]/g, "")) || 0;
-      const bv = parseInt(b.firstYearValue.replace(/[^0-9]/g, "")) || 0;
-      return bv - av;
-    })
+    .sort((a, b) => effectiveFyv(b) - effectiveFyv(a))
     .slice(0, 6);
 
   const lastVerified = await getLastVerified();
