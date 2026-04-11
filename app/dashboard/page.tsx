@@ -164,6 +164,12 @@ const DOWNGRADE_PATHS: Record<string, DowngradePath> = {
     url: "https://www.cibc.com/en/personal-banking/credit-cards/aeroplan-cards/aeroplan-visa-card.html",
     note: "You can skip tiers — go directly to the no-fee Aeroplan Visa. Call CIBC to request the product change.",
   },
+  // ── TD First Class family ────────────────────────────────────────────────
+  "td-fct-vi": {
+    toName: "TD Rewards Visa (No Fee)",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/travel-rewards/rewards-visa-card",
+    note: "Keep your TD Rewards points and account history at zero cost. Call TD to request a product change.",
+  },
   // ── TD Aeroplan family ───────────────────────────────────────────────────
   "td-aeroplan-vi": {
     toName: "TD Aeroplan Visa (No Fee)",
