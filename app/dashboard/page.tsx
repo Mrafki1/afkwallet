@@ -369,7 +369,7 @@ function DashboardInner() {
   const [saving, setSaving]                 = useState(false);
 
   function toggleBenefits(id: string) {
-    setBenefitsOpen(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setBenefitsOpen(prev => { const n = new Set(prev); if (n.has(id)) { n.delete(id); } else { n.add(id); } return n; });
   }
 
   useEffect(() => {

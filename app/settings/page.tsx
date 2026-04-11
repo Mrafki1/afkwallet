@@ -11,7 +11,7 @@ export default function SettingsPage() {
 
   const [loading, setLoading]       = useState(true);
   const [userEmail, setUserEmail]   = useState("");
-  const [userId, setUserId]         = useState("");
+  const [_userId, setUserId]        = useState("");
 
   // Email update
   const [newEmail, setNewEmail]         = useState("");

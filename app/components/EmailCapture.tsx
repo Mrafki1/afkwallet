@@ -95,7 +95,7 @@ export default function EmailCapture({ source = "homepage", variant = "inline" }
           Never miss a hot offer
         </h3>
         <p className="text-sm mb-5" style={{ color: "#94a3b8" }}>
-          We'll email you when Canadian card bonuses spike — so you apply at the peak, not after.
+          We&apos;ll email you when Canadian card bonuses spike — so you apply at the peak, not after.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
           <input

@@ -9,7 +9,7 @@ export default function ElevatedToggle({
   elevatedNote,
 }: {
   cardId: string;
-  cardName: string;
+  cardName?: string;
   elevated: boolean;
   elevatedNote?: string | null;
 }) {
