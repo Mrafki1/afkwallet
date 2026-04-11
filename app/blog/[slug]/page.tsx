@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllPosts, getPost } from "../../lib/posts";
 import Navbar from "../../components/Navbar";
 import ShareButtons from "./ShareButtons";
+import EmailCapture from "../../components/EmailCapture";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {
@@ -161,20 +162,23 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           <ShareButtons title={post.title} url={`${siteUrl}/blog/${slug}`} />
         </div>
 
+        {/* Email capture */}
+        <EmailCapture source="blog" variant="banner" />
+
         {/* CTA */}
-        <div className="rounded-2xl p-8 text-center" style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
-          <h3 className="font-bold text-lg mb-2" style={{ color: "#0f172a" }}>Ready to find your next card?</h3>
-          <p className="text-sm mb-5" style={{ color: "#64748b" }}>
+        <div className="mt-6 rounded-2xl p-6" style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
+          <h3 className="font-bold text-base mb-1" style={{ color: "#0f172a" }}>Ready to find your next card?</h3>
+          <p className="text-sm mb-4" style={{ color: "#64748b" }}>
             Browse 200+ Canadian credit cards with portal comparisons and first-year value calculated.
           </p>
-          <div className="flex flex-wrap gap-3 justify-center">
+          <div className="flex flex-wrap gap-3">
             <Link href="/cards"
-              className="inline-block text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
+              className="inline-block text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
               style={{ background: "#2563eb" }}>
               Browse all cards →
             </Link>
             <Link href="/dashboard"
-              className="inline-block font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
+              className="inline-block font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
               style={{ border: "1px solid #bfdbfe", color: "#2563eb" }}>
               Track your cards
             </Link>

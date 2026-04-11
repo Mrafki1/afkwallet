@@ -5,6 +5,7 @@ import Link from "next/link";
 import Navbar from "./components/Navbar";
 import { cards } from "./data/cards";
 import QuizModal from "./components/QuizModal";
+import EmailCapture from "./components/EmailCapture";
 
 // ── Find My Card button — reopens the quiz modal for returning visitors ───────
 function FindMyCardButton() {
@@ -391,6 +392,15 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Email Capture ── */}
+      <section style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="max-w-2xl mx-auto">
+            <EmailCapture source="homepage" variant="banner" />
           </div>
         </div>
       </section>
