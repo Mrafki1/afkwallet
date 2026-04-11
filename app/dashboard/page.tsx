@@ -126,6 +126,119 @@ function CardCombobox({ value, onChange, allCards }: { value: string; onChange: 
   );
 }
 
+// ── Downgrade paths ───────────────────────────────────────────────────────────
+// Keyed by the card_id of the premium card being tracked.
+// `url` is the issuer's product page for the downgrade target.
+type DowngradePath = {
+  toName: string;
+  annualFee: string;
+  url: string;
+  note: string;
+};
+const DOWNGRADE_PATHS: Record<string, DowngradePath> = {
+  // CIBC
+  "cibc-aventura-vi": {
+    toName: "CIBC Aventura Visa",
+    annualFee: "$0",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-card.html",
+    note: "Keep your Aventura points and account history. Call CIBC and ask to product-change.",
+  },
+  "cibc-aventura-gold": {
+    toName: "CIBC Aventura Visa",
+    annualFee: "$0",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-card.html",
+    note: "Keep your Aventura points and account history. Call CIBC and ask to product-change.",
+  },
+  "cibc-aventura-vi-privilege": {
+    toName: "CIBC Aventura Visa Infinite",
+    annualFee: "$139",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-infinite-card.html",
+    note: "Step down to Infinite to keep the account open. Or go further to the no-fee Aventura Visa.",
+  },
+  "cibc-aeroplan-vi": {
+    toName: "CIBC Aeroplan Visa",
+    annualFee: "$0",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aeroplan-visa-card.html",
+    note: "Keep earning Aeroplan with no annual fee. Call CIBC to product-change.",
+  },
+  "cibc-aeroplan-vi-privilege": {
+    toName: "CIBC Aeroplan Visa Infinite",
+    annualFee: "$139",
+    url: "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aeroplan-visa-infinite-card.html",
+    note: "Step down to Infinite before considering full cancellation.",
+  },
+  // TD
+  "td-aeroplan-vi": {
+    toName: "TD Aeroplan Visa Platinum",
+    annualFee: "$89",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/td-aeroplan-visa-platinum-card/",
+    note: "Lower annual fee, same Aeroplan earn. Call TD to request a product change.",
+  },
+  "td-aeroplan-vi-privilege": {
+    toName: "TD Aeroplan Visa Infinite",
+    annualFee: "$139",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/td-aeroplan-visa-infinite-card/",
+    note: "Step down to Infinite to cut the fee while keeping the account open.",
+  },
+  "td-aeroplan-vi-infinite-privilege": {
+    toName: "TD Aeroplan Visa Infinite",
+    annualFee: "$139",
+    url: "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/td-aeroplan-visa-infinite-card/",
+    note: "Step down to Infinite to cut the fee while keeping the account open.",
+  },
+  // Scotiabank
+  "scotia-amex-gold": {
+    toName: "Scotia Scene+ Visa",
+    annualFee: "$0",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/scene/scene-visa-card.html",
+    note: "Keep your Scene+ points and credit history. Call Scotia to product-change.",
+  },
+  "scotia-passport-vi": {
+    toName: "Scotia Scene+ Visa",
+    annualFee: "$0",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/scene/scene-visa-card.html",
+    note: "No-fee downgrade option. You lose the travel perks but keep the account open.",
+  },
+  "scotia-passport-vi-privilege": {
+    toName: "Scotiabank Passport Visa Infinite",
+    annualFee: "$150",
+    url: "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/passport-visa-infinite-card.html",
+    note: "Step down to Passport Infinite to reduce the fee while keeping lounge access.",
+  },
+  // RBC
+  "rbc-avion-vi": {
+    toName: "RBC Avion Visa Platinum",
+    annualFee: "$50",
+    url: "https://www.rbcroyalbank.com/credit-cards/avion-visa-platinum.html",
+    note: "Keep your Avion points and account history at a much lower fee.",
+  },
+  "rbc-avion-vi-privilege": {
+    toName: "RBC Avion Visa Infinite",
+    annualFee: "$120",
+    url: "https://www.rbcroyalbank.com/credit-cards/avion-visa-infinite.html",
+    note: "Step down to Infinite to cut the fee while keeping Avion earn rates.",
+  },
+  // BMO
+  "bmo-ascend": {
+    toName: "BMO Eclipse Rise Visa",
+    annualFee: "$0",
+    url: "https://www.bmo.com/main/personal/credit-cards/bmo-eclipse-rise-visa-card/",
+    note: "No-fee option in the Eclipse family. Call BMO to product-change.",
+  },
+  "bmo-eclipse-vi": {
+    toName: "BMO Eclipse Rise Visa",
+    annualFee: "$0",
+    url: "https://www.bmo.com/main/personal/credit-cards/bmo-eclipse-rise-visa-card/",
+    note: "Keep your account open with no annual fee. Call BMO to product-change.",
+  },
+  "bmo-eclipse-vi-privilege": {
+    toName: "BMO Eclipse Visa Infinite",
+    annualFee: "$120",
+    url: "https://www.bmo.com/main/personal/credit-cards/bmo-eclipse-visa-infinite-card/",
+    note: "Step down to Infinite before considering full cancellation.",
+  },
+};
+
 // Maps DB card IDs (from CCG scraper) → local cards.ts IDs where they differ
 const CARD_ID_ALIASES: Record<string, string> = {
   "cibc-aventura-gold-visa":                   "cibc-aventura-gold",
@@ -344,7 +457,8 @@ function DashboardInner() {
   const [userEmail, setUserEmail]     = useState("");
   const [showDetails, setShowDetails] = useState(false);
   const [activeTab, setActiveTab]     = useState<"all" | "active" | "done">("all");
-  const [benefitsOpen, setBenefitsOpen] = useState<Set<string>>(new Set());
+  const [benefitsOpen, setBenefitsOpen]   = useState<Set<string>>(new Set());
+  const [downgradeOpen, setDowngradeOpen] = useState<Set<string>>(new Set());
 
   const [msrUpdateId, setMsrUpdateId]     = useState<string | null>(null);
   const [msrUpdateInput, setMsrUpdateInput] = useState("");
@@ -370,6 +484,9 @@ function DashboardInner() {
 
   function toggleBenefits(id: string) {
     setBenefitsOpen(prev => { const n = new Set(prev); if (n.has(id)) { n.delete(id); } else { n.add(id); } return n; });
+  }
+  function toggleDowngrade(id: string) {
+    setDowngradeOpen(prev => { const n = new Set(prev); if (n.has(id)) { n.delete(id); } else { n.add(id); } return n; });
   }
 
   useEffect(() => {
@@ -767,6 +884,17 @@ function DashboardInner() {
                             style={{ background: benefitsOpen.has(uc.id) ? "#eff6ff" : "#f8fafc", color: benefitsOpen.has(uc.id) ? "#2563eb" : "#64748b", border: "1px solid #e2e8f0" }}>
                             {benefitsOpen.has(uc.id) ? "Hide ↑" : "Benefits ↓"}
                           </button>
+                          {DOWNGRADE_PATHS[uc.card_id] && (
+                            <button onClick={() => toggleDowngrade(uc.id)}
+                              className="text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors"
+                              style={{
+                                background: downgradeOpen.has(uc.id) ? "#fefce8" : "#f8fafc",
+                                color: downgradeOpen.has(uc.id) ? "#a16207" : "#64748b",
+                                border: `1px solid ${downgradeOpen.has(uc.id) ? "#fde68a" : "#e2e8f0"}`,
+                              }}>
+                              {downgradeOpen.has(uc.id) ? "Downgrade ↑" : "Downgrade ↓"}
+                            </button>
+                          )}
                           <button onClick={() => openEdit(uc)}
                             className="text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors"
                             style={{ background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" }}>
@@ -778,6 +906,39 @@ function DashboardInner() {
                             Remove
                           </button>
                         </div>
+
+                        {/* Downgrade panel */}
+                        {downgradeOpen.has(uc.id) && DOWNGRADE_PATHS[uc.card_id] && (() => {
+                          const dp = DOWNGRADE_PATHS[uc.card_id];
+                          return (
+                            <div className="mt-3 rounded-xl p-3.5" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
+                              <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: "#a16207" }}>
+                                💡 Downgrade instead of cancelling
+                              </p>
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div>
+                                  <p className="text-xs font-bold" style={{ color: "#0f172a" }}>{dp.toName}</p>
+                                  <p className="text-[11px] font-semibold" style={{ color: "#16a34a" }}>
+                                    {dp.annualFee === "$0" ? "No annual fee" : `${dp.annualFee}/yr annual fee`}
+                                  </p>
+                                </div>
+                                <a
+                                  href={dp.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-lg"
+                                  style={{ background: "#fbbf24", color: "#0f172a" }}
+                                >
+                                  View card →
+                                </a>
+                              </div>
+                              <p className="text-[11px] leading-relaxed" style={{ color: "#78350f" }}>{dp.note}</p>
+                              <p className="text-[10px] mt-2 font-medium" style={{ color: "#a16207" }}>
+                                Downgrading keeps your account open → preserves credit history & utilization ratio.
+                              </p>
+                            </div>
+                          );
+                        })()}
 
                         {benefitsOpen.has(uc.id) && <BenefitsPanel cardId={uc.card_id} />}
                       </div>
