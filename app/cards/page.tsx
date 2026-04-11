@@ -720,6 +720,7 @@ function pillMatches(card: Card, pillId: string): boolean {
 export default function CardsPage() {
   const [cards, setCards]                     = useState<Card[]>([]);
   const [loading, setLoading]                 = useState(true);
+  const [fetchError, setFetchError]           = useState(false);
   const [view, setView]                       = useState<"grid" | "table">(
     typeof window !== "undefined" && window.innerWidth < 640 ? "grid" : "table"
   );
@@ -736,10 +737,16 @@ export default function CardsPage() {
   const [showAdvanced, setShowAdvanced]       = useState(false);
 
   useEffect(() => {
-    fetch("/api/cards")
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    fetch("/api/cards", { signal: controller.signal })
       .then(r => r.json())
-      .then(data => { setCards(Array.isArray(data) ? data : []); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(data => {
+        if (Array.isArray(data)) { setCards(data); } else { setFetchError(true); }
+        setLoading(false);
+      })
+      .catch(() => { setFetchError(true); setLoading(false); })
+      .finally(() => clearTimeout(timeout));
   }, []);
 
   function toggleCompare(id: string) {
@@ -826,6 +833,22 @@ export default function CardsPage() {
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-gray-500">Loading cards…</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (fetchError) return (
+    <div className="min-h-screen" style={{ background: "#f8fafc" }}>
+      <Navbar activePage="cards" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center max-w-sm px-6">
+          <p className="text-3xl mb-3">⚠️</p>
+          <h2 className="text-lg font-bold mb-2" style={{ color: "#0f172a" }}>Couldn&apos;t load cards</h2>
+          <p className="text-sm mb-4" style={{ color: "#64748b" }}>There was a problem fetching card data. Please refresh the page to try again.</p>
+          <button onClick={() => window.location.reload()} className="btn-primary text-sm px-5 py-2.5">
+            Refresh →
+          </button>
         </div>
       </div>
     </div>

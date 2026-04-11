@@ -88,6 +88,28 @@ function cardToRow(card: Card & { ccgSlug?: string; source?: string; status?: st
   };
 }
 
+// ── Duplicate suppression ─────────────────────────────────────────────────────
+// The CCG scraper imports cards under different IDs than our canonical local IDs.
+// Both end up in Supabase as published, creating duplicate entries on listing pages.
+// These are the CCG IDs to suppress — the canonical version is preferred.
+const DUPLICATE_IDS = new Set([
+  // CCG alias IDs (mapped in dashboard CARD_ID_ALIASES)
+  "cibc-aventura-gold-visa",
+  "bmo-eclipse-vi-infinite",
+  "bmo-eclipse-vi-infinite-privilege",
+  "bmo-ascend-world-elite-mc",
+  "bmo-cashback-we-mc",
+  "amex-marriott-bonvoy",
+  "amex-marriott-bonvoy-business",
+  "tangerine-moneyback-mastercard",
+  "td-aeroplan-visa-infinite",
+  "td-travel-visa-platinum",
+  "mbna-smart-cash-platinum-plus-mastercard",
+  // Additional scraper duplicates (same card, different slug)
+  "td-aeroplan-vi-infinite-privilege",   // duplicate of td-aeroplan-vi-privilege
+  "scotia-passport-vi-infinite",         // duplicate of scotia-passport-vi
+]);
+
 // ── Public queries ────────────────────────────────────────────────────────────
 
 export async function getCards(): Promise<Card[]> {
@@ -101,7 +123,7 @@ export async function getCards(): Promise<Card[]> {
     console.warn("getCards warning:", error.message);
     return [];
   }
-  return (data ?? []).map(rowToCard);
+  return (data ?? []).map(rowToCard).filter(c => !DUPLICATE_IDS.has(c.id));
 }
 
 export async function getCard(id: string): Promise<Card | null> {
