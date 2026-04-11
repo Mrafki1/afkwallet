@@ -139,7 +139,7 @@ export default async function BestOfPage({
   return (
     <div className="min-h-screen" style={{ background: "#f8fafc" }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Navbar activePage="cards" />
+      <Navbar activePage="best" />
 
       {/* Hero */}
       <div style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
