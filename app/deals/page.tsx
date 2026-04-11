@@ -14,7 +14,8 @@ export default async function DealsPage() {
       const av = parseInt(a.firstYearValue.replace(/[^0-9]/g, "")) || 0;
       const bv = parseInt(b.firstYearValue.replace(/[^0-9]/g, "")) || 0;
       return bv - av;
-    });
+    })
+    .slice(0, 6);
 
   const lastVerified = await getLastVerified();
   const LAST_UPDATED = new Date(lastVerified).toLocaleDateString("en-CA", {
