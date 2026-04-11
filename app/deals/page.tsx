@@ -92,9 +92,9 @@ export default async function DealsPage() {
                   </div>
 
                   {/* Card image */}
-                  <div className="relative mx-5 mt-5 aspect-[1.8/1] rounded-xl overflow-hidden" style={{ background: "#f8fafc" }}>
-                    <Image src={card.image} alt={card.name} fill className="object-contain p-3" />
-                  </div>
+                  <Link href={`/cards/${card.id}`} className="relative mx-5 mt-5 aspect-[1.8/1] rounded-xl overflow-hidden block" style={{ background: "#f8fafc" }}>
+                    <Image src={card.image} alt={card.name} fill className="object-contain p-3 hover:scale-105 transition-transform duration-200" />
+                  </Link>
 
                   {/* Content */}
                   <div className="p-5 flex flex-col gap-3 flex-1">
