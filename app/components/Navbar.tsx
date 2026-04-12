@@ -77,6 +77,7 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
           <div className="hidden md:flex items-center gap-6">
             <Link href="/cards"   className={linkClass("cards")}>All Cards</Link>
             <Link href="/compare" className={linkClass("compare")}>Compare</Link>
+            <Link href="/trip-planner" className={linkClass("trip-planner")}>Trip Planner</Link>
 
             {/* Best dropdown */}
             <div ref={bestRef} className="relative">

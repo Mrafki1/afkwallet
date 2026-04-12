@@ -6,6 +6,7 @@ import AlertSubscribe from "./AlertSubscribe";
 import CardImage from "./CardImage";
 import TrackButton from "./TrackButton";
 import { withUtm } from "../../lib/utm";
+import OwnedControl from "./OwnedControl";
 
 export const dynamic = "force-dynamic";
 
@@ -185,7 +186,10 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
           <div className="lg:col-span-3 flex flex-col gap-6">
             <div>
               <p className="text-xs text-gray-400 font-semibold uppercase tracking-widest mb-1">{card.issuer}</p>
-              <h1 className="text-3xl font-bold text-gray-900 leading-tight">{card.name}</h1>
+              <div className="flex items-start gap-3 flex-wrap">
+                <h1 className="text-3xl font-bold text-gray-900 leading-tight">{card.name}</h1>
+                <OwnedControl cardId={card.id} />
+              </div>
               <p className="text-sm text-gray-500 mt-1">{card.program}</p>
             </div>
 

@@ -7,9 +7,11 @@ import {
   getCards,
   getPortalsLastScraped,
   getCardsCount,
+  getLinkHealth,
 } from "../lib/cards-db";
 import ElevatedToggle from "./ElevatedToggle";
 import PortalEditor from "./PortalEditor";
+import LinkHealthPanel from "./LinkHealthPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +37,13 @@ export default async function AdminPage() {
     redirect("/auth");
   }
 
-  const [recentChanges, elevatedCards, allCards, portalsLastScraped, cardsCount] = await Promise.all([
+  const [recentChanges, elevatedCards, allCards, portalsLastScraped, cardsCount, linkHealth] = await Promise.all([
     getRecentChanges(30),
     getElevatedCards(),
     getCards(),
     getPortalsLastScraped(),
     getCardsCount(),
+    getLinkHealth(),
   ]);
 
   // Cards with portals (for portal coverage stats)
@@ -218,6 +221,9 @@ export default async function AdminPage() {
             </div>
           )}
         </div>
+
+        {/* ── Link health ── */}
+        <LinkHealthPanel rows={linkHealth} />
 
         {/* ── Portal editor ── */}
         <PortalEditor cards={allCards.map(c => ({

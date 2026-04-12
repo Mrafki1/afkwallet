@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Card } from "../data/cards";
 import Navbar from "../components/Navbar";
+import { OwnedToggle, OwnedBadge, useIsOwned } from "../components/OwnedBadge";
+import { useOwnedCards } from "../lib/owned-cards";
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
 function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
@@ -158,18 +160,30 @@ function CardArt({ name, image, gradient }: { name: string; image: string; gradi
 function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<string>; onToggle: (id: string) => void }) {
   const inCompare = compareSet.has(card.id);
   const maxed = compareSet.size >= 3 && !inCompare;
+  const isOwned = useIsOwned(card.id);
 
   return (
     <div
-      className="rounded-2xl transition-all duration-200 ease-out hover:-translate-y-1 flex flex-col overflow-hidden"
+      className="rounded-2xl transition-all duration-200 ease-out hover:-translate-y-1 flex flex-col overflow-hidden relative"
       style={{
         background: "#ffffff",
-        border: inCompare ? "2px solid #2563eb" : "1px solid #e2e8f0",
-        boxShadow: inCompare
+        border: isOwned ? "2px solid #dc2626" : inCompare ? "2px solid #2563eb" : "1px solid #e2e8f0",
+        boxShadow: isOwned
+          ? "0 0 0 3px rgba(220,38,38,0.1), 0 1px 3px rgba(0,0,0,0.06)"
+          : inCompare
           ? "0 0 0 3px rgba(37,99,235,0.1), 0 1px 3px rgba(0,0,0,0.06)"
           : "0 1px 3px rgba(0,0,0,0.06)",
+        opacity: isOwned ? 0.7 : 1,
       }}
     >
+      {isOwned && (
+        <div
+          className="absolute top-2 left-2 z-10 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full"
+          style={{ background: "#dc2626", color: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}
+        >
+          ♥ OWNED
+        </div>
+      )}
       <div className="p-5 flex flex-col gap-4 flex-1">
         {card.elevated && (
           <div
@@ -200,6 +214,9 @@ function CardTile({ card, compareSet, onToggle }: { card: Card; compareSet: Set<
           >
             {inCompare ? "✓" : "+"}
           </button>
+          <div className="absolute top-2 right-10">
+            <OwnedToggle cardId={card.id} />
+          </div>
         </div>
         <div>
           <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "#94a3b8" }}>{card.issuer}</p>
@@ -388,12 +405,36 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
             const inCompare = compareSet.has(card.id);
             const maxed = compareSet.size >= 3 && !inCompare;
             return (
-              <tr
+              <TableRow
                 key={card.id}
+                card={card}
+                i={i}
+                inCompare={inCompare}
+                maxed={maxed}
+                best={best}
+                onToggle={onToggle}
+              />
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TableRow({ card, i, inCompare, maxed, best, onToggle }: {
+  card: Card; i: number; inCompare: boolean; maxed: boolean;
+  best: { name: string; bonus: number; url: string } | null;
+  onToggle: (id: string) => void;
+}) {
+  const isOwned = useIsOwned(card.id);
+  const rowBg = isOwned ? "#fef2f2" : inCompare ? "#eff6ff" : i % 2 === 0 ? "#ffffff" : "#f8fafc";
+  return (
+              <tr
                 className="transition-colors"
-                style={{ background: inCompare ? "#eff6ff" : i % 2 === 0 ? "#ffffff" : "#f8fafc", borderBottom: "1px solid #f1f5f9" }}
-                onMouseEnter={e => { if (!inCompare) (e.currentTarget as HTMLElement).style.background = "#f1f5f9"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = inCompare ? "#eff6ff" : i % 2 === 0 ? "#ffffff" : "#f8fafc"; }}
+                style={{ background: rowBg, borderBottom: "1px solid #f1f5f9", opacity: isOwned ? 0.72 : 1 }}
+                onMouseEnter={e => { if (!inCompare && !isOwned) (e.currentTarget as HTMLElement).style.background = "#f1f5f9"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = rowBg; }}
               >
                 <td className="px-3 py-3">
                   <button
@@ -422,7 +463,10 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold leading-tight text-sm transition-colors group-hover:underline" style={{ color: "#0f172a" }}>{card.name}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold leading-tight text-sm transition-colors group-hover:underline" style={{ color: "#0f172a" }}>{card.name}</p>
+                        <OwnedBadge cardId={card.id} />
+                      </div>
                       <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>{card.issuer}</p>
                     </div>
                   </Link>
@@ -492,11 +536,6 @@ function TableView({ cards, compareSet, onToggle }: { cards: Card[]; compareSet:
                   </a>
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
@@ -733,6 +772,8 @@ export default function CardsClient({ initialCards }: { initialCards: Card[] }) 
   const [program, setProgram]                 = useState("Any Program");
   const [gridSort, setGridSort]               = useState("featured");
   const [showAdvanced, setShowAdvanced]       = useState(false);
+  const [hideOwned, setHideOwned]             = useState(false);
+  const { owned: ownedSet, signedIn: ownedSignedIn } = useOwnedCards();
 
 
   function toggleCompare(id: string) {
@@ -773,8 +814,14 @@ export default function CardsClient({ initialCards }: { initialCards: Card[] }) 
   const filtered = useMemo(() => {
     const result = cards.filter(card => {
       if (search) {
-        const q = search.toLowerCase();
-        if (!card.name.toLowerCase().includes(q) && !card.issuer.toLowerCase().includes(q)) return false;
+        const tokens = search.toLowerCase().split(/\s+/).filter(Boolean);
+        const haystack = [
+          card.name,
+          card.issuer,
+          card.program ?? "",
+          ...(card.tags ?? []),
+        ].join(" ").toLowerCase();
+        if (!tokens.every(t => haystack.includes(t))) return false;
       }
       if (activePills.size > 0 && ![...activePills].some(p => pillMatches(card, p))) return false;
       if (excludeTags.length > 0 && excludeTags.some(t => card.tags.includes(t))) return false;
@@ -786,6 +833,7 @@ export default function CardsClient({ initialCards }: { initialCards: Card[] }) 
         if (fee === "400plus"  && card.annualFeeNum < 400) return false;
       }
       if (program !== "Any Program" && card.program !== program) return false;
+      if (hideOwned && ownedSet.has(card.id)) return false;
       return true;
     });
     if (view === "grid") {
@@ -798,7 +846,7 @@ export default function CardsClient({ initialCards }: { initialCards: Card[] }) 
       });
     }
     return result;
-  }, [cards, search, activePills, excludeTags, issuer, fee, program, gridSort, view]);
+  }, [cards, search, activePills, excludeTags, issuer, fee, program, gridSort, view, hideOwned, ownedSet]);
 
   const hasFilters = search || activePills.size > 0 || issuer !== "Any Issuer" || fee !== "any" || program !== "Any Program";
 
@@ -945,6 +993,12 @@ export default function CardsClient({ initialCards }: { initialCards: Card[] }) 
             <select value={program} onChange={e => setProgram(e.target.value)} style={selectStyle}>
               {PROGRAMS.map(p => <option key={p}>{p}</option>)}
             </select>
+            {ownedSignedIn && ownedSet.size > 0 && (
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer px-3 py-2 rounded-lg" style={{ color: "#475569", border: "1px solid #e2e8f0", background: hideOwned ? "#fef2f2" : "#ffffff" }}>
+                <input type="checkbox" checked={hideOwned} onChange={e => setHideOwned(e.target.checked)} />
+                Hide cards I own ({ownedSet.size})
+              </label>
+            )}
           </div>
         )}
 

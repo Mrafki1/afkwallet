@@ -14,6 +14,7 @@ import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { upsertCards, getCards, recordBonusHistory, recordCardChanges } from "../../lib/cards-db";
 import { pingHealthcheck } from "../../lib/healthcheck";
+import { sendAlert } from "../../lib/notify";
 import type { Card } from "../../data/cards";
 import type { CardChange } from "../../lib/cards-db";
 
@@ -363,6 +364,7 @@ export async function POST(req: NextRequest) {
   }
 
   const startedAt = new Date().toISOString();
+  console.log(`[scrape-cards] starting at ${startedAt}`);
 
   try {
     // ── Snapshot existing card data before scraping ────────────────────────
@@ -398,12 +400,17 @@ export async function POST(req: NextRequest) {
         const newPts  = parsePoints(card.pointsBonus);
         const direction = newPts > prevPts ? "up" : newPts < prevPts ? "down" : "changed";
 
+        // Flag suspicious magnitude swings (drop >50%, jump >3x) for manual review
+        const ratio = prevPts > 0 ? newPts / prevPts : 0;
+        const suspicious = prevPts > 0 && (ratio < 0.5 || ratio > 3);
+
         allChanges.push({
-          card_id:   card.id,
-          field:     "points_bonus",
-          old_value: prev.pointsBonus,
-          new_value: card.pointsBonus,
-          note:      `${direction === "up" ? "Increased" : direction === "down" ? "Decreased" : "Changed"} from ${prev.pointsBonus}`,
+          card_id:      card.id,
+          field:        "points_bonus",
+          old_value:    prev.pointsBonus,
+          new_value:    card.pointsBonus,
+          note:         `${direction === "up" ? "Increased" : direction === "down" ? "Decreased" : "Changed"} from ${prev.pointsBonus}${suspicious ? " [suspicious magnitude]" : ""}`,
+          needs_review: suspicious,
         });
         digest.bonusChanges.push({ name: card.name, id: card.id, old: prev.pointsBonus, new: card.pointsBonus, direction });
         await recordBonusHistory(card.id, card.pointsBonus, `Changed from: ${prev.pointsBonus}`);
@@ -469,13 +476,29 @@ export async function POST(req: NextRequest) {
     // ── Send admin digest email ───────────────────────────────────────────
     await sendAdminDigest(digest, cards.length);
 
+    // ── Fire alert on suspicious-magnitude changes ───────────────────────
+    const suspicious = allChanges.filter(c => c.needs_review);
+    if (suspicious.length > 0) {
+      console.warn(`[scrape-cards] ${suspicious.length} suspicious change(s) need review`);
+      await sendAlert({
+        level:   "warn",
+        title:   `${suspicious.length} suspicious bonus change${suspicious.length === 1 ? "" : "s"} need review`,
+        summary: "These welcome-bonus changes exceed the magnitude threshold (drop >50% or jump >3x). Check the source before trusting the scrape.",
+        lines:   suspicious.slice(0, 15).map(c => `${c.card_id}: ${c.old_value} → ${c.new_value}`),
+        link:    { label: "Open admin panel", url: "/admin" },
+      });
+    }
+
     await pingHealthcheck("HEALTHCHECK_URL_SCRAPE_CARDS");
+
+    console.log(`[scrape-cards] done — scraped:${cards.length} upserted:${inserted} changes:${allChanges.length} suspicious:${suspicious.length}`);
 
     return NextResponse.json({
       ok: true,
       scraped: cards.length,
       upserted: inserted,
       changes: allChanges.length,
+      suspicious: suspicious.length,
       newCards: digest.newCards.length,
       bonusChanges: digest.bonusChanges.length,
       feeChanges: digest.feeChanges.length,
@@ -485,6 +508,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    console.error(`[scrape-cards] failed:`, message);
     return NextResponse.json({ ok: false, error: message, startedAt }, { status: 500 });
   }
 }

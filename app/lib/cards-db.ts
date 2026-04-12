@@ -238,6 +238,7 @@ export type CardChange = {
   old_value: string | null;
   new_value: string;
   note?: string;
+  needs_review?: boolean;
 };
 
 export async function recordCardChanges(changes: CardChange[]): Promise<void> {
@@ -245,12 +246,13 @@ export async function recordCardChanges(changes: CardChange[]): Promise<void> {
   const supabase = getServiceClient();
   const today = new Date().toISOString().split("T")[0];
   const rows = changes.map(c => ({
-    card_id:     c.card_id,
-    field:       c.field,
-    old_value:   c.old_value ?? null,
-    new_value:   c.new_value,
-    recorded_at: today,
-    note:        c.note ?? null,
+    card_id:      c.card_id,
+    field:        c.field,
+    old_value:    c.old_value ?? null,
+    new_value:    c.new_value,
+    recorded_at:  today,
+    note:         c.note ?? null,
+    needs_review: c.needs_review ?? false,
   }));
   const { error } = await supabase.from("card_changes").insert(rows);
   if (error) console.warn("recordCardChanges:", error.message);
@@ -309,6 +311,37 @@ export async function getRecentChanges(limit = 50): Promise<RecentChange[]> {
   }
 
   return (data ?? []).map(r => ({ ...r, card_name: nameMap[r.card_id] ?? null }));
+}
+
+// ── Link health ──────────────────────────────────────────────────────────────
+
+export type LinkHealthRow = {
+  card_id:     string;
+  card_name:   string | null;
+  kind:        "portal" | "direct";
+  portal_name: string | null;
+  url:         string;
+  status:      "ok" | "broken" | "unknown";
+  reason:      string | null;
+  checked_at:  string;
+};
+
+export async function getLinkHealth(): Promise<LinkHealthRow[]> {
+  const supabase = getServiceClient();
+  const { data } = await supabase
+    .from("link_health")
+    .select("card_id, kind, portal_name, url, status, reason, checked_at")
+    .order("status", { ascending: false })    // broken > unknown > ok
+    .order("checked_at", { ascending: false })
+    .limit(500);
+  if (!data) return [];
+  const cardIds = [...new Set(data.map(r => r.card_id))];
+  let nameMap: Record<string, string> = {};
+  if (cardIds.length > 0) {
+    const { data: cards } = await supabase.from("cards").select("id, name").in("id", cardIds);
+    nameMap = Object.fromEntries((cards ?? []).map(c => [c.id, c.name]));
+  }
+  return data.map(r => ({ ...r, card_name: nameMap[r.card_id] ?? null })) as LinkHealthRow[];
 }
 
 export async function getElevatedCards(): Promise<Card[]> {

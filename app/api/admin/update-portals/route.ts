@@ -29,6 +29,12 @@ export async function POST(req: NextRequest) {
     if (!p.name || typeof p.bonus !== "number" || !p.url) {
       return NextResponse.json({ error: "Each portal needs name, bonus (number), and url" }, { status: 400 });
     }
+    if (!/^https:\/\//i.test(p.url)) {
+      return NextResponse.json({ error: `Portal URL must be absolute https: ${p.url}` }, { status: 400 });
+    }
+    if (p.name === "CCG" && !/[?&]state=/i.test(p.url)) {
+      return NextResponse.json({ error: `CCG URL must include ?state= affiliate param: ${p.url}` }, { status: 400 });
+    }
   }
 
   const db = getServiceClient();
