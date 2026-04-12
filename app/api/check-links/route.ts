@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { pingHealthcheck } from "../../lib/healthcheck";
 import { createClient } from "@supabase/supabase-js";
 
-export const maxDuration = 60;
+export const maxDuration = 300; // Pro plan allows up to 300s
 export const dynamic = "force-dynamic";
 
 // ── Homepage patterns — if a portal URL redirects here, the offer is gone ──
@@ -39,6 +39,28 @@ function isHomepageUrl(url: string): boolean {
   }
 }
 
+// ── Soft-404 body patterns ─────────────────────────────────────────────────
+// Portals sometimes return HTTP 200 but render a "not found" page.
+// We read the first 8KB of the response body and check for these patterns.
+
+const SOFT_404_PATTERNS = [
+  /page (not|no longer) found/i,
+  /offer (not|no longer) (found|available)/i,
+  /card (not|no longer) (found|available)/i,
+  /this (page|offer|card) (does not|doesn't) exist/i,
+  /sorry.*not found/i,
+  /404/,                                   // explicit "404" in body text
+  /we couldn.t find (this|that|the)/i,
+  /no longer available/i,
+];
+
+function hasSoft404Body(body: string): string | null {
+  for (const pattern of SOFT_404_PATTERNS) {
+    if (pattern.test(body)) return pattern.toString();
+  }
+  return null;
+}
+
 // ── Check a single URL ─────────────────────────────────────────────────────
 // Returns: "ok" | "broken" | "unknown"
 // "unknown" = server error/timeout/blocked — keep the entry, can't confirm
@@ -48,20 +70,17 @@ async function checkUrl(url: string): Promise<{ status: "ok" | "broken" | "unkno
   const timer = setTimeout(() => controller.abort(), 10_000);
 
   try {
-    // Some sites reject HEAD — use GET with a range header to avoid downloading the whole page
     const res = await fetch(url, {
       method: "GET",
       redirect: "follow",
       signal: controller.signal,
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; PointsBinderBot/1.0)",
-        "Range": "bytes=0-0",
       },
     });
 
     clearTimeout(timer);
 
-    // Final URL after redirects
     const finalUrl = res.url;
 
     if (res.status === 404) {
@@ -75,6 +94,21 @@ async function checkUrl(url: string): Promise<{ status: "ok" | "broken" | "unkno
     // 403, 429, 5xx — can't confirm broken, keep it
     if (res.status >= 500 || res.status === 403 || res.status === 429) {
       return { status: "unknown", reason: `HTTP ${res.status}` };
+    }
+
+    // Soft-404 check: read first 8KB of body and scan for "not found" patterns
+    if (res.status === 200) {
+      const reader = res.body?.getReader();
+      let body = "";
+      if (reader) {
+        const { value } = await reader.read();
+        if (value) body = new TextDecoder().decode(value).slice(0, 8_000);
+        reader.cancel();
+      }
+      const matched = hasSoft404Body(body);
+      if (matched) {
+        return { status: "broken", reason: `soft-404: body matched ${matched}` };
+      }
     }
 
     return { status: "ok", reason: `HTTP ${res.status}` };
@@ -98,6 +132,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  console.log("[check-links] starting link check run");
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -110,6 +146,7 @@ export async function GET(req: NextRequest) {
     .eq("status", "published");
 
   if (dbError) {
+    console.error("[check-links] failed to fetch cards:", dbError.message);
     return NextResponse.json({ ok: false, error: dbError.message }, { status: 500 });
   }
 
@@ -166,6 +203,14 @@ export async function GET(req: NextRequest) {
     });
     const { error } = await supabase.from("cards").update({ portals: cleanPortals }).eq("id", card.id);
     if (!error) updated++;
+  }
+
+  console.log(`[check-links] done — checked: ${checked}, broken: ${broken.length}, removed: ${removed.length}, cards updated: ${updated}`);
+  if (unknown.length > 0) {
+    console.log(`[check-links] unknown/skipped: ${unknown.length} — ${unknown.map(u => `${u.card}/${u.portal} (${u.reason})`).join(", ")}`);
+  }
+  if (removed.length > 0) {
+    console.log(`[check-links] removed portals: ${removed.map(r => `${r.card}/${r.portal}`).join(", ")}`);
   }
 
   await pingHealthcheck("HEALTHCHECK_URL_CHECK_LINKS");

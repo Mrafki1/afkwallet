@@ -9,6 +9,7 @@ import {
   getCardsCount,
 } from "../lib/cards-db";
 import ElevatedToggle from "./ElevatedToggle";
+import PortalEditor from "./PortalEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -217,6 +218,14 @@ export default async function AdminPage() {
             </div>
           )}
         </div>
+
+        {/* ── Portal editor ── */}
+        <PortalEditor cards={allCards.map(c => ({
+          id: c.id,
+          name: c.name,
+          issuer: c.issuer,
+          portals: c.portals,
+        }))} />
 
         {/* ── Cron triggers ── */}
         <div className="bg-white rounded-2xl p-6" style={{ border: "1px solid #e2e8f0" }}>
