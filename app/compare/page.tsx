@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cards } from "../data/cards";
@@ -132,26 +132,107 @@ function CardSelector({
   exclude: string[];
   slot: number;
 }) {
-  const available = cards.filter(c => !exclude.includes(c.id) || c.id === value);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  const available = cards
+    .filter(c => !exclude.includes(c.id) || c.id === value)
+    .filter(c =>
+      query.trim() === "" ||
+      c.name.toLowerCase().includes(query.toLowerCase()) ||
+      c.issuer.toLowerCase().includes(query.toLowerCase()) ||
+      c.program.toLowerCase().includes(query.toLowerCase())
+    );
+
+  const selected = cards.find(c => c.id === value);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery("");
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  function pick(id: string) {
+    onChange(id);
+    setOpen(false);
+    setQuery("");
+  }
 
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="w-full appearance-none rounded-xl border px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
-        style={{ borderColor: "#e2e8f0", color: value ? "#0f172a" : "#94a3b8", background: "#fff" }}
+    <div ref={ref} className="relative">
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between rounded-xl border px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-left"
+        style={{ borderColor: open ? "#2563eb" : "#e2e8f0", color: selected ? "#0f172a" : "#94a3b8", background: "#fff" }}
       >
-        <option value="">Select card {slot}…</option>
-        {available.map(c => (
-          <option key={c.id} value={c.id}>
-            {c.name} ({c.annualFee})
-          </option>
-        ))}
-      </select>
-      <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "#94a3b8" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg>
+        <span className="truncate">{selected ? `${selected.name} (${selected.annualFee})` : `Select card ${slot}…`}</span>
+        <svg className="w-4 h-4 shrink-0 ml-2 transition-transform" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", color: "#94a3b8" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div
+          className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-30"
+          style={{ background: "#fff", border: "1px solid #e2e8f0", boxShadow: "0 8px 24px rgba(0,0,0,0.10)" }}
+        >
+          {/* Search input */}
+          <div className="p-2" style={{ borderBottom: "1px solid #f1f5f9" }}>
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search by name or issuer…"
+              className="w-full text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={{ border: "1px solid #e2e8f0", color: "#0f172a" }}
+            />
+          </div>
+
+          {/* Options */}
+          <div className="overflow-y-auto" style={{ maxHeight: 260 }}>
+            {value && (
+              <button
+                type="button"
+                onClick={() => pick("")}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors"
+                style={{ color: "#64748b" }}
+              >
+                — Clear selection
+              </button>
+            )}
+            {available.length === 0 ? (
+              <p className="px-4 py-3 text-sm" style={{ color: "#94a3b8" }}>No cards match &ldquo;{query}&rdquo;</p>
+            ) : (
+              available.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => pick(c.id)}
+                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors"
+                  style={{
+                    color: c.id === value ? "#2563eb" : "#0f172a",
+                    fontWeight: c.id === value ? 600 : 400,
+                    background: c.id === value ? "#eff6ff" : "transparent",
+                  }}
+                >
+                  <span className="block font-medium">{c.name}</span>
+                  <span className="text-xs" style={{ color: "#64748b" }}>{c.issuer} · {c.annualFee}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -159,7 +240,7 @@ function CardSelector({
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ComparePage() {
-  const [ids, setIds] = useState<[string, string, string]>(["amex-plat", "amex-cobalt", ""]);
+  const [ids, setIds] = useState<[string, string, string]>(["", "", ""]);
 
   function setId(slot: 0 | 1 | 2, id: string) {
     setIds(prev => {
@@ -175,7 +256,7 @@ export default function ComparePage() {
 
   return (
     <div className="min-h-screen" style={{ background: "#f8fafc" }}>
-      <Navbar activePage="cards" />
+      <Navbar activePage="compare" />
 
       {/* Header */}
       <div style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>

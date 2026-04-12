@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
-import { cards } from "../../data/cards";
+import { createClient } from "@supabase/supabase-js";
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+}
 
 export async function POST(request: NextRequest) {
   const { email, cardId } = await request.json();
@@ -9,21 +16,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing email or cardId." }, { status: 400 });
   }
 
-  const card = cards.find(c => c.id === cardId);
-  const cardName = card?.name ?? cardId;
-
-  const resend = new Resend(process.env.RESEND_API_KEY);
-
-  const { error } = await resend.emails.send({
-    from: "PointsBinder Alerts <onboarding@resend.dev>",
-    to: process.env.ADMIN_EMAIL!,
-    subject: `New alert subscriber: ${cardName}`,
-    html: `<p><strong>${email}</strong> wants to be notified when <strong>${cardName}</strong> goes elevated.</p>`,
-  });
+  const supabase = getServiceClient();
+  const { error } = await supabase
+    .from("alert_subscriptions")
+    .upsert({ email, card_id: cardId }, { onConflict: "email,card_id" });
 
   if (error) {
-    console.error("alert-subscribe resend error:", error);
-    return NextResponse.json({ error: "Failed to send. Try again." }, { status: 500 });
+    console.error("alert-subscribe error:", error);
+    return NextResponse.json({ error: "Failed to save. Try again." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

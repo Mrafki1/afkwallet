@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 const METHODOLOGY = [
   {
     step: "01",
-    title: "Card catalog — scraped from CreditCardGenius",
-    body: "Our card database is built by scraping the CreditCardGenius API directly, capturing the official annual fee, welcome bonus, earn rates, insurance coverage, and first-year value estimate for every Canadian credit card. This runs automatically every Monday.",
+    title: "Card catalog — manually curated & automatically updated",
+    body: "Our card database covers Canadian credit cards with their official annual fee, welcome bonus, earn rates, insurance coverage, and first-year value estimates. New cards are added manually; portal bonuses and key fields are refreshed automatically every Monday.",
   },
   {
     step: "02",
@@ -186,26 +186,6 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* ── Footer ── */}
-      <footer style={{ background: "#0f172a", borderTop: "1px solid #1e293b" }} className="py-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 flex items-center justify-center rounded-md text-white text-xs font-bold" style={{ background: "#2563eb" }}>P</div>
-            <span className="font-semibold text-sm" style={{ color: "#f1f5f9" }}>PointsBinder</span>
-          </div>
-          <div className="flex gap-6 text-sm">
-            {[
-              { href: "/cards", label: "Cards" },
-              { href: "/deals", label: "Hot Deals" },
-              { href: "/blog",  label: "Blog" },
-              { href: "/about", label: "About" },
-            ].map(l => (
-              <Link key={l.href} href={l.href} style={{ color: "#64748b" }} className="hover:text-white transition-colors">{l.label}</Link>
-            ))}
-          </div>
-          <p className="text-xs" style={{ color: "#334155" }}>Not financial advice. Verify all offers before applying.</p>
-        </div>
-      </footer>
     </div>
   );
 }

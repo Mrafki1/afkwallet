@@ -75,9 +75,8 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/cards"   className={linkClass("cards")}>Cards</Link>
+            <Link href="/cards"   className={linkClass("cards")}>All Cards</Link>
             <Link href="/compare" className={linkClass("compare")}>Compare</Link>
-            <Link href="/deals"   className={linkClass("deals")}>⚡ Hot Deals</Link>
 
             {/* Best dropdown */}
             <div ref={bestRef} className="relative">
@@ -126,6 +125,7 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
               )}
             </div>
 
+            <Link href="/deals"   className={linkClass("deals")}>⚡ Hot Deals</Link>
             <Link href="/blog"  className={linkClass("blog")}>Blog</Link>
             <Link href="/about" className={linkClass("about")}>About</Link>
             <button
@@ -170,7 +170,7 @@ export default function Navbar({ activePage }: { activePage?: "cards" | "blog" |
           style={{ background: "#ffffff", borderColor: "#e2e8f0" }}
         >
           {[
-            { href: "/cards",   label: "Cards",        page: "cards"   },
+            { href: "/cards",   label: "All Cards",    page: "cards"   },
             { href: "/compare", label: "Compare",      page: "compare" },
             { href: "/deals",   label: "⚡ Hot Deals", page: "deals"   },
             { href: "/blog",    label: "Blog",         page: "blog"    },

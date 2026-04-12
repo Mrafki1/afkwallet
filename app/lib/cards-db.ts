@@ -107,7 +107,8 @@ const DUPLICATE_IDS = new Set([
   "mbna-smart-cash-platinum-plus-mastercard",
   // Additional scraper duplicates (same card, different slug)
   "td-aeroplan-vi-infinite-privilege",   // duplicate of td-aeroplan-vi-privilege
-  "scotia-passport-vi-infinite",         // duplicate of scotia-passport-vi
+  // Note: scotia-passport-vi-infinite, scotia-momentum-vi-infinite, td-cashback-vi-infinite,
+  // scotia-scene-plus-visa, cibc-aeroplan-vi-no-fee are now archived in DB — no longer needed here
 ]);
 
 // ── Public queries ────────────────────────────────────────────────────────────

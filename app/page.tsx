@@ -55,7 +55,7 @@ const HOW_IT_WORKS_STEPS = [
       </svg>
     ),
     title: "Find the right card",
-    body: "Browse 155+ Canadian credit cards. Filter by program, issuer, or fee. We show the full first-year value — welcome bonus plus portal cash back.",
+    body: "Browse 130+ Canadian credit cards. Filter by program, issuer, or fee. We show the full first-year value — welcome bonus plus portal cash back.",
   },
   {
     number: "02",
@@ -191,7 +191,7 @@ export default function LandingPage() {
               {/* Stats row */}
               <div className="flex flex-wrap gap-x-8 gap-y-4">
                 {[
-                  { value: "155+",   label: "Canadian cards tracked" },
+                  { value: "130+",   label: "Canadian cards tracked" },
                   { value: "$1,800", label: "Top first-year value" },
                   { value: "4",      label: "Portals compared per card" },
                   { value: "Free",   label: "Always free to use" },
@@ -274,7 +274,7 @@ export default function LandingPage() {
               </h2>
             </div>
             <Link href="/cards" className="text-sm font-semibold hidden sm:block" style={{ color: "#2563eb" }}>
-              View all 155+ cards →
+              View all 130+ cards →
             </Link>
           </div>
 
@@ -311,7 +311,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-5 text-center sm:hidden">
-            <Link href="/cards" className="text-sm font-semibold" style={{ color: "#2563eb" }}>View all 155+ cards →</Link>
+            <Link href="/cards" className="text-sm font-semibold" style={{ color: "#2563eb" }}>View all 130+ cards →</Link>
           </div>
         </div>
       </section>
@@ -479,7 +479,7 @@ export default function LandingPage() {
             Ready to stop leaving money on the table?
           </h2>
           <p className="text-base mb-8" style={{ color: "#94a3b8" }}>
-            Browse 155+ Canadian cards, find the best portal, and track every deadline — free.
+            Browse 130+ Canadian cards, find the best portal, and track every deadline — free.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/auth" className="btn-primary text-sm px-7 py-3.5">Create your free account →</Link>
