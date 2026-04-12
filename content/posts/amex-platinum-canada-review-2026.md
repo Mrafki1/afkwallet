@@ -86,4 +86,4 @@ If you don't use both credits or don't fly often, cancel before month 11 and mov
 
 **Bottom line:** In year one, it's one of the best value propositions in Canadian personal finance. Apply via GCR to stack an extra $125 on top.
 
-*Offer terms change. Verify current welcome bonus before applying.*
+*Offer terms change. Verify current welcome bonus before applying. Portal links on PointsBinder are affiliate links — we may earn a commission if you apply through them, at no extra cost to you.*

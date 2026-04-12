@@ -275,6 +275,10 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
               )}
               <TrackButton cardId={card.id} />
             </div>
+            <p className="text-xs" style={{ color: "#94a3b8" }}>
+              Portal links are affiliate links — PointsBinder may earn a commission at no extra cost to you.{" "}
+              <Link href="/disclosure" className="underline hover:text-gray-600 transition-colors">How we make money</Link>
+            </p>
 
             {/* Notify me when elevated */}
             {!card.elevated && (
@@ -474,19 +478,6 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
 
       </div>
 
-      {/* ── Footer ── */}
-      <footer className="mt-16 py-8" style={{ borderTop: "1px solid #e2e8f0" }}>
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs" style={{ color: "#94a3b8" }}>
-          <Link href="/" className="font-bold text-sm" style={{ color: "#64748b" }}>PointsBinder</Link>
-          <div className="flex gap-5">
-            <Link href="/cards" className="hover:text-gray-600 transition-colors">All Cards</Link>
-            <Link href="/deals" className="hover:text-gray-600 transition-colors">Hot Deals</Link>
-            <Link href="/blog" className="hover:text-gray-600 transition-colors">Blog</Link>
-            <Link href="/auth" className="hover:text-gray-600 transition-colors">Sign up</Link>
-          </div>
-          <p>Offers change frequently — always verify before applying.</p>
-        </div>
-      </footer>
     </div>
   );
 }

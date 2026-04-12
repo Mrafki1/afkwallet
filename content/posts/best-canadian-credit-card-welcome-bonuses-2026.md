@@ -54,4 +54,4 @@ A few things to keep in mind when applying:
 
 ---
 
-*Offers change frequently. Always verify current terms before applying.*
+*Offers change frequently. Always verify current terms before applying. Portal links on PointsBinder are affiliate links — we may earn a commission if you apply through them, at no extra cost to you.*

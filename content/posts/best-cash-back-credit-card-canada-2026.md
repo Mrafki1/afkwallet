@@ -91,4 +91,4 @@ This approach maximizes cash back across all spending without the complexity of 
 
 ---
 
-*Cash back rates and welcome offers change. Always verify current terms before applying.*
+*Cash back rates and welcome offers change. Always verify current terms before applying. Portal links on PointsBinder are affiliate links — we may earn a commission if you apply through them, at no extra cost to you.*
