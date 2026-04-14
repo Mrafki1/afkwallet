@@ -45,7 +45,7 @@ function extractHrefs(html: string, baseHost: string): string[] {
   const re = /href\s*=\s*["']([^"']+)["']/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html))) {
-    let href = m[1];
+    const href = m[1];
     if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) continue;
     try {
       const u = new URL(href, `https://${baseHost}`);
