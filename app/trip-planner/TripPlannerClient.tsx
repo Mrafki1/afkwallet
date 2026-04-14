@@ -46,7 +46,7 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
   const [includeHotel, setIncludeHotel]       = useState(true);
   const [excludeOwned, setExcludeOwned]       = useState(true);
   const [onlyNoFee, setOnlyNoFee]             = useState(false);
-  const [excludeBusiness, setExcludeBusiness] = useState(false);
+  const [excludeBusiness, setExcludeBusiness] = useState(true);
   const [allowedIssuers, setAllowedIssuers]   = useState<Set<string>>(new Set());
   const [diversify, setDiversify]             = useState(true);
   const [maxPerIssuer, setMaxPerIssuer]       = useState(2);
@@ -157,7 +157,7 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
     (includeHotel ? 0 : 1) +
     (excludeOwned ? 0 : 1) +
     (onlyNoFee ? 1 : 0) +
-    (excludeBusiness ? 1 : 0) +
+    (excludeBusiness ? 0 : 1) +
     (diversify ? 0 : 1) +
     (maxPerIssuer !== 2 ? 1 : 0) +
     (allowedIssuers.size > 0 ? 1 : 0);
@@ -287,8 +287,8 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
                   Only no-annual-fee cards
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
-                  <input type="checkbox" checked={excludeBusiness} onChange={e => setExcludeBusiness(e.target.checked)} />
-                  Hide business cards
+                  <input type="checkbox" checked={!excludeBusiness} onChange={e => setExcludeBusiness(!e.target.checked)} />
+                  Include business cards
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
                   <input type="checkbox" checked={diversify} onChange={e => setDiversify(e.target.checked)} />
