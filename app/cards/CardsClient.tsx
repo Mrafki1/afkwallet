@@ -999,6 +999,27 @@ export default function CardsClient({ initialCards }: { initialCards: Card[] }) 
                 Hide cards I own ({ownedSet.size})
               </label>
             )}
+            <label
+              className="flex items-center gap-2 text-sm font-medium cursor-pointer px-3 py-2 rounded-lg"
+              style={{
+                color: "#475569",
+                border: "1px solid #e2e8f0",
+                background: !excludeTags.includes("Business") ? "#ecfdf5" : "#ffffff",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={!excludeTags.includes("Business")}
+                onChange={e =>
+                  setExcludeTags(prev =>
+                    e.target.checked
+                      ? prev.filter(t => t !== "Business")
+                      : [...prev, "Business"]
+                  )
+                }
+              />
+              Show business cards
+            </label>
           </div>
         )}
 
