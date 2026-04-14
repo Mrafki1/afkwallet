@@ -52,9 +52,8 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
   const [maxPerIssuer, setMaxPerIssuer]       = useState(2);
   const [balances, setBalances]               = useState<Record<string, number>>({});
 
-  // ── UI: which sections are expanded ──
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showBalances, setShowBalances] = useState(false);
+  // ── UI: which tune panel is expanded (null = collapsed) ──
+  const [openPanel, setOpenPanel] = useState<"filters" | "balances" | null>(null);
 
   const allIssuers = useMemo(
     () => Array.from(new Set(cards.map(c => c.issuer))).sort(),
@@ -232,6 +231,133 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
           </div>
         </div>
 
+        {/* ── Compact tune bar: filters + balances ── */}
+        <div className={card} style={cardBorder}>
+          <div className="grid grid-cols-2">
+            <button
+              onClick={() => setOpenPanel(p => p === "filters" ? null : "filters")}
+              className="px-5 py-3.5 flex items-center justify-between text-sm font-semibold transition-colors"
+              style={{
+                color: "#0f172a",
+                background: openPanel === "filters" ? "#f8fafc" : "transparent",
+                borderRight: "1px solid #f1f5f9",
+              }}
+            >
+              <span className="flex items-center gap-2">
+                Filters
+                {activeFiltersCount > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#dbeafe", color: "#1d4ed8" }}>
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </span>
+              <span style={{ color: "#94a3b8" }}>{openPanel === "filters" ? "▴" : "▾"}</span>
+            </button>
+            <button
+              onClick={() => setOpenPanel(p => p === "balances" ? null : "balances")}
+              className="px-5 py-3.5 flex items-center justify-between text-sm font-semibold transition-colors"
+              style={{
+                color: "#0f172a",
+                background: openPanel === "balances" ? "#f8fafc" : "transparent",
+              }}
+            >
+              <span className="flex items-center gap-2">
+                My points
+                {balancesCount > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#dcfce7", color: "#166534" }}>
+                    {balancesCount}
+                  </span>
+                )}
+              </span>
+              <span style={{ color: "#94a3b8" }}>{openPanel === "balances" ? "▴" : "▾"}</span>
+            </button>
+          </div>
+
+          {openPanel === "filters" && (
+            <div className="px-6 pb-6 flex flex-col gap-5" style={{ borderTop: "1px solid #f1f5f9", paddingTop: "20px" }}>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {signedIn && owned.size > 0 && (
+                  <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
+                    <input type="checkbox" checked={excludeOwned} onChange={e => setExcludeOwned(e.target.checked)} />
+                    Skip cards I already own
+                  </label>
+                )}
+                <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
+                  <input type="checkbox" checked={onlyNoFee} onChange={e => setOnlyNoFee(e.target.checked)} />
+                  Only no-annual-fee cards
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
+                  <input type="checkbox" checked={excludeBusiness} onChange={e => setExcludeBusiness(e.target.checked)} />
+                  Hide business cards
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
+                  <input type="checkbox" checked={diversify} onChange={e => setDiversify(e.target.checked)} />
+                  Spread across issuers
+                </label>
+              </div>
+              <div>
+                <label className={fieldLabel} style={fieldColor}>Max cards per bank</label>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setMaxPerIssuer(n => Math.max(1, n - 1))} className="w-9 h-9 rounded-lg font-bold" style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>−</button>
+                  <span className="font-bold text-lg px-3 min-w-[32px] text-center" style={{ color: "#0f172a" }}>{maxPerIssuer}</span>
+                  <button onClick={() => setMaxPerIssuer(n => Math.min(5, n + 1))} className="w-9 h-9 rounded-lg font-bold" style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>+</button>
+                  <span className="text-[11px] ml-2" style={{ color: "#94a3b8" }}>Amex stays at 2 per 90 days</span>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className={fieldLabel + " mb-0"} style={fieldColor}>Only show cards from (optional)</label>
+                  {allowedIssuers.size > 0 && (
+                    <button onClick={() => setAllowedIssuers(new Set())} className="text-[11px] font-semibold" style={{ color: "#2563eb" }}>clear</button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {allIssuers.map(iss => {
+                    const on = allowedIssuers.has(iss);
+                    return (
+                      <button
+                        key={iss}
+                        onClick={() => toggleIssuer(iss)}
+                        className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors"
+                        style={on
+                          ? { background: "#2563eb", color: "#fff", border: "1px solid #2563eb" }
+                          : { background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0" }}
+                      >
+                        {iss}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {openPanel === "balances" && (
+            <div className="px-6 pb-6" style={{ borderTop: "1px solid #f1f5f9", paddingTop: "20px" }}>
+              <p className="text-xs mb-4" style={{ color: "#64748b" }}>
+                Enter current balances. Points in programs useful for this destination count toward the target, and their cards get boosted in the plan.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {BALANCE_PROGRAMS.map(prog => (
+                  <div key={prog} className="flex items-center gap-2">
+                    <span className="text-sm flex-1" style={{ color: "#475569" }}>{prog}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1000}
+                      value={balances[prog] ?? ""}
+                      onChange={e => setBalance(prog, parseInt(e.target.value, 10) || 0)}
+                      placeholder="0"
+                      className="w-28 px-2 py-1.5 rounded-md text-sm text-right"
+                      style={{ border: "1px solid #e2e8f0", background: "#fff", color: "#0f172a" }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* ── Results: big headline number + card plan ── */}
         <div className={card} style={{ ...cardBorder, padding: "24px" }}>
           <div className="flex items-baseline gap-3 flex-wrap">
@@ -361,133 +487,6 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
           </p>
         </div>
 
-        {/* ── Collapsible: filters ── */}
-        <div className={card} style={cardBorder}>
-          <button
-            onClick={() => setShowAdvanced(s => !s)}
-            className="w-full px-6 py-4 flex items-center justify-between text-sm font-semibold"
-            style={{ color: "#0f172a" }}
-          >
-            <span className="flex items-center gap-2">
-              Filters & preferences
-              {activeFiltersCount > 0 && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#dbeafe", color: "#1d4ed8" }}>
-                  {activeFiltersCount} active
-                </span>
-              )}
-            </span>
-            <span style={{ color: "#94a3b8" }}>{showAdvanced ? "▴" : "▾"}</span>
-          </button>
-
-          {showAdvanced && (
-            <div className="px-6 pb-6 flex flex-col gap-5" style={{ borderTop: "1px solid #f1f5f9", paddingTop: "20px" }}>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {signedIn && owned.size > 0 && (
-                  <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
-                    <input type="checkbox" checked={excludeOwned} onChange={e => setExcludeOwned(e.target.checked)} />
-                    Skip cards I already own
-                  </label>
-                )}
-                <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
-                  <input type="checkbox" checked={onlyNoFee} onChange={e => setOnlyNoFee(e.target.checked)} />
-                  Only no-annual-fee cards
-                </label>
-                <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
-                  <input type="checkbox" checked={excludeBusiness} onChange={e => setExcludeBusiness(e.target.checked)} />
-                  Hide business cards
-                </label>
-                <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
-                  <input type="checkbox" checked={diversify} onChange={e => setDiversify(e.target.checked)} />
-                  Spread across issuers
-                </label>
-              </div>
-
-              <div>
-                <label className={fieldLabel} style={fieldColor}>Max cards per bank</label>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setMaxPerIssuer(n => Math.max(1, n - 1))} className="w-9 h-9 rounded-lg font-bold" style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>−</button>
-                  <span className="font-bold text-lg px-3 min-w-[32px] text-center" style={{ color: "#0f172a" }}>{maxPerIssuer}</span>
-                  <button onClick={() => setMaxPerIssuer(n => Math.min(5, n + 1))} className="w-9 h-9 rounded-lg font-bold" style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>+</button>
-                  <span className="text-[11px] ml-2" style={{ color: "#94a3b8" }}>Amex stays at 2 per 90 days</span>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className={fieldLabel + " mb-0"} style={fieldColor}>
-                    Only show cards from (optional)
-                  </label>
-                  {allowedIssuers.size > 0 && (
-                    <button onClick={() => setAllowedIssuers(new Set())} className="text-[11px] font-semibold" style={{ color: "#2563eb" }}>
-                      clear
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {allIssuers.map(iss => {
-                    const on = allowedIssuers.has(iss);
-                    return (
-                      <button
-                        key={iss}
-                        onClick={() => toggleIssuer(iss)}
-                        className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors"
-                        style={on
-                          ? { background: "#2563eb", color: "#fff", border: "1px solid #2563eb" }
-                          : { background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0" }}
-                      >
-                        {iss}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Collapsible: balances ── */}
-        <div className={card} style={cardBorder}>
-          <button
-            onClick={() => setShowBalances(s => !s)}
-            className="w-full px-6 py-4 flex items-center justify-between text-sm font-semibold"
-            style={{ color: "#0f172a" }}
-          >
-            <span className="flex items-center gap-2">
-              Already have points?
-              {balancesCount > 0 && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#dcfce7", color: "#166534" }}>
-                  {balancesCount} program{balancesCount === 1 ? "" : "s"}
-                </span>
-              )}
-            </span>
-            <span style={{ color: "#94a3b8" }}>{showBalances ? "▴" : "▾"}</span>
-          </button>
-
-          {showBalances && (
-            <div className="px-6 pb-6" style={{ borderTop: "1px solid #f1f5f9", paddingTop: "20px" }}>
-              <p className="text-xs mb-4" style={{ color: "#64748b" }}>
-                Enter current balances. Points in programs useful for this destination count toward the target, and their cards get boosted in the plan.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {BALANCE_PROGRAMS.map(prog => (
-                  <div key={prog} className="flex items-center gap-2">
-                    <span className="text-sm flex-1" style={{ color: "#475569" }}>{prog}</span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={1000}
-                      value={balances[prog] ?? ""}
-                      onChange={e => setBalance(prog, parseInt(e.target.value, 10) || 0)}
-                      placeholder="0"
-                      className="w-28 px-2 py-1.5 rounded-md text-sm text-right"
-                      style={{ border: "1px solid #e2e8f0", background: "#fff", color: "#0f172a" }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
 
         <p className="text-[11px] text-center" style={{ color: "#94a3b8" }}>
           Point costs are starting-point estimates based on saver inventory, not live quotes. Actual availability varies by route and season. Amex Canada limits personal approvals to 2 per 90 days.
