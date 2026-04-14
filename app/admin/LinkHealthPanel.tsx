@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import type { LinkHealthRow } from "../lib/cards-db";
 
@@ -20,6 +20,9 @@ export default function LinkHealthPanel({ rows: initialRows }: { rows: LinkHealt
   const [rows, setRows] = useState(initialRows);
   const [busy, setBusy] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "broken" | "unknown">("broken");
+  const [suggestFor, setSuggestFor] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Record<string, Array<{ url: string; score: number }>>>({});
+  const [suggestBusy, setSuggestBusy] = useState<string | null>(null);
 
   const visible = rows.filter(r => filter === "all" ? true : r.status === filter);
 
@@ -62,6 +65,52 @@ export default function LinkHealthPanel({ rows: initialRows }: { rows: LinkHealt
       alert(`Recheck error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setBusy(null);
+    }
+  }
+
+  async function suggest(cardId: string) {
+    setSuggestBusy(cardId);
+    try {
+      const res = await fetch("/api/admin/suggest-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Suggest failed: ${data.error ?? "unknown"}`);
+        return;
+      }
+      setSuggestions(prev => ({ ...prev, [cardId]: data.candidates ?? [] }));
+      setSuggestFor(cardId);
+      if ((data.candidates ?? []).length === 0) {
+        alert(data.reason ?? "No candidate URLs found on issuer site");
+      }
+    } catch (err) {
+      alert(`Suggest error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setSuggestBusy(null);
+    }
+  }
+
+  async function applySuggestion(cardId: string, url: string) {
+    if (!confirm(`Set direct_link for this card to:\n\n${url}\n\nProceed?`)) return;
+    setSuggestBusy(cardId);
+    try {
+      const res = await fetch("/api/admin/update-direct-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId, url }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Apply failed: ${data.error ?? "unknown"}`);
+        return;
+      }
+      setSuggestFor(null);
+      await recheck(cardId);
+    } finally {
+      setSuggestBusy(null);
     }
   }
 
@@ -116,7 +165,8 @@ export default function LinkHealthPanel({ rows: initialRows }: { rows: LinkHealt
                 const s = statusStyle(r.status);
                 const key = `${r.card_id}-${r.kind}-${r.portal_name ?? "direct"}-${i}`;
                 return (
-                  <tr key={key} className="hover:bg-gray-50">
+                  <React.Fragment key={key}>
+                  <tr className="hover:bg-gray-50">
                     <td className="px-5 py-3">
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase" style={{ background: s.bg, color: s.color }}>
                         {r.status}
@@ -135,20 +185,62 @@ export default function LinkHealthPanel({ rows: initialRows }: { rows: LinkHealt
                       {formatDate(r.checked_at)}
                     </td>
                     <td className="px-5 py-3">
-                      <button
-                        onClick={() => recheck(r.card_id)}
-                        disabled={busy === r.card_id}
-                        className="text-xs font-semibold px-3 py-1 rounded-lg"
-                        style={{
-                          background: busy === r.card_id ? "#e2e8f0" : "#2563eb",
-                          color: busy === r.card_id ? "#94a3b8" : "white",
-                          cursor: busy === r.card_id ? "wait" : "pointer",
-                        }}
-                      >
-                        {busy === r.card_id ? "Checking…" : "Recheck"}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => recheck(r.card_id)}
+                          disabled={busy === r.card_id}
+                          className="text-xs font-semibold px-3 py-1 rounded-lg"
+                          style={{
+                            background: busy === r.card_id ? "#e2e8f0" : "#2563eb",
+                            color: busy === r.card_id ? "#94a3b8" : "white",
+                            cursor: busy === r.card_id ? "wait" : "pointer",
+                          }}
+                        >
+                          {busy === r.card_id ? "Checking…" : "Recheck"}
+                        </button>
+                        {r.kind === "direct" && r.status === "broken" && (
+                          <button
+                            onClick={() => suggest(r.card_id)}
+                            disabled={suggestBusy === r.card_id}
+                            className="text-xs font-semibold px-3 py-1 rounded-lg"
+                            style={{
+                              background: suggestBusy === r.card_id ? "#e2e8f0" : "#f59e0b",
+                              color: "white",
+                              cursor: suggestBusy === r.card_id ? "wait" : "pointer",
+                            }}
+                          >
+                            {suggestBusy === r.card_id ? "Scanning…" : "Suggest"}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
+                  {suggestFor === r.card_id && suggestions[r.card_id] && suggestions[r.card_id].length > 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-5 py-3" style={{ background: "#fffbeb", borderTop: "1px solid #fde68a" }}>
+                        <p className="text-xs font-semibold mb-2" style={{ color: "#92400e" }}>
+                          Candidate replacement URLs (ranked by name match):
+                        </p>
+                        <ul className="flex flex-col gap-1">
+                          {suggestions[r.card_id].map((c, j) => (
+                            <li key={j} className="flex items-center gap-3">
+                              <span className="text-xs font-mono flex-1 truncate" style={{ color: "#0f172a" }}>{c.url}</span>
+                              <span className="text-xs" style={{ color: "#94a3b8" }}>score {c.score.toFixed(1)}</span>
+                              <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold" style={{ color: "#2563eb" }}>open ↗</a>
+                              <button
+                                onClick={() => applySuggestion(r.card_id, c.url)}
+                                className="text-xs font-semibold px-3 py-1 rounded-lg"
+                                style={{ background: "#16a34a", color: "white" }}
+                              >
+                                Use
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 );
               })}
             </tbody>
