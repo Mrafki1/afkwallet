@@ -55,10 +55,25 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
   // ── UI: which tune panel is expanded (null = collapsed) ──
   const [openPanel, setOpenPanel] = useState<"filters" | "balances" | null>(null);
 
-  const allIssuers = useMemo(
-    () => Array.from(new Set(cards.map(c => c.issuer))).sort(),
-    [cards]
-  );
+  // Issuers worth showing in the trip planner, ranked by how useful they are
+  // for points-based travel. Cash-back-only or non-travel issuers (PC Financial,
+  // Canadian Tire, Rogers, Tangerine, EQ, HSBC CA wind-down, etc.) are excluded
+  // because none of their cards feed Aeroplan / MR / Avion / Bonvoy.
+  const TRAVEL_ISSUER_ORDER = [
+    "American Express",
+    "TD",
+    "RBC",
+    "CIBC",
+    "Scotiabank",
+    "BMO",
+    "National Bank",
+    "MBNA",
+    "MBNA / TD",
+  ];
+  const allIssuers = useMemo(() => {
+    const present = new Set(cards.map(c => c.issuer));
+    return TRAVEL_ISSUER_ORDER.filter(i => present.has(i));
+  }, [cards]);
   function toggleIssuer(name: string) {
     setAllowedIssuers(prev => {
       const next = new Set(prev);
