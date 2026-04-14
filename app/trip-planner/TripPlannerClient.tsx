@@ -35,6 +35,23 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
   const [tripDate, setTripDate]         = useState(defaultTrip);
   const [excludeOwned, setExcludeOwned] = useState(true);
   const [onlyNoFee, setOnlyNoFee]       = useState(false);
+  const [excludeBusiness, setExcludeBusiness] = useState(false);
+  const [allowedIssuers, setAllowedIssuers]   = useState<Set<string>>(new Set());
+  const [diversify, setDiversify]             = useState(true);
+
+  // All issuers present in the card catalog (alphabetical)
+  const allIssuers = useMemo(
+    () => Array.from(new Set(cards.map(c => c.issuer))).sort(),
+    [cards]
+  );
+
+  function toggleIssuer(name: string) {
+    setAllowedIssuers(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      return next;
+    });
+  }
 
   const monthsOut = Math.max(0, monthsBetween(today, tripDate));
 
@@ -53,6 +70,8 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
     const candidates = cards
       .filter(c => (excludeOwned ? !owned.has(c.id) : true))
       .filter(c => (onlyNoFee ? c.annualFeeNum === 0 : true))
+      .filter(c => (excludeBusiness ? !(c.tags ?? []).includes("Business") : true))
+      .filter(c => (allowedIssuers.size === 0 ? true : allowedIssuers.has(c.issuer)))
       .map(c => {
         const feeds = cardProgramFeeds(c.program);
         const matchedProgram = feeds.find(f => preferredPrograms.has(f));
@@ -60,22 +79,38 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
         return { card: c, matchedProgram, bonus };
       })
       .filter((x): x is { card: Card; matchedProgram: string; bonus: number } =>
-        !!x.matchedProgram && x.bonus > 0)
-      .sort((a, b) => b.bonus - a.bonus);
+        !!x.matchedProgram && x.bonus > 0);
 
-    // Greedy pack: pick top cards until totalNeeded is covered (or no more cards).
-    // Amex cap: at most 2 Amex cards in a 90-day window.
+    // Pick cards greedily. When `diversify` is on, penalize each subsequent
+    // card from an already-used issuer so we spread applications across banks
+    // instead of stacking e.g. 3 Amex cards just because Amex MR bonuses tend
+    // to be the highest on paper.
+    const remaining = [...candidates];
     const selected: { card: Card; matchedProgram: string; bonus: number }[] = [];
+    const issuerCount = new Map<string, number>();
     let running = 0;
     let amexCount = 0;
-    for (const c of candidates) {
+
+    while (selected.length < 5 && remaining.length > 0) {
       if (running >= totalNeeded && selected.length >= 2) break;
-      const isAmex = c.card.issuer?.toLowerCase().includes("american express");
-      if (isAmex && amexCount >= 2) continue;
-      selected.push(c);
-      running += c.bonus;
-      if (isAmex) amexCount++;
-      if (selected.length >= 5) break; // cap recommendations at 5 for sanity
+
+      // Score each remaining candidate
+      let bestIdx = -1, bestScore = -Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const c = remaining[i];
+        const isAmex = c.card.issuer?.toLowerCase().includes("american express");
+        if (isAmex && amexCount >= 2) continue;
+        const used = issuerCount.get(c.card.issuer) ?? 0;
+        // 35% bonus penalty per prior card from same issuer if diversifying
+        const score = diversify ? c.bonus * Math.pow(0.65, used) : c.bonus;
+        if (score > bestScore) { bestScore = score; bestIdx = i; }
+      }
+      if (bestIdx < 0) break;
+      const pick = remaining.splice(bestIdx, 1)[0];
+      selected.push(pick);
+      running += pick.bonus;
+      issuerCount.set(pick.card.issuer, (issuerCount.get(pick.card.issuer) ?? 0) + 1);
+      if (pick.card.issuer?.toLowerCase().includes("american express")) amexCount++;
     }
 
     // Timeline buckets based on months out
@@ -89,7 +124,7 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
       appliedTimelineOk,
       preferredPrograms: fit,
     };
-  }, [region, cabin, travelers, includeHotel, excludeOwned, onlyNoFee, cards, owned, monthsOut]);
+  }, [region, cabin, travelers, includeHotel, excludeOwned, onlyNoFee, excludeBusiness, allowedIssuers, diversify, cards, owned, monthsOut]);
 
   // ── Render ──
   return (
@@ -167,6 +202,53 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
               <input type="checkbox" checked={onlyNoFee} onChange={e => setOnlyNoFee(e.target.checked)} />
               Only no-annual-fee cards
             </label>
+
+            <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
+              <input type="checkbox" checked={excludeBusiness} onChange={e => setExcludeBusiness(e.target.checked)} />
+              No business cards
+            </label>
+
+            <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "#475569" }}>
+              <input type="checkbox" checked={diversify} onChange={e => setDiversify(e.target.checked)} />
+              Spread across issuers
+            </label>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold" style={{ color: "#64748b" }}>
+                  Limit to banks ({allowedIssuers.size === 0 ? "all" : allowedIssuers.size})
+                </label>
+                {allowedIssuers.size > 0 && (
+                  <button
+                    onClick={() => setAllowedIssuers(new Set())}
+                    className="text-[11px] font-semibold"
+                    style={{ color: "#2563eb" }}
+                  >
+                    clear
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {allIssuers.map(iss => {
+                  const on = allowedIssuers.has(iss);
+                  return (
+                    <button
+                      key={iss}
+                      onClick={() => toggleIssuer(iss)}
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors"
+                      style={on
+                        ? { background: "#2563eb", color: "#fff", border: "1px solid #2563eb" }
+                        : { background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0" }}
+                    >
+                      {iss}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] mt-1.5" style={{ color: "#94a3b8" }}>
+                Leave empty to consider every bank. Pick one or more to restrict suggestions.
+              </p>
+            </div>
           </div>
 
           {/* ── Output ── */}
