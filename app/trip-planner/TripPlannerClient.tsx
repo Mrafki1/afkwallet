@@ -40,6 +40,20 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
   const [diversify, setDiversify]             = useState(true);
   const [maxPerIssuer, setMaxPerIssuer]       = useState(2);
 
+  // Current points balances — e.g. { "Aeroplan": 60000, "Membership Rewards": 15000 }
+  const BALANCE_PROGRAMS = [
+    "Aeroplan",
+    "Membership Rewards",
+    "RBC Avion",
+    "Marriott Bonvoy",
+    "WestJet Rewards",
+    "TD Rewards",
+  ] as const;
+  const [balances, setBalances] = useState<Record<string, number>>({});
+  function setBalance(prog: string, val: number) {
+    setBalances(prev => ({ ...prev, [prog]: val }));
+  }
+
   // All issuers present in the card catalog (alphabetical)
   const allIssuers = useMemo(
     () => Array.from(new Set(cards.map(c => c.issuer))).sort(),
@@ -61,13 +75,22 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
     const perPaxPoints  = POINTS_COST[region][cabin];
     const flightsTotal  = perPaxPoints * travelers;
     const hotelTotal    = includeHotel ? HOTEL_POINTS_ROUGH[region] : 0;
-    const totalNeeded   = flightsTotal + hotelTotal;
+    const grossNeeded   = flightsTotal + hotelTotal;
 
     const fit = PROGRAM_FIT[region];
     const preferredPrograms = new Set(fit.filter(p => p.rank <= 2).map(p => p.program));
     // When the user wants hotel points too, accept hotel-loyalty feeds (and
     // keep Marriott Bonvoy-earning cards like the Bonvoy Amex in the pool).
     if (includeHotel) preferredPrograms.add("Marriott Bonvoy");
+
+    // Apply existing balances in preferred programs as credit toward target.
+    // Only points in programs useful for this route count — 200k WestJet pts
+    // don't help a Japan trip.
+    const existingCredit = [...preferredPrograms].reduce(
+      (sum, p) => sum + (balances[p] ?? 0), 0
+    );
+    const creditApplied = Math.min(existingCredit, grossNeeded);
+    const totalNeeded = Math.max(0, grossNeeded - creditApplied);
 
     // Candidate cards = published, non-owned (if toggle), match preferred programs,
     // with a real welcome bonus.
@@ -107,7 +130,9 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
         const used = issuerCount.get(c.card.issuer) ?? 0;
         if (used >= maxPerIssuer) continue;
         // 35% bonus penalty per prior card from same issuer if diversifying
-        const score = diversify ? c.bonus * Math.pow(0.65, used) : c.bonus;
+        let score = diversify ? c.bonus * Math.pow(0.65, used) : c.bonus;
+        // 20% boost if card feeds a program where user already has a balance
+        if ((balances[c.matchedProgram] ?? 0) > 0) score *= 1.2;
         if (score > bestScore) { bestScore = score; bestIdx = i; }
       }
       if (bestIdx < 0) break;
@@ -123,13 +148,13 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
     const appliedTimelineOk = totalMsrWeeks / 4 <= monthsOut + 1;
 
     return {
-      perPaxPoints, flightsTotal, hotelTotal, totalNeeded,
+      perPaxPoints, flightsTotal, hotelTotal, grossNeeded, creditApplied, totalNeeded,
       selected, running,
       shortfall: Math.max(0, totalNeeded - running),
       appliedTimelineOk,
       preferredPrograms: fit,
     };
-  }, [region, cabin, travelers, includeHotel, excludeOwned, onlyNoFee, excludeBusiness, allowedIssuers, diversify, maxPerIssuer, cards, owned, monthsOut]);
+  }, [region, cabin, travelers, includeHotel, excludeOwned, onlyNoFee, excludeBusiness, allowedIssuers, diversify, maxPerIssuer, balances, cards, owned, monthsOut]);
 
   // ── Render ──
   return (
@@ -266,6 +291,32 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
                 Leave empty to consider every bank. Pick one or more to restrict suggestions.
               </p>
             </div>
+
+            <div>
+              <label className="text-xs font-semibold block mb-1.5" style={{ color: "#64748b" }}>
+                Your current points (optional)
+              </label>
+              <div className="flex flex-col gap-1.5">
+                {BALANCE_PROGRAMS.map(prog => (
+                  <div key={prog} className="flex items-center gap-2">
+                    <span className="text-xs flex-1" style={{ color: "#475569" }}>{prog}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1000}
+                      value={balances[prog] ?? ""}
+                      onChange={e => setBalance(prog, parseInt(e.target.value, 10) || 0)}
+                      placeholder="0"
+                      className="w-24 px-2 py-1 rounded-md text-xs text-right"
+                      style={{ border: "1px solid #e2e8f0", background: "#fff", color: "#0f172a" }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] mt-1.5" style={{ color: "#94a3b8" }}>
+                Balances in programs useful for this destination get subtracted from the target, and cards feeding those programs get a boost in the picker.
+              </p>
+            </div>
           </div>
 
           {/* ── Output ── */}
@@ -274,8 +325,13 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
             <div className="bg-white rounded-2xl p-6" style={{ border: "1px solid #e2e8f0" }}>
               <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#94a3b8" }}>Points you&rsquo;ll need</p>
               <p className="text-4xl font-black" style={{ color: "#0f172a" }}>
-                {strategy.totalNeeded.toLocaleString()} <span className="text-base font-semibold" style={{ color: "#64748b" }}>pts total</span>
+                {strategy.totalNeeded.toLocaleString()} <span className="text-base font-semibold" style={{ color: "#64748b" }}>pts to earn</span>
               </p>
+              {strategy.creditApplied > 0 && (
+                <p className="text-xs mt-1" style={{ color: "#15803d" }}>
+                  −{strategy.creditApplied.toLocaleString()} from your existing balances (gross target: {strategy.grossNeeded.toLocaleString()})
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
                 <div className="rounded-xl p-3" style={{ background: "#f8fafc", border: "1px solid #f1f5f9" }}>
                   <p className="text-xs font-medium" style={{ color: "#94a3b8" }}>Flights ({travelers}× {cabin})</p>
