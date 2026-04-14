@@ -38,6 +38,7 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
   const [excludeBusiness, setExcludeBusiness] = useState(false);
   const [allowedIssuers, setAllowedIssuers]   = useState<Set<string>>(new Set());
   const [diversify, setDiversify]             = useState(true);
+  const [maxPerIssuer, setMaxPerIssuer]       = useState(2);
 
   // All issuers present in the card catalog (alphabetical)
   const allIssuers = useMemo(
@@ -64,6 +65,9 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
 
     const fit = PROGRAM_FIT[region];
     const preferredPrograms = new Set(fit.filter(p => p.rank <= 2).map(p => p.program));
+    // When the user wants hotel points too, accept hotel-loyalty feeds (and
+    // keep Marriott Bonvoy-earning cards like the Bonvoy Amex in the pool).
+    if (includeHotel) preferredPrograms.add("Marriott Bonvoy");
 
     // Candidate cards = published, non-owned (if toggle), match preferred programs,
     // with a real welcome bonus.
@@ -101,6 +105,7 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
         const isAmex = c.card.issuer?.toLowerCase().includes("american express");
         if (isAmex && amexCount >= 2) continue;
         const used = issuerCount.get(c.card.issuer) ?? 0;
+        if (used >= maxPerIssuer) continue;
         // 35% bonus penalty per prior card from same issuer if diversifying
         const score = diversify ? c.bonus * Math.pow(0.65, used) : c.bonus;
         if (score > bestScore) { bestScore = score; bestIdx = i; }
@@ -124,7 +129,7 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
       appliedTimelineOk,
       preferredPrograms: fit,
     };
-  }, [region, cabin, travelers, includeHotel, excludeOwned, onlyNoFee, excludeBusiness, allowedIssuers, diversify, cards, owned, monthsOut]);
+  }, [region, cabin, travelers, includeHotel, excludeOwned, onlyNoFee, excludeBusiness, allowedIssuers, diversify, maxPerIssuer, cards, owned, monthsOut]);
 
   // ── Render ──
   return (
@@ -212,6 +217,18 @@ export default function TripPlannerClient({ cards }: { cards: Card[] }) {
               <input type="checkbox" checked={diversify} onChange={e => setDiversify(e.target.checked)} />
               Spread across issuers
             </label>
+
+            <div>
+              <label className="text-xs font-semibold block mb-1.5" style={{ color: "#64748b" }}>
+                Max cards per bank
+              </label>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setMaxPerIssuer(n => Math.max(1, n - 1))} className="w-9 h-9 rounded-lg font-bold" style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>−</button>
+                <span className="font-bold text-lg px-3" style={{ color: "#0f172a" }}>{maxPerIssuer}</span>
+                <button onClick={() => setMaxPerIssuer(n => Math.min(5, n + 1))} className="w-9 h-9 rounded-lg font-bold" style={{ background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }}>+</button>
+                <span className="text-[11px] ml-1" style={{ color: "#94a3b8" }}>(Amex stays capped at 2 per 90 days regardless)</span>
+              </div>
+            </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
